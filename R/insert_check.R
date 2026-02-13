@@ -1,22 +1,23 @@
 # ============================================================
-# insert_check()
-#   BKP-based insertion trigger exactly matching Eq.(5) in Section 2.4.
+# insert_check()  [BKP + ADM-style PAVA monotonicity]
+#   BKP-based insertion trigger (Eq.(5) logic) + monotonic stabilization.
 #
-# Core trigger (Eq. 5):
-#   For l in {j, j+1}:
-#     Pr(pi_{l-1} < key_L | D) > C1    AND    Pr(pi_l > key_U | D) > C2
+# Step A: compute raw region probabilities at each dose:
+#   under[j]  = Pr(pi_j <= key_L | D) = pbeta(key_L; post_alpha[j], post_beta[j])
+#   over[j]   = Pr(pi_j >  key_U | D) = 1 - pbeta(key_U; post_alpha[j], post_beta[j])
+#   target[j] = Pr(key_L < pi_j <= key_U | D) = pbeta(key_U)-pbeta(key_L)
 #
-# "Evaluate only when both bracketing doses have accrued information":
-#   Check Eq.(5) only if n_{l-1} > 0 and n_l > 0 (paper rule),
-#   with boundary handling using auxiliary pi_0=0 and pi_{J+1}=1.
-#   In code:
-#     - For below-min interval (d0, d1): left event is always TRUE if key_L>0; require n1>0.
-#     - For above-max interval (dJ, dJ+1): right event is always TRUE if key_U<1; require nJ>0.
+# Step B: enforce monotonicity via PAVA (ADM style):
+#   under_pava  : non-increasing with dose index
+#   over_pava   : non-decreasing with dose index
+#   target_pava : complement, clamped at >=0
 #
-# Scheme A output:
+# Step C: apply Eq.(5) trigger using (optionally) PAVA-adjusted under/over.
+#
+# Output scheme (Scheme A):
 #   insert_code = NA         : no insertion
-#   insert_code = -1L        : below minimum (d0, d1)
-#   insert_code = -2L        : above maximum (dJ, dJ+1)
+#   insert_code = -1L        : below minimum
+#   insert_code = -2L        : above maximum
 #   insert_code = i >= 1     : between (i, i+1)
 # ============================================================
 
@@ -29,6 +30,8 @@ insert_check = function(
     C1,
     C2,
     n_treated,
+    use_pava = TRUE,          # NEW: whether to apply ADM-style monotonicity
+    return_probs = TRUE,       # NEW: return prob vectors for debugging
     LOC_BELOW_MIN = -1L,
     LOC_ABOVE_MAX = -2L
 ) {
@@ -41,62 +44,79 @@ insert_check = function(
   if (!(0 < key_L && key_L < key_U && key_U < 1)) stop("require 0 < key_L < key_U < 1.")
   if (!(0 <= C1 && C1 <= 1 && 0 <= C2 && C2 <= 1)) stop("C1,C2 must be in [0,1].")
   
+  if (use_pava) {
+    if (!exists("pava", mode = "function")) {
+      stop("insert_check(): use_pava=TRUE but pava() not found. Please define pava() first.")
+    }
+  }
+  
+  # -----------------------------
+  # Step A: raw region probabilities at each discrete dose
+  # -----------------------------
+  prob_under = pbeta(key_L, post_alpha, post_beta)
+  prob_over  = 1 - pbeta(key_U, post_alpha, post_beta)
+  prob_target = (pbeta(key_U, post_alpha, post_beta) - pbeta(key_L, post_alpha, post_beta))
+  
+  # -----------------------------
+  # Step B: ADM-style PAVA monotonic adjustment (optional)
+  # -----------------------------
+  if (use_pava) {
+    prob_under_adj = rev(pava(rev(prob_under)))   # enforce non-increasing
+    prob_over_adj  = pava(prob_over)              # enforce non-decreasing
+    prob_target_adj = pmax(0, 1 - prob_under_adj - prob_over_adj)
+  } else {
+    prob_under_adj = prob_under
+    prob_over_adj  = prob_over
+    prob_target_adj = prob_target
+  }
+  
+  # -----------------------------
+  # Step C: Eq.(5) trigger using adjusted probabilities
+  # -----------------------------
   insert_code = NA_integer_
   
-  # Helper probabilities at a *discrete* dose level k using BKP posterior Beta(post_alpha[k], post_beta[k])
-  prob_under = function(k) {
-    pbeta(key_L, post_alpha[k], post_beta[k])  # Pr(pi_k < key_L)
-  }
-  prob_over = function(k) {
-    1 - pbeta(key_U, post_alpha[k], post_beta[k])  # Pr(pi_k > key_U)
-  }
-  
-  # ----------------------------------------------------------
-  # Check left adjacent interval: (d_{j-1}, d_j) corresponds to l = j
-  # Condition: Pr(pi_{j-1} < key_L) > C1  AND  Pr(pi_j > key_U) > C2
-  # ----------------------------------------------------------
-  left_ok = FALSE
-  
+  # Left interval: (d_{j-1}, d_j)  <=> l = j
   if (j == 1) {
-    # Boundary interval (d0, d1): treat pi_0 = 0 => Pr(pi_0 < key_L) = 1 (since key_L>0)
-    # Only require the right bracket has accrued info (n1>0) and is "strongly over"
-    left_ok = (n_treated[1] > 0) && (prob_over(1) > C2)
+    # Boundary (d0, d1): pi_0 = 0 => Pr(pi_0 < key_L) = 1, so only need right bracket evidence.
+    left_ok = (n_treated[1] > 0) && (prob_over_adj[1] > C2)
     if (left_ok) insert_code = LOC_BELOW_MIN
-    
   } else {
-    # Interior interval: require both bracketing doses have data
     left_ok = (n_treated[j - 1] > 0) && (n_treated[j] > 0) &&
-      (prob_under(j - 1) > C1) && (prob_over(j) > C2)
-    if (left_ok) insert_code = as.integer(j - 1)  # between (j-1, j)
+      (prob_under_adj[j - 1] > C1) && (prob_over_adj[j] > C2)
+    if (left_ok) insert_code = as.integer(j - 1)
   }
   
-  # ----------------------------------------------------------
-  # Check right adjacent interval: (d_j, d_{j+1}) corresponds to l = j+1
-  # Condition: Pr(pi_j < key_L) > C1  AND  Pr(pi_{j+1} > key_U) > C2
-  # ----------------------------------------------------------
-  right_ok = FALSE
-  
+  # Right interval: (d_j, d_{j+1}) <=> l = j+1
   if (is.na(insert_code)) {
     if (j == J) {
-      # Boundary interval (dJ, dJ+1): treat pi_{J+1} = 1 => Pr(pi_{J+1} > key_U) = 1 (since key_U<1)
-      # Only require the left bracket has accrued info (nJ>0) and is "strongly under"
-      right_ok = (n_treated[J] > 0) && (prob_under(J) > C1)
+      # Boundary (dJ, dJ+1): pi_{J+1} = 1 => Pr(pi_{J+1} > key_U) = 1, so only need left bracket evidence.
+      right_ok = (n_treated[J] > 0) && (prob_under_adj[J] > C1)
       if (right_ok) insert_code = LOC_ABOVE_MAX
-      
     } else {
-      # Interior interval: require both bracketing doses have data
       right_ok = (n_treated[j] > 0) && (n_treated[j + 1] > 0) &&
-        (prob_under(j) > C1) && (prob_over(j + 1) > C2)
-      if (right_ok) insert_code = as.integer(j)  # between (j, j+1)
+        (prob_under_adj[j] > C1) && (prob_over_adj[j + 1] > C2)
+      if (right_ok) insert_code = as.integer(j)
     }
   }
   
   need_insert = !is.na(insert_code)
   
-  return(list(
+  out = list(
     need_insert = need_insert,
     insert_code = insert_code,
     LOC_BELOW_MIN = LOC_BELOW_MIN,
     LOC_ABOVE_MAX = LOC_ABOVE_MAX
-  ))
+  )
+  
+  if (return_probs) {
+    out$prob_under_raw = prob_under
+    out$prob_over_raw  = prob_over
+    out$prob_target_raw = prob_target
+    
+    out$prob_under = prob_under_adj
+    out$prob_over  = prob_over_adj
+    out$prob_target = prob_target_adj
+  }
+  
+  return(out)
 }
