@@ -1,5 +1,5 @@
 ## Kernel Function
-#' @noRd
+
 kernel <- function(dose, dose_set, symmetric = FALSE, theta = NULL){
   # dose--std dose(not index)
   # dose_set--std test dose

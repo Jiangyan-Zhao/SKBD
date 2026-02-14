@@ -22,18 +22,10 @@
 # ============================================================
 
 insert_check = function(
-    j,
-    post_alpha,
-    post_beta,
-    key_L,
-    key_U,
-    C1,
-    C2,
-    n_treated,
-    use_pava = TRUE,          # NEW: whether to apply ADM-style monotonicity
-    return_probs = TRUE,       # NEW: return prob vectors for debugging
-    LOC_BELOW_MIN = -1L,
-    LOC_ABOVE_MAX = -2L
+    j, post_alpha, post_beta, key_L, key_U, C1, C2, n_treated,
+    use_pava = TRUE,      # whether to apply ADM-style monotonicity
+    return_probs = TRUE,  # return prob vectors for debugging
+    LOC_BELOW_MIN = -1L, LOC_ABOVE_MAX = -2L
 ) {
   
   J = length(post_alpha)
@@ -44,18 +36,12 @@ insert_check = function(
   if (!(0 < key_L && key_L < key_U && key_U < 1)) stop("require 0 < key_L < key_U < 1.")
   if (!(0 <= C1 && C1 <= 1 && 0 <= C2 && C2 <= 1)) stop("C1,C2 must be in [0,1].")
   
-  if (use_pava) {
-    if (!exists("pava", mode = "function")) {
-      stop("insert_check(): use_pava=TRUE but pava() not found. Please define pava() first.")
-    }
-  }
-  
   # -----------------------------
   # Step A: raw region probabilities at each discrete dose
   # -----------------------------
   prob_under = pbeta(key_L, post_alpha, post_beta)
   prob_over  = 1 - pbeta(key_U, post_alpha, post_beta)
-  prob_target = (pbeta(key_U, post_alpha, post_beta) - pbeta(key_L, post_alpha, post_beta))
+  prob_target = 1 - prob_under - prob_over
   
   # -----------------------------
   # Step B: ADM-style PAVA monotonic adjustment (optional)
@@ -87,7 +73,7 @@ insert_check = function(
   }
   
   # Right interval: (d_j, d_{j+1}) <=> l = j+1
-  if (is.na(insert_code)) {
+  if (is.na(insert_code)) { # It is impossible to satisfy simultaneously.
     if (j == J) {
       # Boundary (dJ, dJ+1): pi_{J+1} = 1 => Pr(pi_{J+1} > key_U) = 1, so only need left bracket evidence.
       right_ok = (n_treated[J] > 0) && (prob_under_adj[J] > C1)

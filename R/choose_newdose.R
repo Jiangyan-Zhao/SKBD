@@ -15,8 +15,7 @@
 
 choose_newdose = function(
     dl, dr, dose_set_work, n_dlt_work, n_treated_work,
-    pri_alpha, pri_beta, key_L, key_U,
-    symmetric, theta, M = 100
+    pri_alpha, pri_beta, key_L, key_U, symmetric, theta, M = 100
 ){
   if (!is.finite(dl) || !is.finite(dr) || dr <= dl) {
     return(list(newdose = NA_real_, q_max = NA_real_))
@@ -33,15 +32,21 @@ choose_newdose = function(
   n_obs    = n_treated_work[obs_idx]
   
   eps = 1e-10
-  if ((dr - dl) <= 2*eps) return(list(newdose = NA_real_, q_max = NA_real_))
-  grid = seq(dl + eps, dr - eps, length.out = M)
+  if ((dr - dl) <= 2*eps) {
+    return(list(newdose = NA_real_, q_max = NA_real_))
+  }
   
+  grid = seq(dl + eps, dr - eps, length.out = M)
   q_grid = rep(NA_real_, length(grid))
+  
   for (g in seq_along(grid)) {
     k = kernel(grid[g], dose_obs, symmetric, theta)
+    
+    # stabilize normalization (avoid underflow -> all zeros)
     km = max(k)
     if (!is.finite(km) || km <= 0) next
     k = k / km
+    
     den = sum(k)
     if (!is.finite(den) || den <= 0) next
     w = k / den
@@ -52,12 +57,18 @@ choose_newdose = function(
     q_grid[g] = pbeta(key_U, alpha_d, beta_d) - pbeta(key_L, alpha_d, beta_d)
   }
   
-  if (all(is.na(q_grid))) return(list(newdose = NA_real_, q_max = NA_real_, grid = grid, q_grid = q_grid))
+  if (all(is.na(q_grid))) {
+    return(list(newdose = NA_real_, q_max = NA_real_, grid = grid, q_grid = q_grid))
+  }
+  
   idx = which.max(q_grid)
-  cand = grid[idx]
+  newdose = grid[idx]
   
+  # tolerance de-dup
   tol = 1e-12
-  if (any(abs(dose_set_work - cand) < tol)) cand <- NA_real_
+  if (any(abs(dose_set_work - newdose) < tol)) {
+    newdose = NA_real_
+  }
   
-  list(newdose = cand, q_max = q_grid[idx], grid = grid, q_grid = q_grid)
+  list(newdose = newdose, q_max = q_grid[idx], grid = grid, q_grid = q_grid)
 }
