@@ -1,17 +1,77 @@
-# ============================================================
-# choose_newdose()
-#   Choose newdose in an eligible interval (dl, dr) by maximizing q(d) on a grid.
-#
-# Inputs:
-#   dl, dr           : interval endpoints (dl < dr)
-#   dose_set_work    : current working dose grid
-#   n_dlt_work       : DLT counts on working grid
-#   n_treated_work   : treated counts on working grid
-#   M                : grid size for searching (e.g., 100)
-#
-# Output:
-#   list(newdose = ..., q_max = ..., grid = ..., q_grid = ...)
-# ============================================================
+#' Choose an inserted dose within an eligible interval by maximizing target-key probability
+#'
+#' @description
+#' `choose_newdose()` selects a new dose level within an eligible open interval \eqn{(d_l, d_r)}
+#' by searching over a grid and maximizing
+#' \deqn{q(d) = \Pr\{ \text{key}_L < \pi(d) \le \text{key}_U \mid \mathcal{D} \}.}
+#' The probability \eqn{q(d)} is computed under the BKP/SKBD pseudo-posterior at candidate dose
+#' locations, where Beta parameters are formed by kernel-weighted pseudo-counts aggregated from
+#' already-observed doses.
+#'
+#' @details
+#' **How it works**
+#' \itemize{
+#'   \item Collect observed doses \eqn{S=\{j: n_j>0\}} from the current working grid.
+#'   \item Build an equally spaced grid of size `M` within \eqn{(d_l,d_r)} (excluding endpoints).
+#'   \item For each grid point \eqn{d}, compute kernel similarities `k(d, dose_obs)`, normalize to
+#'         weights \eqn{w}, and obtain Beta pseudo-posterior parameters:
+#'         \deqn{\alpha(d)=\alpha_0 + \sum_{j\in S} w_j(d) y_j,\qquad
+#'               \beta(d)=\beta_0 + \sum_{j\in S} w_j(d) (n_j-y_j).}
+#'   \item Compute \eqn{q(d)} as `pbeta(key_U, alpha, beta) - pbeta(key_L, alpha, beta)`.
+#'   \item Return the grid point maximizing \eqn{q(d)}.
+#' }
+#'
+#' **Numerical stabilizations**
+#' \itemize{
+#'   \item Rescales kernel similarities by `max(k)` to reduce underflow when values are extremely small.
+#'   \item Guards against zero/invalid normalization and clamps Beta parameters to be at least `1e-12`.
+#'   \item Avoids duplicating an existing dose by returning `NA` if the selected `newdose` is within a
+#'         small tolerance of any value in `dose_set_work`.
+#' }
+#'
+#' @param dl Numeric scalar. Left endpoint of the eligible interval; must satisfy `dl < dr`.
+#' @param dr Numeric scalar. Right endpoint of the eligible interval; must satisfy `dl < dr`.
+#' @param dose_set_work Numeric vector. Current working dose grid (often standardized to `[0, 1]`).
+#' @param n_dlt_work Numeric/integer vector. Number of DLTs observed at each working dose.
+#'   Must have the same length as `dose_set_work`.
+#' @param n_treated_work Numeric/integer vector. Number treated at each working dose.
+#'   Must have the same length as `dose_set_work`.
+#' @param pri_alpha Numeric scalar. Prior alpha for the Beta pseudo-posterior.
+#' @param pri_beta Numeric scalar. Prior beta for the Beta pseudo-posterior.
+#' @param key_L Numeric scalar. Lower bound of the target key, in `(0,1)`.
+#' @param key_U Numeric scalar. Upper bound of the target key, in `(0,1)` with `key_L < key_U`.
+#' @param symmetric Logical. Passed to `kernel()` to indicate symmetric vs asymmetric kernel mode.
+#' @param theta Numeric. Passed to `kernel()` as kernel hyperparameter(s).
+#'   Length 1 for symmetric, length 2 for asymmetric (per your `kernel()` definition).
+#' @param M Integer. Number of grid points inside `(dl, dr)` used for search. Default is `100`.
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{newdose}{Selected new dose in `(dl, dr)`. Returns `NA_real_` if no valid candidate is found
+#'                 or if the selected dose is too close to an existing dose.}
+#'   \item{q_max}{Maximum value of `q(d)` over the search grid (or `NA_real_` if not available).}
+#'   \item{grid}{The grid of candidate dose values used for searching (returned when available).}
+#'   \item{q_grid}{Vector of `q(d)` values over `grid`, possibly containing `NA` for invalid points.}
+#' }
+#'
+#' @examples
+#' # Suppose three doses have been tried and we want to insert between 0.25 and 0.50
+#' dose_set_work = c(0.25, 0.50, 0.75)
+#' n_treated_work = c(3, 6, 0)
+#' n_dlt_work = c(0, 3, 0)
+#'
+#' # Candidate selection
+#' out = choose_newdose(
+#'   dl = 0.25, dr = 0.50,
+#'   dose_set_work = dose_set_work,
+#'   n_dlt_work = n_dlt_work,
+#'   n_treated_work = n_treated_work,
+#'   pri_alpha = 0.5, pri_beta = 0.5,
+#'   key_L = 0.25, key_U = 0.35,
+#'   symmetric = FALSE, theta = c(10, 5), M = 100
+#' )
+#'
+#' @export
 
 choose_newdose = function(
     dl, dr, dose_set_work, n_dlt_work, n_treated_work,
