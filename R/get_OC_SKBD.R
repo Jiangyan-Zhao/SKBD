@@ -171,9 +171,9 @@ get_OC_SKBD <- function(
   
   ## proir setting: non-informative
   # r0 = 3
-  # alpha_pri = rep((r0-2)*target_prob + 1, n_dose)
-  # beta_pri = r0 - alpha_pri
-  alpha_pri = beta_pri = rep(1, n_dose)
+  # pri_alpha = rep((r0-2)*target_prob + 1, n_dose)
+  # pri_beta = r0 - pri_alpha
+  pri_alpha = pri_beta = rep(1, n_dose)
 
   ## get keys
   keys = get_Key(target_prob, margin_left, margin_right)
@@ -185,6 +185,7 @@ get_OC_SKBD <- function(
   ## get kernel
   if(shared){
     ker_vals = matrix(0, nrow = n_dose, ncol = n_dose)
+    ref_gap = min(diff(dose_set_std))
     for (i in 1:n_dose) {
       ker_vals[i, ] = kernel(
         dose = dose_set_std[i],
@@ -206,8 +207,8 @@ get_OC_SKBD <- function(
     y = n = rep(0, n_dose)
     is_earlystop = FALSE               # Whether to stop the design early
     is_eliminated = rep(FALSE, n_dose) 
-    alpha_post = alpha_pri
-    beta_post  = beta_pri
+    post_alpha = pri_alpha
+    post_beta  = pri_beta
     
     #-------------------------------- begin one trial --------------------------------------#
     for (cohort in 1:n_cohort) {
@@ -229,17 +230,17 @@ get_OC_SKBD <- function(
       }
       
       # weight = ker_vals[d, ] / sum(ker_vals[d, ])
-      # alpha_post[d] = alpha_pri[d] + sum(weight * y)
-      # beta_post[d] = beta_pri[d] + sum(weight * (n - y))
+      # post_alpha[d] = pri_alpha[d] + sum(weight * y)
+      # post_beta[d] = pri_beta[d] + sum(weight * (n - y))
       weight = ker_vals[d, n>0] / sum(ker_vals[d, n>0])
-      alpha_post[d] = alpha_pri[d] + sum(weight * y[n>0])
-      beta_post[d] = beta_pri[d] + sum(weight * (n[n>0] - y[n>0]))
+      post_alpha[d] = pri_alpha[d] + sum(weight * y[n>0])
+      post_beta[d] = pri_beta[d] + sum(weight * (n[n>0] - y[n>0]))
       
-      # curve(dbeta(x, shape1 = alpha_post[d], shape2 = beta_post[d]), 0.001, 0.999)
+      # curve(dbeta(x, shape1 = post_alpha[d], shape2 = post_beta[d]), 0.001, 0.999)
       # abline(v = c(target_prob - margin_left, target_prob, target_prob + margin_right), lty = 2)
       
       # whether the trial is overdose
-      overdose_prob = 1 - pbeta(target_prob, alpha_post[d], beta_post[d]) # P(pi_d > target_prob | data)
+      overdose_prob = 1 - pbeta(target_prob, post_alpha[d], post_beta[d]) # P(pi_d > target_prob | data)
       if(extra_safe){
         is_overdose = overdose_prob > cutoff_elimin - offset
       }else{
@@ -260,7 +261,7 @@ get_OC_SKBD <- function(
       }
       
       ## strongest key based on current posterior
-      strong_key = get_strongKey(alpha_post[d], beta_post[d], keys, margin_left, margin_right)
+      strong_key = get_strongKey(post_alpha[d], post_beta[d], keys, margin_left, margin_right)
       
       
       ## escalation and de-escalation rule
@@ -283,42 +284,40 @@ get_OC_SKBD <- function(
     ## Maximum Tolerated Dose (MTD) Selection
     admissible_set = (n > 0) & (!is_eliminated) # adimissble set
     adm_idx <- which(admissible_set)
-    if(is_earlystop || length(adm_idx) == 0){
+    if (is_earlystop || length(adm_idx) == 0) {
       dose_select[trial] = -1  # no dose should be selected as the MTD
-    }else{
-      # ## poster mean and variance of toxicity probabilities using beta(0.05, 0.05) as the prior
-      # tox_prob_hat = (y[admissible_set] + 0.05) / (n[admissible_set] + 0.1)
-      # tox_prob_hat_var = (y[admissible_set] + 0.05) * (n[admissible_set] - y[admissible_set] + 0.05)/(
-      #   (n[admissible_set] + 0.1)^2 * (n[admissible_set] + 0.1 + 1))
-      # ## perform the isotonic transformation using PAVA
-      # tox_prob_hat = pava(tox_prob_hat, wt = tox_prob_hat_var)
+    } else {
+      ## poster mean and variance of toxicity probabilities using beta(0.01, 0.01) as the prior
+      if (shared) {
+        post = post_par_all(
+          n_dlt = y[adm_idx], 
+          n_treated = n[adm_idx], 
+          dose_set = dose_set_std[adm_idx], 
+          pri_alpha = 0.01, 
+          pri_beta = 0.01, 
+          symmetric = TRUE, 
+          k_left = 0.2,
+          k_right = 0.2,
+          ref_gap = ref_gap
+        )
+        post_alpha = post$post_alpha
+        post_beta  = post$post_beta
+      } else {
+        # same with the original keyboard design
+        post_alpha = 0.01 + y[adm_idx]
+        post_beta  = 0.01 + (n[adm_idx] - y[adm_idx])
+      }
+      
+      tox_prob_hat = post_alpha / (post_alpha + post_beta)
+      # tox_prob_hat_var = tox_prob_hat * (1 - tox_prob_hat) / (post_alpha + post_beta + 1)
 
-      # if(shared){
-      #   tox_prob_hat = rep(0, length(admissible_set))
-      #   # get kernel
-      #   theta_PCS = -log(0.2) / dose_diff_min^2
-      #   for (i in 1:length(admissible_set)) {
-      #     ker_vals_PCS = kernel(dose_set_std[i], dose_set_std, 
-      #                          symmetric=TRUE, theta_PCS)
-      #     weight = ker_vals_PCS[n>0] / sum(ker_vals_PCS[n>0])
-      #     # alpha_pri = beta_pri = 1
-      #     tox_prob_hat[i] = sum(weight * y[n>0]) / sum(weight * n[n>0])
-      #   }
-      # } else {
-      #   # same with the original keyboard design
-      #   tox_prob_hat = y[admissible_set] / n[admissible_set]
-      # }
-      
-      # same with the original keyboard design
-      tox_prob_hat = y[adm_idx] / n[adm_idx]
-      
-      # # whether or not monotonic of the estimated toxicity probability
-      # is_monotonic = (all(diff(tox_prob_hat) > 0))
+      # whether or not monotonic of the estimated toxicity probability
+      is_monotonic = (all(diff(tox_prob_hat) > 0))
       
       tox_prob_hat = pava(tox_prob_hat)
-      # break ties by adding an increasingly small number
-      tox_prob_hat = tox_prob_hat + seq_along(tox_prob_hat) * 1e-10
-      
+      # tox_prob_hat = pava(tox_prob_hat, wt = tox_prob_hat_var)
+      tox_prob_hat = tox_prob_hat + seq_along(tox_prob_hat) * 1e-10 # break ties by adding an increasingly small number
+
       # select dose closest to the target_prob as the MTD
       dose_select[trial] = adm_idx[ which.min(abs(tox_prob_hat - target_prob)) ]
     }# end MTD selection 
@@ -357,6 +356,8 @@ get_OC_SKBD <- function(
   
   # 2.3 the number of DLT
   n_DLT = mean(rowSums(Y))
+  
+  ## 3. monotonic
   
   #------------------------ end performance metrics -----------------------#
   

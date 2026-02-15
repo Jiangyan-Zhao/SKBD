@@ -102,10 +102,10 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
   
   ## proir setting: non-informative
   # r0 = 2
-  # alpha_Pri = rep((r0-2)*target_prob + 1, n_dose)
-  # beta_Pri = r0 - alpha_Pri
-  alpha_Pri = beta_Pri = rep(1, n_dose)
-  alpha_Post = beta_Post = rep(1, n_dose)
+  # pri_alpha = rep((r0-2)*target_prob + 1, n_dose)
+  # pri_beta = r0 - pri_alpha
+  pri_alpha = pri_beta = rep(1, n_dose)
+  post_alpha = post_beta = rep(1, n_dose)
   
   ## dose standardization
   dose_set_std = (dose_set - min(dose_set)) / (max(dose_set) - min(dose_set))
@@ -244,18 +244,18 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
           weight = ker_vals[d_j, ] / sum(ker_vals[d_j, n > 0])
           # weight = ker_vals[d_j, ] / sum(ker_vals[d_j, ])
           
-          alpha_Post[d_j] = alpha_Pri[d_j] + sum(weight * y_tilde)
+          post_alpha[d_j] = pri_alpha[d_j] + sum(weight * y_tilde)
           
-          # beta_Post[d_j] = beta_Pri[d_j] + sum(weight * m_tilde)
+          # post_beta[d_j] = pri_beta[d_j] + sum(weight * m_tilde)
           
           m_1 = m; m_1[d_j] = m_tilde[d_j] # Only share ascertained data
-          beta_Post[d_j] = beta_Pri[d_j] + sum(weight * m_1)
+          post_beta[d_j] = pri_beta[d_j] + sum(weight * m_1)
           
         }
         
         # determine which dose level should be eliminated
         for(d_j in 1:n_dose_exist){
-          overdose_prob = 1 - pbeta(target_prob, alpha_Post[d_j], beta_Post[d_j])
+          overdose_prob = 1 - pbeta(target_prob, post_alpha[d_j], post_beta[d_j])
           if(extraSafe){
             is_overdose = overdose_prob > cutoff_elimin - offset
           } else {
@@ -280,14 +280,14 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
         }
         
         #check whether the current dose is toxic based on observed data
-        target_key_prob = pbeta(target_prob + margin_right, alpha_Post[d], beta_Post[d]) - 
-          pbeta(target_prob - margin_left, alpha_Post[d], beta_Post[d])
+        target_key_prob = pbeta(target_prob + margin_right, post_alpha[d], post_beta[d]) - 
+          pbeta(target_prob - margin_left, post_alpha[d], post_beta[d])
         
-        left_key_prob = pbeta(target_prob - margin_left, alpha_Post[d], beta_Post[d]) - 
-          pbeta(target_prob - margin_left - margin_length, alpha_Post[d], beta_Post[d])
+        left_key_prob = pbeta(target_prob - margin_left, post_alpha[d], post_beta[d]) - 
+          pbeta(target_prob - margin_left - margin_length, post_alpha[d], post_beta[d])
         
-        right_key_prob = pbeta(target_prob + margin_right + margin_length, alpha_Post[d], beta_Post[d]) - 
-          pbeta(target_prob + margin_right, alpha_Post[d], beta_Post[d])
+        right_key_prob = pbeta(target_prob + margin_right + margin_length, post_alpha[d], post_beta[d]) - 
+          pbeta(target_prob + margin_right, post_alpha[d], post_beta[d])
         
         # make dose assignment decisions
         is_escalation = (left_key_prob > target_key_prob) && (left_key_prob > right_key_prob) && (d < n_dose)
