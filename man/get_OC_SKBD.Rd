@@ -65,12 +65,12 @@ threshold \code{cutoff_elimin - offset}.}
 \item{symmetric}{Logical; kernel type when \code{shared=TRUE}. If \code{TRUE},
 uses a symmetric Gaussian kernel; otherwise uses an asymmetric Gaussian kernel.}
 
-\item{k_left}{Numeric scalar in \verb{(0,1)}. Left-side neighbor borrowing strength passed to \code{kernel()}.}
+\item{k_left}{Numeric scalar in \verb{(0,1)}. Left-side neighbor borrowing strength passed to \code{kernel_fun()}.}
 
-\item{k_right}{Numeric scalar in \verb{(0,1)}. Right-side neighbor borrowing strength passed to \code{kernel()}
+\item{k_right}{Numeric scalar in \verb{(0,1)}. Right-side neighbor borrowing strength passed to \code{kernel_fun()}
 (and used for symmetric borrowing when \code{symmetric=TRUE}).}
 
-\item{ref_gap}{Optional positive scalar. Reference spacing passed to \code{kernel()}. If \code{NULL},
+\item{ref_gap}{Optional positive scalar. Reference spacing passed to \code{kernel_fun()}. If \code{NULL},
 kernel defaults to the minimum adjacent spacing in \code{dose_set}.}
 
 \item{shared}{Logical; if \code{TRUE}, use kernel-weighted borrowing across doses

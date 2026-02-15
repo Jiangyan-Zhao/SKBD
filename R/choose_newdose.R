@@ -40,13 +40,13 @@
 #' @param pri_beta Numeric scalar. Prior beta for the Beta pseudo-posterior.
 #' @param key_L Numeric scalar. Lower bound of the target key, in `(0,1)`.
 #' @param key_U Numeric scalar. Upper bound of the target key, in `(0,1)` with `key_L < key_U`.
-#' @param symmetric Logical. Passed to `kernel()` to indicate symmetric vs asymmetric kernel mode.
-#' @param k_left Numeric scalar in `(0,1)`. Passed to `kernel()` as left-side
+#' @param symmetric Logical. Passed to `kernel_fun()` to indicate symmetric vs asymmetric kernel mode.
+#' @param k_left Numeric scalar in `(0,1)`. Passed to `kernel_fun()` as left-side
 #'   neighbor borrowing strength (used when `dose_set < dose`).
-#' @param k_right Numeric scalar in `(0,1)`. Passed to `kernel()` as right-side
+#' @param k_right Numeric scalar in `(0,1)`. Passed to `kernel_fun()` as right-side
 #'   neighbor borrowing strength (used when `dose_set >= dose`, and as the symmetric
 #'   borrowing strength when `symmetric = TRUE`).
-#' @param ref_gap Optional positive scalar. Passed to `kernel()` as the reference
+#' @param ref_gap Optional positive scalar. Passed to `kernel_fun()` as the reference
 #'   spacing used to infer decay from `k_left`/`k_right`.
 #' @param M Integer. Number of grid points inside `(dl, dr)` used for search. Default is `100`.
 #'
@@ -107,7 +107,7 @@ choose_newdose = function(
   q_grid = rep(NA_real_, length(grid))
   
   for (g in seq_along(grid)) {
-    k = kernel(grid[g], dose_obs,
+    k = kernel_fun(grid[g], dose_obs,
                symmetric = symmetric,
                k_left = k_left,
                k_right = k_right,

@@ -29,16 +29,16 @@ Must have the same length as \code{dose_set}.}
 
 \item{pri_beta}{Numeric scalar. Prior beta \eqn{\beta_0} for Beta pseudo-posterior.}
 
-\item{symmetric}{Logical. Passed to \code{kernel()} to indicate symmetric vs asymmetric kernel mode.}
+\item{symmetric}{Logical. Passed to \code{kernel_fun()} to indicate symmetric vs asymmetric kernel mode.}
 
-\item{k_left}{Numeric scalar in \verb{(0,1)}. Passed to \code{kernel()} as left-side
+\item{k_left}{Numeric scalar in \verb{(0,1)}. Passed to \code{kernel_fun()} as left-side
 neighbor borrowing strength (used when \code{dose_set < dose}).}
 
-\item{k_right}{Numeric scalar in \verb{(0,1)}. Passed to \code{kernel()} as right-side
+\item{k_right}{Numeric scalar in \verb{(0,1)}. Passed to \code{kernel_fun()} as right-side
 neighbor borrowing strength (used when \code{dose_set >= dose}, and as the symmetric
 borrowing strength when \code{symmetric = TRUE}).}
 
-\item{ref_gap}{Optional positive scalar. Passed to \code{kernel()} as the reference
+\item{ref_gap}{Optional positive scalar. Passed to \code{kernel_fun()} as the reference
 spacing used to infer decay from \code{k_left}/\code{k_right}.}
 }
 \value{

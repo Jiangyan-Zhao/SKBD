@@ -42,12 +42,12 @@ get_boundary_SKBD(
 
 \item{symmetric}{Logical; if \code{TRUE}, use a symmetric kernel; otherwise use an asymmetric kernel.}
 
-\item{k_left}{Numeric scalar in \verb{(0,1)}. Left-side neighbor borrowing strength passed to \code{kernel()}.}
+\item{k_left}{Numeric scalar in \verb{(0,1)}. Left-side neighbor borrowing strength passed to \code{kernel_fun()}.}
 
-\item{k_right}{Numeric scalar in \verb{(0,1)}. Right-side neighbor borrowing strength passed to \code{kernel()}
+\item{k_right}{Numeric scalar in \verb{(0,1)}. Right-side neighbor borrowing strength passed to \code{kernel_fun()}
 (and used for symmetric borrowing when \code{symmetric=TRUE}).}
 
-\item{ref_gap}{Optional positive scalar. Reference spacing passed to \code{kernel()}. If \code{NULL},
+\item{ref_gap}{Optional positive scalar. Reference spacing passed to \code{kernel_fun()}. If \code{NULL},
 kernel defaults to the minimum adjacent spacing in \code{dose_set}.}
 
 \item{dose_set}{Numeric vector of dose labels (default \code{1:length(y)}). Used only to compute kernel distances.}
@@ -163,5 +163,5 @@ out_future$full_boundary_tab
 
 }
 \seealso{
-\code{\link{get_Key}}, \code{\link{get_strongKey}}, \code{\link{kernel}}
+\code{\link{get_Key}}, \code{\link{get_strongKey}}, \code{\link{kernel_fun}}
 }

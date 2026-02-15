@@ -54,10 +54,10 @@
 #' @param n_cohort Total number of cohorts in the trial (used to define the maximal table size).
 #' @param cohort_size Number of patients per cohort (used for cohort-aligned \code{boundary_tab} output).
 #' @param symmetric Logical; if \code{TRUE}, use a symmetric kernel; otherwise use an asymmetric kernel.
-#' @param k_left Numeric scalar in `(0,1)`. Left-side neighbor borrowing strength passed to `kernel()`.
-#' @param k_right Numeric scalar in `(0,1)`. Right-side neighbor borrowing strength passed to `kernel()`
+#' @param k_left Numeric scalar in `(0,1)`. Left-side neighbor borrowing strength passed to `kernel_fun()`.
+#' @param k_right Numeric scalar in `(0,1)`. Right-side neighbor borrowing strength passed to `kernel_fun()`
 #'        (and used for symmetric borrowing when \code{symmetric=TRUE}).
-#' @param ref_gap Optional positive scalar. Reference spacing passed to `kernel()`. If `NULL`,
+#' @param ref_gap Optional positive scalar. Reference spacing passed to `kernel_fun()`. If `NULL`,
 #'        kernel defaults to the minimum adjacent spacing in `dose_set`.
 #' @param dose_set Numeric vector of dose labels (default \code{1:length(y)}). Used only to compute kernel distances.
 #' @param n_earlystop Maximum number of patients to display in output tables (columns are truncated at this value).
@@ -86,7 +86,7 @@
 #' If \code{extra_safe=TRUE} and \code{d==1}, additional elements \code{cutoff} and \code{stop_boundary} are returned.
 #'
 #' @seealso
-#' \code{\link{get_Key}}, \code{\link{get_strongKey}}, \code{\link{kernel}}
+#' \code{\link{get_Key}}, \code{\link{get_strongKey}}, \code{\link{kernel_fun}}
 #'
 #' @examples
 #' ## Example data across 5 doses:
@@ -161,7 +161,7 @@ get_boundary_SKBD <- function(target_prob, d,
   if (max(dose_set) == min(dose_set)) stop("dose_set must have at least two distinct values.")
   dose_set_std <- (dose_set - min(dose_set)) / (max(dose_set) - min(dose_set))
   
-  ker_vals <- kernel(
+  ker_vals <- kernel_fun(
     dose = dose_set_std[d],
     dose_set = dose_set_std,
     symmetric = symmetric,

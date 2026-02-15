@@ -33,10 +33,10 @@
 #'   local updating (keyboard-style) via an identity kernel.
 #' @param symmetric Logical; kernel type when \code{shared=TRUE}. If \code{TRUE},
 #'   uses a symmetric Gaussian kernel; otherwise uses an asymmetric Gaussian kernel.
-#' @param k_left Numeric scalar in `(0,1)`. Left-side neighbor borrowing strength passed to `kernel()`.
-#' @param k_right Numeric scalar in `(0,1)`. Right-side neighbor borrowing strength passed to `kernel()`
+#' @param k_left Numeric scalar in `(0,1)`. Left-side neighbor borrowing strength passed to `kernel_fun()`.
+#' @param k_right Numeric scalar in `(0,1)`. Right-side neighbor borrowing strength passed to `kernel_fun()`
 #'   (and used for symmetric borrowing when \code{symmetric=TRUE}).
-#' @param ref_gap Optional positive scalar. Reference spacing passed to `kernel()`. If `NULL`,
+#' @param ref_gap Optional positive scalar. Reference spacing passed to `kernel_fun()`. If `NULL`,
 #'   kernel defaults to the minimum adjacent spacing in `dose_set`.
 #' @param light_return Logical; if \code{TRUE}, do not store/return individual-level
 #'   dose/DLT paths to reduce memory usage. If \code{FALSE}, returns
@@ -187,7 +187,7 @@ get_OC_SKBD <- function(
     ker_vals = matrix(0, nrow = n_dose, ncol = n_dose)
     ref_gap = min(diff(dose_set_std))
     for (i in 1:n_dose) {
-      ker_vals[i, ] = kernel(
+      ker_vals[i, ] = kernel_fun(
         dose = dose_set_std[i],
         dose_set = dose_set_std,
         symmetric = symmetric,

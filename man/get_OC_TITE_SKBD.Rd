@@ -36,12 +36,12 @@ get_OC_TITE_SKBD(
 \arguments{
 \item{target_prob}{The target dose-limiting toxicity (DLT) rate}
 
-\item{k_left}{Numeric scalar in \verb{(0,1)}. Left-side neighbor borrowing strength passed to \code{kernel()}.}
+\item{k_left}{Numeric scalar in \verb{(0,1)}. Left-side neighbor borrowing strength passed to \code{kernel_fun()}.}
 
-\item{k_right}{Numeric scalar in \verb{(0,1)}. Right-side neighbor borrowing strength passed to \code{kernel()}
+\item{k_right}{Numeric scalar in \verb{(0,1)}. Right-side neighbor borrowing strength passed to \code{kernel_fun()}
 (and used for symmetric borrowing when \code{symmetric=TRUE}).}
 
-\item{ref_gap}{Optional positive scalar. Reference spacing passed to \code{kernel()}. If \code{NULL},
+\item{ref_gap}{Optional positive scalar. Reference spacing passed to \code{kernel_fun()}. If \code{NULL},
 kernel defaults to the minimum adjacent spacing in \code{dose_set}.}
 
 \item{accrual}{the accrual rate, i.e., the number of patients accrued in 1 unit of time}

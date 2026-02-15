@@ -1,7 +1,7 @@
 #' Asymmetric/symmetric kernel with interpretable neighbor borrowing strengths
 #'
 #' @description
-#' `kernel()` computes kernel similarities between a target dose value `dose` and a set of dose
+#' `kernel_fun()` computes kernel similarities between a target dose value `dose` and a set of dose
 #' locations `dose_set` (typically on a standardized scale, e.g., `[0,1]`).
 #'
 #' Unlike the conventional parameterization that requires users to specify decay parameters
@@ -50,17 +50,17 @@
 #' dose_set = c(0.25, 0.50, 0.75)
 #'
 #' # Asymmetric borrowing: weaker from the left (0.2), stronger from the right (0.8)
-#' kernel(dose = 0.50, dose_set = dose_set, symmetric = FALSE, k_left = 0.2, k_right = 0.8)
+#' kernel_fun(dose = 0.50, dose_set = dose_set, symmetric = FALSE, k_left = 0.2, k_right = 0.8)
 #'
 #' # Symmetric borrowing using k_right as the reference similarity
-#' kernel(dose = 0.50, dose_set = dose_set, symmetric = TRUE, k_right = 0.5)
+#' kernel_fun(dose = 0.50, dose_set = dose_set, symmetric = TRUE, k_right = 0.5)
 #'
 #' # Fix the reference distance explicitly (instead of using min(diff(dose_set)))
-#' kernel(dose = 0.50, dose_set = dose_set, symmetric = FALSE,
-#'        k_left = 0.2, k_right = 0.8, ref_gap = 0.25)
+#' kernel_fun(dose = 0.50, dose_set = dose_set, symmetric = FALSE,
+#'            k_left = 0.2, k_right = 0.8, ref_gap = 0.25)
 #'
 #' @export
-kernel <- function(
+kernel_fun <- function(
     dose, dose_set,
     symmetric = FALSE,
     k_left = NULL, k_right = NULL,
@@ -72,27 +72,27 @@ kernel <- function(
   # ---- Validate neighbor kernel values (defaults if missing) ----
   # Require at least one of k_left/k_right; fill missing side with defaults
   if (is.null(k_left) && is.null(k_right)) {
-    stop("kernel(): please provide `k_left` and/or `k_right` (both in (0,1)).")
+    stop("please provide `k_left` and/or `k_right` (both in (0,1)).")
   }
   if (is.null(k_left))  k_left  = 0.2
   if (is.null(k_right)) k_right = 0.8
   
   # Ensure both neighbor kernel values are scalars in (0,1)
   if (!is.numeric(k_left)  || length(k_left)  != 1 || !(0 < k_left  && k_left  < 1)) {
-    stop("kernel(): `k_left` must be a scalar in (0,1).")
+    stop("`k_left` must be a scalar in (0,1).")
   }
   if (!is.numeric(k_right) || length(k_right) != 1 || !(0 < k_right && k_right < 1)) {
-    stop("kernel(): `k_right` must be a scalar in (0,1).")
+    stop("`k_right` must be a scalar in (0,1).")
   }
   
   # ---- Choose reference distance (gap) ----
   # Default: smallest adjacent spacing in dose_set (interprets k_left/k_right as neighbor borrowing)
   if (is.null(ref_gap)) {
-    if (length(dose_set) < 2) stop("kernel(): need at least two distinct dose points to infer ref_gap.")
+    if (length(dose_set) < 2) stop("need at least two distinct dose points to infer ref_gap.")
     ref_gap = min(diff(dose_set))
   }
   if (!is.numeric(ref_gap) || length(ref_gap) != 1 || !is.finite(ref_gap) || ref_gap <= 0) {
-    stop("kernel(): `ref_gap` must be a positive finite scalar.")
+    stop("`ref_gap` must be a positive finite scalar.")
   }
   
   # ---- Infer decay parameter(s) theta internally from neighbor kernel values ----
