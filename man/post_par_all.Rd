@@ -2,20 +2,76 @@
 % Please edit documentation in R/post_par_all.R
 \name{post_par_all}
 \alias{post_par_all}
-\title{BKP posterior update for ALL doses}
+\title{Compute BKP/SKBD pseudo-posterior Beta parameters for all doses on a working grid}
 \usage{
 post_par_all(n_dlt, n_treated, dose_set, pri_alpha, pri_beta, symmetric, theta)
 }
+\arguments{
+\item{n_dlt}{Numeric/integer vector. Number of observed DLTs at each working dose.
+Must have the same length as \code{dose_set}.}
+
+\item{n_treated}{Numeric/integer vector. Number treated at each working dose.
+Must have the same length as \code{dose_set}.}
+
+\item{dose_set}{Numeric vector. Working dose grid (often standardized to \verb{[0, 1]}), assumed sorted.}
+
+\item{pri_alpha}{Numeric scalar. Prior alpha \eqn{\alpha_0} for Beta pseudo-posterior.}
+
+\item{pri_beta}{Numeric scalar. Prior beta \eqn{\beta_0} for Beta pseudo-posterior.}
+
+\item{symmetric}{Logical. Passed to \code{kernel()} to indicate symmetric vs asymmetric kernel mode.}
+
+\item{theta}{Numeric. Passed to \code{kernel()} as kernel hyperparameter(s).
+Length 1 for symmetric, length 2 for asymmetric (per your \code{kernel()} definition).}
+}
+\value{
+A list with two numeric vectors (both of length \code{length(dose_set)}):
+\describe{
+\item{post_alpha}{Pseudo-posterior alpha parameters at each working dose.}
+\item{post_beta}{Pseudo-posterior beta parameters at each working dose.}
+}
+}
 \description{
-A short description...
+\code{post_par_all()} computes the BKP/SKBD pseudo-posterior Beta parameters
+\eqn{\alpha_j, \beta_j} for \strong{every} dose level \eqn{d_j} on the current working dose grid.
+The update borrows information only from dose levels with accrued data (i.e., \code{n_treated > 0})
+via kernel-normalized weights.
+}
+\details{
+Let \eqn{S=\{s: n_s > 0\}} denote the set of observed (treated) dose indices.
+For each target dose \eqn{d_j} and each observed dose \eqn{d_s, s\in S}, define kernel
+similarity \eqn{k(d_j, d_s)} and normalize across \eqn{S} to obtain weights
+\deqn{w_{js} = \frac{k(d_j,d_s)}{\sum_{t\in S} k(d_j,d_t)}.}
+The pseudo-posterior Beta parameters are then
+\deqn{\alpha_j = \alpha_0 + \sum_{s\in S} w_{js} y_s,\qquad
+      \beta_j  = \beta_0  + \sum_{s\in S} w_{js} (m_s-y_s),}
+where \eqn{y_s} is the number of DLTs and \eqn{m_s} is the number treated at dose \eqn{d_s}.
+
+\strong{Numerical stabilizations}
+\itemize{
+\item Each row of the kernel matrix is rescaled by its row maximum \code{km = max(K[j, ])}
+(if \code{km} is non-finite or non-positive, it is set to 1). This reduces underflow
+when kernel values are extremely small.
+\item The row sum \code{den} used for normalization is lower-bounded by \code{1e-12} to avoid
+division by zero.
+}
 }
 \examples{
-n_dlt = c(0, 0, 1, 2, 0)
-n_treated = c(3, 3, 6, 3, 0)
-dose_set = seq(0, 1, length.out = 5)
-pri_alpha = 1
-pri_beta = 1 
-symmetric = TRUE
-theta = 0.7
-post_par_all(n_dlt, n_treated, dose_set, pri_alpha, pri_beta, symmetric, theta)
+# Example with 3 doses and data accrued at doses 1 and 2
+dose_set = c(0.25, 0.50, 0.75)
+n_treated = c(3, 6, 0)
+n_dlt = c(0, 2, 0)
+
+out = post_par_all(
+  n_dlt = n_dlt,
+  n_treated = n_treated,
+  dose_set = dose_set,
+  pri_alpha = 0.5,
+  pri_beta = 0.5,
+  symmetric = FALSE,
+  theta = c(10, 5)
+)
+out$post_alpha
+out$post_beta
+
 }

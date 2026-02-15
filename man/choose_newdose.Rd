@@ -89,18 +89,18 @@ small tolerance of any value in \code{dose_set_work}.
 \examples{
 # Suppose three doses have been tried and we want to insert between 0.25 and 0.50
 dose_set_work = c(0.25, 0.50, 0.75)
-n_treated_work = c(3, 6, 3)
-n_dlt_work = c(0, 2, 1)
+n_treated_work = c(3, 6, 0)
+n_dlt_work = c(0, 3, 0)
 
-# Candidate selection (requires a user-defined kernel())
-# out = choose_newdose(
-#   dl = 0.25, dr = 0.50,
-#   dose_set_work = dose_set_work,
-#   n_dlt_work = n_dlt_work,
-#   n_treated_work = n_treated_work,
-#   pri_alpha = 0.5, pri_beta = 0.5,
-#   key_L = 0.25, key_U = 0.35,
-#   symmetric = FALSE, theta = c(10, 5), M = 100
-# )
+# Candidate selection
+out = choose_newdose(
+  dl = 0.25, dr = 0.50,
+  dose_set_work = dose_set_work,
+  n_dlt_work = n_dlt_work,
+  n_treated_work = n_treated_work,
+  pri_alpha = 0.5, pri_beta = 0.5,
+  key_L = 0.25, key_U = 0.35,
+  symmetric = FALSE, theta = c(10, 5), M = 100
+)
 
 }
