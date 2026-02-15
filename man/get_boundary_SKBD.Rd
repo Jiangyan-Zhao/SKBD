@@ -12,7 +12,9 @@ get_boundary_SKBD(
   n_cohort = 10,
   cohort_size = 3,
   symmetric = FALSE,
-  theta = NULL,
+  k_left = 0.2,
+  k_right = 0.8,
+  ref_gap = NULL,
   dose_set = 1:length(y),
   n_earlystop = 1000,
   margin_left = 0.05,
@@ -40,8 +42,13 @@ get_boundary_SKBD(
 
 \item{symmetric}{Logical; if \code{TRUE}, use a symmetric kernel; otherwise use an asymmetric kernel.}
 
-\item{theta}{Kernel parameter(s). If \code{NULL}, it is calibrated automatically.
-For asymmetric kernels, \code{theta} is typically a length-2 vector.}
+\item{k_left}{Numeric scalar in \verb{(0,1)}. Left-side neighbor borrowing strength passed to \code{kernel()}.}
+
+\item{k_right}{Numeric scalar in \verb{(0,1)}. Right-side neighbor borrowing strength passed to \code{kernel()}
+(and used for symmetric borrowing when \code{symmetric=TRUE}).}
+
+\item{ref_gap}{Optional positive scalar. Reference spacing passed to \code{kernel()}. If \code{NULL},
+kernel defaults to the minimum adjacent spacing in \code{dose_set}.}
 
 \item{dose_set}{Numeric vector of dose labels (default \code{1:length(y)}). Used only to compute kernel distances.}
 

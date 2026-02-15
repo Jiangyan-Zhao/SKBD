@@ -4,7 +4,17 @@
 \alias{post_par_all}
 \title{Compute BKP/SKBD pseudo-posterior Beta parameters for all doses on a working grid}
 \usage{
-post_par_all(n_dlt, n_treated, dose_set, pri_alpha, pri_beta, symmetric, theta)
+post_par_all(
+  n_dlt,
+  n_treated,
+  dose_set,
+  pri_alpha,
+  pri_beta,
+  symmetric,
+  k_left = 0.2,
+  k_right = 0.8,
+  ref_gap = NULL
+)
 }
 \arguments{
 \item{n_dlt}{Numeric/integer vector. Number of observed DLTs at each working dose.
@@ -21,8 +31,15 @@ Must have the same length as \code{dose_set}.}
 
 \item{symmetric}{Logical. Passed to \code{kernel()} to indicate symmetric vs asymmetric kernel mode.}
 
-\item{theta}{Numeric. Passed to \code{kernel()} as kernel hyperparameter(s).
-Length 1 for symmetric, length 2 for asymmetric (per your \code{kernel()} definition).}
+\item{k_left}{Numeric scalar in \verb{(0,1)}. Passed to \code{kernel()} as left-side
+neighbor borrowing strength (used when \code{dose_set < dose}).}
+
+\item{k_right}{Numeric scalar in \verb{(0,1)}. Passed to \code{kernel()} as right-side
+neighbor borrowing strength (used when \code{dose_set >= dose}, and as the symmetric
+borrowing strength when \code{symmetric = TRUE}).}
+
+\item{ref_gap}{Optional positive scalar. Passed to \code{kernel()} as the reference
+spacing used to infer decay from \code{k_left}/\code{k_right}.}
 }
 \value{
 A list with two numeric vectors (both of length \code{length(dose_set)}):

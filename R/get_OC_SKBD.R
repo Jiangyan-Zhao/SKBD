@@ -33,9 +33,11 @@
 #'   local updating (keyboard-style) via an identity kernel.
 #' @param symmetric Logical; kernel type when \code{shared=TRUE}. If \code{TRUE},
 #'   uses a symmetric Gaussian kernel; otherwise uses an asymmetric Gaussian kernel.
-#' @param theta Kernel parameter(s). If \code{NULL}, calibrated from the minimum
-#'   standardized dose spacing. For symmetric kernels, \code{theta} is a scalar; for
-#'   asymmetric kernels, \code{theta} is a length-2 vector \code{c(theta_left, theta_right)}.
+#' @param k_left Numeric scalar in `(0,1)`. Left-side neighbor borrowing strength passed to `kernel()`.
+#' @param k_right Numeric scalar in `(0,1)`. Right-side neighbor borrowing strength passed to `kernel()`
+#'   (and used for symmetric borrowing when \code{symmetric=TRUE}).
+#' @param ref_gap Optional positive scalar. Reference spacing passed to `kernel()`. If `NULL`,
+#'   kernel defaults to the minimum adjacent spacing in `dose_set`.
 #' @param light_return Logical; if \code{TRUE}, do not store/return individual-level
 #'   dose/DLT paths to reduce memory usage. If \code{FALSE}, returns
 #'   \code{dose_Paths} and \code{DLT_Paths}.
@@ -100,7 +102,8 @@ get_OC_SKBD <- function(
     n_earlystop = 1000, 
     cutoff_elimin = 0.95,
     extra_safe = FALSE, offset = 0.05, 
-    symmetric = FALSE, theta = NULL,
+    symmetric = FALSE,
+    k_left = 0.2, k_right = 0.8, ref_gap = NULL,
     shared = TRUE, # incorporate the keybooard design as a special case
     light_return = TRUE,
     n_trial = 1000, seed = 6
@@ -181,19 +184,16 @@ get_OC_SKBD <- function(
   
   ## get kernel
   if(shared){
-    if(is.null(theta)){
-      dose_diff_min = min(diff(dose_set_std))
-      if(symmetric){
-        theta = -log(0.8) / dose_diff_min^2
-      }else{
-        # theta = c(-log(0.3 - target_prob / 2), -log(0.7 + target_prob / 2)) / dose_diff_min^2
-        # theta = c(-log(target_prob), -log(1 - target_prob)) / dose_diff_min^2
-        theta = c(-log(0.2), -log(0.8)) / dose_diff_min^2
-      }
-    }
     ker_vals = matrix(0, nrow = n_dose, ncol = n_dose)
     for (i in 1:n_dose) {
-      ker_vals[i, ] = kernel(dose_set_std[i], dose_set_std, symmetric, theta)
+      ker_vals[i, ] = kernel(
+        dose = dose_set_std[i],
+        dose_set = dose_set_std,
+        symmetric = symmetric,
+        k_left = k_left,
+        k_right = k_right,
+        ref_gap = ref_gap
+      )
     }
   } else {
     ker_vals = diag(n_dose)

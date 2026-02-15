@@ -33,8 +33,13 @@
 #' @param pri_alpha Numeric scalar. Prior alpha \eqn{\alpha_0} for Beta pseudo-posterior.
 #' @param pri_beta Numeric scalar. Prior beta \eqn{\beta_0} for Beta pseudo-posterior.
 #' @param symmetric Logical. Passed to `kernel()` to indicate symmetric vs asymmetric kernel mode.
-#' @param theta Numeric. Passed to `kernel()` as kernel hyperparameter(s).
-#'   Length 1 for symmetric, length 2 for asymmetric (per your `kernel()` definition).
+#' @param k_left Numeric scalar in `(0,1)`. Passed to `kernel()` as left-side
+#'   neighbor borrowing strength (used when `dose_set < dose`).
+#' @param k_right Numeric scalar in `(0,1)`. Passed to `kernel()` as right-side
+#'   neighbor borrowing strength (used when `dose_set >= dose`, and as the symmetric
+#'   borrowing strength when `symmetric = TRUE`).
+#' @param ref_gap Optional positive scalar. Passed to `kernel()` as the reference
+#'   spacing used to infer decay from `k_left`/`k_right`.
 #'
 #' @return A list with two numeric vectors (both of length `length(dose_set)`):
 #' \describe{
@@ -63,7 +68,8 @@
 #' @export
 post_par_all = function(
     n_dlt, n_treated, dose_set,
-    pri_alpha, pri_beta, symmetric, theta
+    pri_alpha, pri_beta, symmetric,
+    k_left = 0.2, k_right = 0.8, ref_gap = NULL
 ) {
   
   # ---- Basic setup ----
@@ -88,7 +94,11 @@ post_par_all = function(
   for (j in 1:n_dose) {
     
     # Kernel similarities between target dose_set[j] and all observed doses
-    K[j, ] = kernel(dose_set[j], dose_obs, symmetric, theta)
+    K[j, ] = kernel(dose_set[j], dose_obs,
+                    symmetric = symmetric,
+                    k_left = k_left,
+                    k_right = k_right,
+                    ref_gap = ref_gap)
     
     # Row-wise rescaling to reduce underflow when values are extremely small
     km = max(K[j, ])

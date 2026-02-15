@@ -17,7 +17,8 @@ get_OC_Insert_SKBD <- function(
     n_earlystop = 1000, 
     cutoff_elimin = 0.95,
     extra_safe = FALSE, offset = 0.05, 
-    symmetric = FALSE, theta = NULL,
+    symmetric = FALSE, 
+    k_left = 0.2, k_right = 0.8, ref_gap = NULL,
     shared = TRUE, # incorporate the keybooard design as a special case
     light_return = TRUE,
     n_trial = 1000, seed = 6
@@ -101,26 +102,16 @@ get_OC_Insert_SKBD <- function(
   # Standardize doses to [0,1]
   dose_set_std <- (dose_set - dose_range[1]) / (dose_range[2] - dose_range[1])
   
-  # theta defaults
-  if (is.null(theta)) {
-    dose_diff_min = min(diff(dose_set_std))
-    # defaults (safe-ish): asym borrows more from higher doses => theta1 > theta2
-    theta <- if (symmetric) {
-      -log(0.5) / dose_diff_min^2
-    } else {
-      c(-log(0.2), -log(0.8)) / dose_diff_min^2
-    }
+  # kernel borrowing strengths
+  if (!is.numeric(k_left) || length(k_left) != 1 || is.na(k_left) || k_left <= 0 || k_left >= 1) {
+    stop("`k_left` must be a single number in (0, 1).")
   }
-  if (symmetric) {
-    if (!is.numeric(theta) || length(theta) != 1 || is.na(theta) || theta <= 0) {
-      stop("When `symmetric=TRUE`, `theta` must be a single positive number.")
-    }
-  } else {
-    if (!is.numeric(theta) || length(theta) != 2 || anyNA(theta) || any(theta <= 0)) {
-      stop("When `symmetric=FALSE`, `theta` must be a length-2 positive vector c(theta1, theta2).")
-    }
-    if (!(theta[1] > theta[2])) {
-      stop("For asymmetric kernel, require theta[1] > theta[2] (borrow less from lower doses).")
+  if (!is.numeric(k_right) || length(k_right) != 1 || is.na(k_right) || k_right <= 0 || k_right >= 1) {
+    stop("`k_right` must be a single number in (0, 1).")
+  }
+  if (!is.null(ref_gap)) {
+    if (!is.numeric(ref_gap) || length(ref_gap) != 1 || is.na(ref_gap) || !is.finite(ref_gap) || ref_gap <= 0) {
+      stop("`ref_gap` must be a positive finite scalar when provided.")
     }
   }
   
@@ -194,7 +185,9 @@ get_OC_Insert_SKBD <- function(
         pri_alpha = pri_alpha, 
         pri_beta = pri_beta, 
         symmetric = symmetric, 
-        theta = theta
+        k_left = k_left,
+        k_right = k_right,
+        ref_gap = ref_gap
       )
       post_alpha_work = post_work$post_alpha
       post_beta_work  = post_work$post_beta
@@ -287,7 +280,9 @@ get_OC_Insert_SKBD <- function(
                   key_L = key_L,
                   key_U = key_U,
                   symmetric = symmetric,
-                  theta = theta
+                  k_left = k_left,
+                  k_right = k_right,
+                  ref_gap = ref_gap
                 )
                 newdose = sel$newdose
                 
@@ -358,7 +353,9 @@ get_OC_Insert_SKBD <- function(
             key_L = key_L,
             key_U = key_U,
             symmetric = symmetric,
-            theta = theta
+            k_left = k_left,
+            k_right = k_right,
+            ref_gap = ref_gap
           )
           newdose = sel$newdose
           
@@ -413,7 +410,9 @@ get_OC_Insert_SKBD <- function(
             pri_alpha = pri_alpha,
             pri_beta = pri_beta,
             symmetric = symmetric,
-            theta = theta
+            k_left = k_left,
+            k_right = k_right,
+            ref_gap = ref_gap
           )
           post_alpha_work = post_work$post_alpha
           post_beta_work  = post_work$post_beta

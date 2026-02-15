@@ -15,7 +15,9 @@ choose_newdose(
   key_L,
   key_U,
   symmetric,
-  theta,
+  k_left = 0.2,
+  k_right = 0.8,
+  ref_gap = NULL,
   M = 100
 )
 }
@@ -42,8 +44,15 @@ Must have the same length as \code{dose_set_work}.}
 
 \item{symmetric}{Logical. Passed to \code{kernel()} to indicate symmetric vs asymmetric kernel mode.}
 
-\item{theta}{Numeric. Passed to \code{kernel()} as kernel hyperparameter(s).
-Length 1 for symmetric, length 2 for asymmetric (per your \code{kernel()} definition).}
+\item{k_left}{Numeric scalar in \verb{(0,1)}. Passed to \code{kernel()} as left-side
+neighbor borrowing strength (used when \code{dose_set < dose}).}
+
+\item{k_right}{Numeric scalar in \verb{(0,1)}. Passed to \code{kernel()} as right-side
+neighbor borrowing strength (used when \code{dose_set >= dose}, and as the symmetric
+borrowing strength when \code{symmetric = TRUE}).}
+
+\item{ref_gap}{Optional positive scalar. Passed to \code{kernel()} as the reference
+spacing used to infer decay from \code{k_left}/\code{k_right}.}
 
 \item{M}{Integer. Number of grid points inside \verb{(dl, dr)} used for search. Default is \code{100}.}
 }
@@ -100,7 +109,8 @@ out = choose_newdose(
   n_treated_work = n_treated_work,
   pri_alpha = 0.5, pri_beta = 0.5,
   key_L = 0.25, key_U = 0.35,
-  symmetric = FALSE, theta = c(10, 5), M = 100
+  symmetric = FALSE, k_left = 0.2, k_right = 0.8, M = 100
 )
+out$newdose
 
 }

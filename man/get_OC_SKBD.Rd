@@ -18,7 +18,9 @@ get_OC_SKBD(
   extra_safe = FALSE,
   offset = 0.05,
   symmetric = FALSE,
-  theta = NULL,
+  k_left = 0.2,
+  k_right = 0.8,
+  ref_gap = NULL,
   shared = TRUE,
   light_return = TRUE,
   n_trial = 1000,
@@ -63,9 +65,13 @@ threshold \code{cutoff_elimin - offset}.}
 \item{symmetric}{Logical; kernel type when \code{shared=TRUE}. If \code{TRUE},
 uses a symmetric Gaussian kernel; otherwise uses an asymmetric Gaussian kernel.}
 
-\item{theta}{Kernel parameter(s). If \code{NULL}, calibrated from the minimum
-standardized dose spacing. For symmetric kernels, \code{theta} is a scalar; for
-asymmetric kernels, \code{theta} is a length-2 vector \code{c(theta_left, theta_right)}.}
+\item{k_left}{Numeric scalar in \verb{(0,1)}. Left-side neighbor borrowing strength passed to \code{kernel()}.}
+
+\item{k_right}{Numeric scalar in \verb{(0,1)}. Right-side neighbor borrowing strength passed to \code{kernel()}
+(and used for symmetric borrowing when \code{symmetric=TRUE}).}
+
+\item{ref_gap}{Optional positive scalar. Reference spacing passed to \code{kernel()}. If \code{NULL},
+kernel defaults to the minimum adjacent spacing in \code{dose_set}.}
 
 \item{shared}{Logical; if \code{TRUE}, use kernel-weighted borrowing across doses
 to construct the posterior at the current dose. If \code{FALSE}, reduces to

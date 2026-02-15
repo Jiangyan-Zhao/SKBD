@@ -4,7 +4,11 @@
 #' A short description...
 #' 
 #' @param target_prob The target dose-limiting toxicity (DLT) rate
-#' @param theta description
+#' @param k_left Numeric scalar in `(0,1)`. Left-side neighbor borrowing strength passed to `kernel()`.
+#' @param k_right Numeric scalar in `(0,1)`. Right-side neighbor borrowing strength passed to `kernel()`
+#'        (and used for symmetric borrowing when `symmetric=TRUE`).
+#' @param ref_gap Optional positive scalar. Reference spacing passed to `kernel()`. If `NULL`,
+#'        kernel defaults to the minimum adjacent spacing in `dose_set`.
 #' @param prior_p a vector of length 3, which specifies the prior probability 
 #'                that the time to toxicity lies inside the time interval 
 #'                (0,\code{tau}/3), (\code{tau}/3,2*\code{tau}/3), (2*\code{tau}/3,1). 
@@ -14,7 +18,8 @@
 
 get_OC_TITE_SKBD <- function(target_prob, tox_prob, 
                         n_cohort, cohort_size,
-                        symmetric = FALSE, theta = NULL,
+                        symmetric = FALSE,
+                        k_left = 0.2, k_right = 0.8, ref_gap = NULL,
                         shared = TRUE, # incorporate the keybooard design
                         dose_set = 1:length(tox_prob), 
                         n_earlystop = 1000, start_dose = 1,
@@ -107,18 +112,16 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
   
   ## get kernel
   if(shared){
-    if(is.null(theta)){
-      dose_diff_min = min(diff(dose_set_std))
-      if(symmetric){
-        theta = -log(0.8) / dose_diff_min^2
-      }else{
-        theta = c(-log(0.3 - target_prob / 2), -log(0.7 + target_prob / 2)) / dose_diff_min^2
-        # theta = c(-log(0.2), -log(0.8)) / dose_diff_min^2
-      }
-    }
     ker_vals = matrix(0, nrow = n_dose, ncol = n_dose)
     for (i in 1:n_dose) {
-      ker_vals[i, ] = kernel(dose_set_std[i], dose_set_std, symmetric, theta)
+      ker_vals[i, ] = kernel(
+        dose = dose_set_std[i],
+        dose_set = dose_set_std,
+        symmetric = symmetric,
+        k_left = k_left,
+        k_right = k_right,
+        ref_gap = ref_gap
+      )
     }
   } else {
     ker_vals = diag(n_dose)
@@ -382,7 +385,8 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
 # n_cohort = 10
 # cohort_size = 3
 # symmetric = FALSE
-# theta = NULL
+# k_left = 0.2
+# k_right = 0.8
 # shared = TRUE # incorporate the keybooard design
 # dose_set = 1:length(tox_prob)
 # n_earlystop = 1000

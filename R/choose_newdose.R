@@ -41,8 +41,13 @@
 #' @param key_L Numeric scalar. Lower bound of the target key, in `(0,1)`.
 #' @param key_U Numeric scalar. Upper bound of the target key, in `(0,1)` with `key_L < key_U`.
 #' @param symmetric Logical. Passed to `kernel()` to indicate symmetric vs asymmetric kernel mode.
-#' @param theta Numeric. Passed to `kernel()` as kernel hyperparameter(s).
-#'   Length 1 for symmetric, length 2 for asymmetric (per your `kernel()` definition).
+#' @param k_left Numeric scalar in `(0,1)`. Passed to `kernel()` as left-side
+#'   neighbor borrowing strength (used when `dose_set < dose`).
+#' @param k_right Numeric scalar in `(0,1)`. Passed to `kernel()` as right-side
+#'   neighbor borrowing strength (used when `dose_set >= dose`, and as the symmetric
+#'   borrowing strength when `symmetric = TRUE`).
+#' @param ref_gap Optional positive scalar. Passed to `kernel()` as the reference
+#'   spacing used to infer decay from `k_left`/`k_right`.
 #' @param M Integer. Number of grid points inside `(dl, dr)` used for search. Default is `100`.
 #'
 #' @return A list with components:
@@ -68,14 +73,16 @@
 #'   n_treated_work = n_treated_work,
 #'   pri_alpha = 0.5, pri_beta = 0.5,
 #'   key_L = 0.25, key_U = 0.35,
-#'   symmetric = FALSE, theta = c(10, 5), M = 100
+#'   symmetric = FALSE, k_left = 0.2, k_right = 0.8, M = 100
 #' )
+#' out$newdose
 #'
 #' @export
 
 choose_newdose = function(
     dl, dr, dose_set_work, n_dlt_work, n_treated_work,
-    pri_alpha, pri_beta, key_L, key_U, symmetric, theta, M = 100
+    pri_alpha, pri_beta, key_L, key_U, symmetric,
+    k_left = 0.2, k_right = 0.8, ref_gap = NULL, M = 100
 ){
   if (!is.finite(dl) || !is.finite(dr) || dr <= dl) {
     return(list(newdose = NA_real_, q_max = NA_real_))
@@ -100,7 +107,11 @@ choose_newdose = function(
   q_grid = rep(NA_real_, length(grid))
   
   for (g in seq_along(grid)) {
-    k = kernel(grid[g], dose_obs, symmetric, theta)
+    k = kernel(grid[g], dose_obs,
+               symmetric = symmetric,
+               k_left = k_left,
+               k_right = k_right,
+               ref_gap = ref_gap)
     
     # stabilize normalization (avoid underflow -> all zeros)
     km = max(k)

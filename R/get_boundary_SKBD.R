@@ -54,8 +54,11 @@
 #' @param n_cohort Total number of cohorts in the trial (used to define the maximal table size).
 #' @param cohort_size Number of patients per cohort (used for cohort-aligned \code{boundary_tab} output).
 #' @param symmetric Logical; if \code{TRUE}, use a symmetric kernel; otherwise use an asymmetric kernel.
-#' @param theta Kernel parameter(s). If \code{NULL}, it is calibrated automatically.
-#'        For asymmetric kernels, \code{theta} is typically a length-2 vector.
+#' @param k_left Numeric scalar in `(0,1)`. Left-side neighbor borrowing strength passed to `kernel()`.
+#' @param k_right Numeric scalar in `(0,1)`. Right-side neighbor borrowing strength passed to `kernel()`
+#'        (and used for symmetric borrowing when \code{symmetric=TRUE}).
+#' @param ref_gap Optional positive scalar. Reference spacing passed to `kernel()`. If `NULL`,
+#'        kernel defaults to the minimum adjacent spacing in `dose_set`.
 #' @param dose_set Numeric vector of dose labels (default \code{1:length(y)}). Used only to compute kernel distances.
 #' @param n_earlystop Maximum number of patients to display in output tables (columns are truncated at this value).
 #' @param margin_left Left margin of the target key (lower bound is \code{target_prob - margin_left}).
@@ -119,7 +122,8 @@
 get_boundary_SKBD <- function(target_prob, d,
                               y, n,
                               n_cohort = 10, cohort_size = 3,
-                              symmetric = FALSE, theta = NULL,
+                              symmetric = FALSE,
+                              k_left = 0.2, k_right = 0.8, ref_gap = NULL,
                               dose_set = 1:length(y),
                               n_earlystop = 1000,
                               margin_left = 0.05, margin_right = 0.05,
@@ -157,16 +161,14 @@ get_boundary_SKBD <- function(target_prob, d,
   if (max(dose_set) == min(dose_set)) stop("dose_set must have at least two distinct values.")
   dose_set_std <- (dose_set - min(dose_set)) / (max(dose_set) - min(dose_set))
   
-  if (is.null(theta)) {
-    dose_diff_min <- min(diff(dose_set_std))
-    if (symmetric) {
-      theta <- -log(0.8) / dose_diff_min^2
-    } else {
-      theta <- c(-log(0.2), -log(0.8)) / dose_diff_min^2
-    }
-  }
-  
-  ker_vals <- kernel(dose_set_std[d], dose_set_std, symmetric, theta)
+  ker_vals <- kernel(
+    dose = dose_set_std[d],
+    dose_set = dose_set_std,
+    symmetric = symmetric,
+    k_left = k_left,
+    k_right = k_right,
+    ref_gap = ref_gap
+  )
   
   ## ---------------------------
   ## Define borrowing weights (normalize over observed doses + current dose)
@@ -176,7 +178,7 @@ get_boundary_SKBD <- function(target_prob, d,
   
   w_raw <- ker_vals
   w_raw[!obs_mask] <- 0
-  if (sum(w_raw) == 0) stop("All weights are zero; check kernel/theta settings.")
+  if (sum(w_raw) == 0) stop("All weights are zero; check kernel k_left/k_right settings.")
   weight <- w_raw / sum(w_raw)
   
   ## ---------------------------
