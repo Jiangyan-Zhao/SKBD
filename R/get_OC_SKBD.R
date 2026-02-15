@@ -367,7 +367,12 @@ get_OC_SKBD <- function(
   n_DLT = mean(rowSums(Y))
   
   ## 3. monotonic
-  monotonic_percent = mean(is_monotonic_trial, na.rm = TRUE) * 100
+  n_admissible_trial = sum(!is.na(is_monotonic_trial))
+  if (n_admissible_trial > 0) {
+    monotonic_percent = mean(is_monotonic_trial, na.rm = TRUE) * 100
+  } else {
+    monotonic_percent = NA_real_
+  }
   
   #------------------------ end performance metrics -----------------------#
   
