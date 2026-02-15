@@ -97,6 +97,9 @@ with >60\\% or >80\\% patients treated above the MTD.
 \item \code{select_percent}: selection percentages for each dose and \code{-1}.
 \item \code{n_patient_mean}: mean number of patients per trial.
 \item \code{n_DLT}: mean number of DLTs per trial.
+\item \code{monotonic_percent}: among trials with an admissible MTD decision,
+the percent whose estimated toxicity profile is already monotone nondecreasing
+before isotonic regression.
 \item \code{Y}, \code{N}: \code{n_trial x n_dose} matrices of DLT counts and treated counts.
 \item \code{dose_Paths}, \code{DLT_Paths}: only returned when \code{light_return=FALSE};
 \code{n_trial x (n_cohort*cohort_size)} matrices recording individual-level assignments and outcomes.

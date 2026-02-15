@@ -71,6 +71,9 @@
 #' \item \code{select_percent}: selection percentages for each dose and \code{-1}.
 #' \item \code{n_patient_mean}: mean number of patients per trial.
 #' \item \code{n_DLT}: mean number of DLTs per trial.
+#' \item \code{monotonic_percent}: among trials with an admissible MTD decision,
+#'   the percent whose estimated toxicity profile is already monotone nondecreasing
+#'   before isotonic regression.
 #' \item \code{Y}, \code{N}: \code{n_trial x n_dose} matrices of DLT counts and treated counts.
 #' \item \code{dose_Paths}, \code{DLT_Paths}: only returned when \code{light_return=FALSE};
 #'   \code{n_trial x (n_cohort*cohort_size)} matrices recording individual-level assignments and outcomes.
@@ -167,6 +170,7 @@ get_OC_SKBD <- function(
     DLT_Paths  <- NULL
   }
   dose_select = rep(NA, n_trial)                              # MTD selection                           
+  is_monotonic_trial = rep(NA, n_trial)
   
   
   ## proir setting: non-informative
@@ -312,11 +316,16 @@ get_OC_SKBD <- function(
       # tox_prob_hat_var = tox_prob_hat * (1 - tox_prob_hat) / (post_alpha + post_beta + 1)
 
       # whether or not monotonic of the estimated toxicity probability
-      is_monotonic = (all(diff(tox_prob_hat) > 0))
+      is_monotonic = all(diff(tox_prob_hat) >= -1e-10)
+      is_monotonic_trial[trial] = is_monotonic
       
-      tox_prob_hat = pava(tox_prob_hat)
+      if (!is_monotonic) {
+        tox_prob_hat = pava(tox_prob_hat)
+      }
       # tox_prob_hat = pava(tox_prob_hat, wt = tox_prob_hat_var)
-      tox_prob_hat = tox_prob_hat + seq_along(tox_prob_hat) * 1e-10 # break ties by adding an increasingly small number
+      
+      # break ties by adding an increasingly small number
+      tox_prob_hat = tox_prob_hat + seq_along(tox_prob_hat) * 1e-10 
 
       # select dose closest to the target_prob as the MTD
       dose_select[trial] = adm_idx[ which.min(abs(tox_prob_hat - target_prob)) ]
@@ -358,6 +367,7 @@ get_OC_SKBD <- function(
   n_DLT = mean(rowSums(Y))
   
   ## 3. monotonic
+  monotonic_percent = mean(is_monotonic_trial, na.rm = TRUE) * 100
   
   #------------------------ end performance metrics -----------------------#
   
@@ -366,6 +376,7 @@ get_OC_SKBD <- function(
              above_MTD = above_MTD, ROD60 = ROD60, ROD80 = ROD80,
              dose_select = dose_select, select_percent = select_percent, 
              n_patient_mean = n_patient_mean, n_DLT = n_DLT,
+             monotonic_percent = monotonic_percent,
              Y = Y, N = N)
   if (!light_return) {
     out$dose_Paths <- dose_Paths
@@ -374,4 +385,3 @@ get_OC_SKBD <- function(
   
   return(out)
 }
-

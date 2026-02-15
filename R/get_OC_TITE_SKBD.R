@@ -113,6 +113,7 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
   ## get kernel
   if(shared){
     ker_vals = matrix(0, nrow = n_dose, ncol = n_dose)
+    ref_gap = min(diff(dose_set_std))
     for (i in 1:n_dose) {
       ker_vals[i, ] = kernel_fun(
         dose = dose_set_std[i],
