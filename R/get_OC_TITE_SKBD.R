@@ -30,6 +30,7 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
                         piecewise = FALSE, prior_p = rep(1/3,3), 
                         dist_DLT = c("weibull", "loglogistic", "uniform"),
                         dist_enter = c("exp", "uniform"),
+                        light_return = TRUE,
                         n_trial = 1000, seed = 6) {
   set.seed(seed)
   
@@ -94,11 +95,18 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
   n_patient = n_cohort * cohort_size                          # number of patients
   
   Y = N = matrix(NA, nrow = n_trial, ncol = n_dose)           # Y: number of DLT response at each dose; N: number of patients at each dose
-  dose_Paths = matrix(NA, nrow = n_trial, ncol = n_patient)   # record the dose path of the dose assignment for all patients
-  DLT_Paths = matrix(NA, nrow = n_trial, ncol = n_patient)    # record the DLT path of the dose assignment for all patients
   dose_select = rep(NA, n_trial)                              # MTD selection                           
   
+  is_monotonic_trial = rep(NA, n_trial)
   duration = rep(0, n_trial)
+  
+  if (!light_return) {
+    dose_Paths = matrix(NA, nrow = n_trial, ncol = n_patient) # record the dose path of the dose assignment for all patients
+    DLT_Paths = matrix(NA, nrow = n_trial, ncol = n_patient)  # record the DLT path of the dose assignment for all patients
+  } else {
+    dose_Paths <- rep(NA, n_patient)
+    DLT_Paths  <- rep(NA, n_patient)
+  }
   
   ## proir setting: non-informative
   # r0 = 2
@@ -163,8 +171,14 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
       n[d] = n[d] + cohort_size
       
       ## record the dose and DLT path
-      DLT_Paths[trial, current_cohort_index] = obs_cohort$DLT
-      dose_Paths[trial, current_cohort_index] = rep(d, cohort_size)
+      if (!light_return) {
+        DLT_Paths[trial, current_cohort_index] = obs_cohort$DLT
+        dose_Paths[trial, current_cohort_index] = rep(d, cohort_size)
+      }else{
+        DLT_Paths[current_cohort_index] = obs_cohort$DLT
+        dose_Paths[current_cohort_index] = rep(d, cohort_size)
+      }
+      
       
       # check whether the trial should be early terminated
       if (n[d] >= n_earlystop) {
@@ -205,11 +219,21 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
         delta = (time_DLT <=  time_decision) | (time_follow_up > tau)
         
         # update the effective dataset
-        n_dose_exist = max(dose_Paths[trial, ], na.rm = TRUE)
+        if (!light_return) {
+          n_dose_exist = max(dose_Paths[trial, ], na.rm = TRUE)
+        }else{
+          n_dose_exist = max(dose_Paths, na.rm = TRUE)
+        }
+        
         for (d_j in 1:n_dose_exist) {
-          d_j_idx = which(dose_Paths[trial, ] == d_j)
+          if (!light_return) {
+            d_j_idx = which(dose_Paths[trial, ] == d_j)
+            DLT_j = DLT_Paths[trial, d_j_idx]
+          }else{
+            d_j_idx = which(dose_Paths == d_j)
+            DLT_j = DLT_Paths[d_j_idx]
+          }
           
-          DLT_j = DLT_Paths[trial, d_j_idx]
           delta_j = delta[d_j_idx]
           
           y_tilde[d_j] = sum(delta_j * DLT_j)
@@ -317,18 +341,49 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
     N[trial, ] = n
     
     ## Maximum Tolerated Dose (MTD) Selection
-    admissble_set = (n > 0) & (!eliminate) # adimissble set
+    admissible_set = (n > 0) & (!eliminate) # adimissble set
+    adm_idx = which(admissible_set)
     if(is_earlystop){
       dose_select[trial] = -1  # no dose should be selected as the MTD
     }else{
-      # same with the original keyboard design
-      tox_prob_hat = y[admissble_set] / n[admissble_set]
-      tox_prob_hat = pava(tox_prob_hat)
+      ## poster mean and variance of toxicity probabilities using beta(0.01, 0.01) as the prior
+      if (shared) {
+        post = post_par_all(
+          n_dlt = y[adm_idx], 
+          n_treated = n[adm_idx], 
+          dose_set = dose_set_std[adm_idx], 
+          pri_alpha = 0.01, 
+          pri_beta = 0.01, 
+          symmetric = TRUE, 
+          k_left = 0.2,
+          k_right = 0.2,
+          ref_gap = ref_gap
+        )
+        post_alpha = post$post_alpha
+        post_beta  = post$post_beta
+      } else {
+        # same with the original keyboard design
+        post_alpha = 0.01 + y[adm_idx]
+        post_beta  = 0.01 + (n[adm_idx] - y[adm_idx])
+      }
+      
+      tox_prob_hat = post_alpha / (post_alpha + post_beta)
+      # tox_prob_hat_var = tox_prob_hat * (1 - tox_prob_hat) / (post_alpha + post_beta + 1)
+      
+      # whether or not monotonic of the estimated toxicity probability
+      is_monotonic = all(diff(tox_prob_hat) >= -1e-10)
+      is_monotonic_trial[trial] = is_monotonic
+      
+      if (!is_monotonic) {
+        tox_prob_hat = pava(tox_prob_hat)
+      }
+      # tox_prob_hat = pava(tox_prob_hat, wt = tox_prob_hat_var)
+      
       # break ties by adding an increasingly small number
-      tox_prob_hat = tox_prob_hat + (1:length(tox_prob_hat)) * 1e-10 
+      tox_prob_hat = tox_prob_hat + seq_along(tox_prob_hat) * 1e-10 
       
       # select dose closest to the target_prob as the MTD
-      dose_select[trial] = which.min(abs(tox_prob_hat - target_prob))
+      dose_select[trial] = adm_idx[ which.min(abs(tox_prob_hat - target_prob)) ]
     }# end MTD selection 
   }
   #------------------------ end trials -------------------------#
@@ -337,7 +392,7 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
   ## 1. accuracy
   # 1.1 percentage of correct selection (PCS)
   select_percent = as.vector(table(factor(dose_select, levels = c(1:n_dose, -1)))) / n_trial * 100
-  is_all_ovedose = tox_prob[1] > target_prob + 0.1 # ref. 18_Zhou_SiM & 18_Zhou_CCR
+  is_all_ovedose = tox_prob[1] > target_prob + margin_right # ref. 18_Zhou_SiM & 18_Zhou_CCR
   if(is_all_ovedose){
     target_dose = n_dose + 1  # no dose should be selected as the MTD
   }else{
@@ -345,40 +400,53 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
   }
   PCS = select_percent[target_dose]
   
-  # 1.2 percentage of patients treated at the MTD (TR_MTD)
+  # 1.2 percentage of correct allocation (PCA)
   n_patient_each_dose = colMeans(N)
   n_patient_mean = sum(N) / n_trial
   if(is_all_ovedose){
-    TR_MTD = 0
+    PCA = 0
   }else{
-    TR_MTD = n_patient_each_dose[target_dose] / n_patient_mean * 100
+    PCA = n_patient_each_dose[target_dose] / n_patient_mean * 100
   }
   
-  
   ## 2. safty
-  # 2.1 percentage of patients treated above the MTD (TR_aboveMTD)
-  TR_aboveMTD = sum(n_patient_each_dose[tox_prob > (target_prob + margin_right)] / n_patient_mean * 100)
+  # 2.1 percentage of patients treated above the MTD (above_MTD)
+  above_MTD = sum(n_patient_each_dose[tox_prob > (target_prob + margin_right)] / n_patient_mean * 100)
   
-  # 2.2 risk of overdosing 
-  overdosing60 = mean(rowSums(N[, tox_prob > (target_prob + margin_right), drop = FALSE]) > 0.6 * n_patient) * 100
-  overdosing80 = mean(rowSums(N[, tox_prob > (target_prob + margin_right), drop = FALSE]) > 0.8 * n_patient) * 100
+  # 2.2 risk of overdosing (ROD)
+  ROD60 = mean(rowSums(N[, tox_prob > (target_prob + margin_right), drop = FALSE]) > 0.6 * rowSums(N)) * 100
+  ROD80 = mean(rowSums(N[, tox_prob > (target_prob + margin_right), drop = FALSE]) > 0.8 * rowSums(N)) * 100
   
-  # duration time 
+  # 2.3 the number of DLT
+  n_DLT = mean(rowSums(Y))
+  
+  ## 3. monotonic
+  n_admissible_trial = sum(!is.na(is_monotonic_trial))
+  if (n_admissible_trial > 0) {
+    monotonic_percent = mean(is_monotonic_trial, na.rm = TRUE) * 100
+  } else {
+    monotonic_percent = NA_real_
+  }
+  
+  # 4. duration time 
   duration_mean = mean(duration)
   #------------------------ end performance metrics -----------------------#
   
-  out = list(PCS = PCS, TR_MTD = TR_MTD, TR_aboveMTD = TR_aboveMTD, 
-             overdosing60 = overdosing60, overdosing80 = overdosing80,
+  out = list(PCS = PCS, PCA = PCA,
+             above_MTD = above_MTD, ROD60 = ROD60, ROD80 = ROD80,
              dose_select = dose_select, select_percent = select_percent, 
-             n_patient_mean = n_patient_mean, duration_mean = duration_mean,
-             Y = Y, N = N, dose_Paths = dose_Paths, DLT_Paths = DLT_Paths)
+             n_patient_mean = n_patient_mean, n_DLT = n_DLT,
+             duration_mean = duration_mean,
+             TR_MTD = PCA, TR_aboveMTD = above_MTD,
+             overdosing60 = ROD60, overdosing80 = ROD80,
+             monotonic_percent = monotonic_percent,
+             Y = Y, N = N)
+  if (!light_return) {
+    out$dose_Paths <- dose_Paths
+    out$DLT_Paths  <- DLT_Paths
+  }
   return(out)
 }
-
-
-
-
-
 
 
 # target_prob = 0.3
@@ -404,5 +472,6 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
 # prior_p = rep(1/3,3)
 # dist_DLT = "weibull"
 # dist_enter = "exp"
+# light_return = TRUE
 # n_trial = 1000
 # seed = 6

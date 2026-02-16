@@ -29,6 +29,7 @@ get_OC_TITE_SKBD(
   prior_p = rep(1/3, 3),
   dist_DLT = c("weibull", "loglogistic", "uniform"),
   dist_enter = c("exp", "uniform"),
+  light_return = TRUE,
   n_trial = 1000,
   seed = 6
 )

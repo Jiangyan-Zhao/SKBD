@@ -1,5 +1,6 @@
-#' Operating Characteristics for the Shared Keyboard Design
+#' @title Operating Characteristics for the Shared Keyboard Design
 #'
+#' @description 
 #' Simulate Phase I dose-finding trials under the shared keyboard design (SKBD)
 #' and summarize operating characteristics (e.g., PCS, PCA, overdosing risk).
 #' SKBD follows the keyboard decision rules (strongest key vs. target key) but
@@ -165,10 +166,7 @@ get_OC_SKBD <- function(
   if (!light_return) {
     dose_Paths = matrix(NA, nrow = n_trial, ncol = n_patient) # record the dose path of the dose assignment for all patients
     DLT_Paths = matrix(NA, nrow = n_trial, ncol = n_patient)  # record the DLT path of the dose assignment for all patients
-  } else {
-    dose_Paths <- NULL
-    DLT_Paths  <- NULL
-  }
+  } 
   dose_select = rep(NA, n_trial)                              # MTD selection                           
   is_monotonic_trial = rep(NA, n_trial)
   
@@ -287,7 +285,7 @@ get_OC_SKBD <- function(
     
     ## Maximum Tolerated Dose (MTD) Selection
     admissible_set = (n > 0) & (!is_eliminated) # adimissble set
-    adm_idx <- which(admissible_set)
+    adm_idx = which(admissible_set)
     if (is_earlystop || length(adm_idx) == 0) {
       dose_select[trial] = -1  # no dose should be selected as the MTD
     } else {
