@@ -60,7 +60,8 @@
 #'   pri_alpha = 0.5,
 #'   pri_beta = 0.5,
 #'   symmetric = FALSE,
-#'   theta = c(10, 5)
+#'   k_left = 0.2,
+#'   k_right = 0.8
 #' )
 #' out$post_alpha
 #' out$post_beta

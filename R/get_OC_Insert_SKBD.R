@@ -101,6 +101,7 @@ get_OC_Insert_SKBD <- function(
   
   # Standardize doses to [0,1]
   dose_set_std <- (dose_set - dose_range[1]) / (dose_range[2] - dose_range[1])
+  ref_gap = min(diff(dose_set_std))
   
   # kernel borrowing strengths
   if (!is.numeric(k_left) || length(k_left) != 1 || is.na(k_left) || k_left <= 0 || k_left >= 1) {
@@ -128,7 +129,7 @@ get_OC_Insert_SKBD <- function(
   simdata = NULL
   
   # hyperparameters for beta prior
-  pri_alpha = pri_beta = 0.5 
+  pri_alpha = pri_beta = 1 
   
   # keep details optionally
   trial_detail = if (!light_return) vector("list", n_trial) else NULL
@@ -141,7 +142,7 @@ get_OC_Insert_SKBD <- function(
   for(trial in 1:n_trial){
     
     ## current dose index (starting dose for this trial)
-    d = start_dose  
+    d = start_dose
     
     ## working dose grid (may expand after insertion)
     dose_set_work = dose_set_std   # current dose set; starts with prespecified doses and may add inserted doses
@@ -179,24 +180,40 @@ get_OC_Insert_SKBD <- function(
       
       ## BKP posterior update for ALL doses
       post_work = post_par_all(
-        n_dlt = n_dlt_work, 
-        n_treated = n_treated_work, 
-        dose_set = dose_set_work, 
-        pri_alpha = pri_alpha, 
-        pri_beta = pri_beta, 
-        symmetric = symmetric, 
+        n_dlt = n_dlt_work,
+        n_treated = n_treated_work,
+        dose_set = dose_set_work,
+        pri_alpha = pri_alpha,
+        pri_beta = pri_beta,
+        symmetric = symmetric,
         k_left = k_left,
         k_right = k_right,
         ref_gap = ref_gap
       )
       post_alpha_work = post_work$post_alpha
       post_beta_work  = post_work$post_beta
+      
+      
+      post_work_insert = post_par_all(
+        n_dlt = n_dlt_work, 
+        n_treated = n_treated_work, 
+        dose_set = dose_set_work, 
+        pri_alpha = 0.01, 
+        pri_beta = 0.01, 
+        symmetric = TRUE, 
+        k_left = 0.2,
+        k_right = 0.2,
+        ref_gap = ref_gap
+      )
+      
+      post_alpha_work_insert = post_work_insert$post_alpha
+      post_beta_work_insert  = post_work_insert$post_beta
 
       # Determine if insertion is warranted
       res = insert_check(
         j = d,
-        post_alpha = post_alpha_work,
-        post_beta  = post_beta_work,
+        post_alpha = post_alpha_work_insert,
+        post_beta  = post_beta_work_insert,
         key_L = key_L,
         key_U = key_U,
         C1 = C1,
@@ -462,7 +479,7 @@ get_OC_Insert_SKBD <- function(
       # stop when total enrolled patients reaches n_patients
       if(sum(n_treated_work) >= n_patients){
         break
-      }  
+      }
     }
     #-------------------------------- end while --------------------------------------------
     
@@ -565,3 +582,30 @@ get_OC_Insert_SKBD <- function(
   if (!light_return) out$trial_detail <- trial_detail
   return(out)
 }
+
+
+
+
+target_prob = 0.3
+tox_prob = c(0.01, 0.08, 0.12, 0.45, 0.5)
+n_cohort = 10
+cohort_size = 3
+dose_set = c(10, 15, 20, 25, 30)
+dose_range = c(5, 45)
+C1 = 0.6
+C2 = 0.6
+start_dose = 1
+margin_left = 0.05
+margin_right = 0.05
+n_earlystop = 1000
+cutoff_elimin = 0.95
+extra_safe = FALSE
+offset = 0.05
+symmetric = FALSE
+k_left = 0.2
+k_right = 0.8
+ref_gap = NULL
+shared = TRUE
+light_return = TRUE
+n_trial = 1000
+seed = 6
