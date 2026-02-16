@@ -103,9 +103,6 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
   if (!light_return) {
     dose_Paths = matrix(NA, nrow = n_trial, ncol = n_patient) # record the dose path of the dose assignment for all patients
     DLT_Paths = matrix(NA, nrow = n_trial, ncol = n_patient)  # record the DLT path of the dose assignment for all patients
-  } else {
-    dose_Paths <- rep(NA, n_patient)
-    DLT_Paths  <- rep(NA, n_patient)
   }
   
   ## proir setting: non-informative
@@ -142,6 +139,10 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
   for (trial in 1:n_trial) {
     ## initial for each trial
     d = start_dose
+    if (light_return) {
+      dose_Paths <- rep(NA, n_patient)
+      DLT_Paths  <- rep(NA, n_patient)
+    }
     is_earlystop = FALSE               # Whether to stop the design early
     eliminate = rep(FALSE, n_dose) 
     
