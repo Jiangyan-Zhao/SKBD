@@ -292,9 +292,9 @@ get_OC_SKBD <- function(
       ## poster mean and variance of toxicity probabilities using beta(0.01, 0.01) as the prior
       if (shared) {
         post = post_par_all(
-          n_dlt = y[adm_idx], 
-          n_treated = n[adm_idx], 
-          dose_set = dose_set_std[adm_idx], 
+          n_dlt = y, 
+          n_treated = n, 
+          dose_set = dose_set_std, 
           pri_alpha = 0.01, 
           pri_beta = 0.01, 
           symmetric = TRUE, 
@@ -302,8 +302,8 @@ get_OC_SKBD <- function(
           k_right = 0.2,
           ref_gap = ref_gap
         )
-        post_alpha = post$post_alpha
-        post_beta  = post$post_beta
+        post_alpha = post$post_alpha[adm_idx]
+        post_beta  = post$post_beta[adm_idx]
       } else {
         # same with the original keyboard design
         post_alpha = 0.01 + y[adm_idx]

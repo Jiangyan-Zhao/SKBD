@@ -70,53 +70,39 @@
 post_par_all = function(
     n_dlt, n_treated, dose_set,
     pri_alpha, pri_beta, symmetric,
-    k_left = 0.2, k_right = 0.8, ref_gap = NULL
+    k_left = 0.2, k_right = 0.8, ref_gap = NULL, ker_scale = TRUE
 ) {
   
-  # ---- Basic setup ----
   n_dose = length(dose_set)
-  obs_idx = which(n_treated > 0)
   
   # Default: prior only (if no data accrued yet)
   post_alpha = rep(pri_alpha, n_dose)
   post_beta  = rep(pri_beta,  n_dose)
   
+  obs_idx = which(n_treated > 0)
+  
   if (length(obs_idx) == 0) return(list(post_alpha = post_alpha, post_beta = post_beta))
   
-  # ---- Extract observed-dose quantities once ----
-  dose_obs = dose_set[obs_idx]
-  y_obs    = n_dlt[obs_idx]
-  m_obs    = n_treated[obs_idx]
-  z_obs    = m_obs - y_obs
-  
   # ---- Build kernel matrix K and normalized weight matrix W ----
-  K = W = matrix(0, nrow = n_dose, ncol = length(obs_idx))
-  
-  for (j in 1:n_dose) {
+  for (d in obs_idx) {
     
     # Kernel similarities between target dose_set[j] and all observed doses
-    K[j, ] = kernel_fun(
-      dose_set[j], dose_obs,
+    ker_vals = kernel_fun(
+      dose_set[d], dose_set,
       symmetric = symmetric,
       k_left = k_left,
       k_right = k_right,
       ref_gap = ref_gap
     )
+    if(ker_scale){
+      weight = ker_vals[obs_idx] / sum(ker_vals[obs_idx])
+    }else{
+      weight = ker_vals[obs_idx]
+    }
     
-    # Row-wise rescaling to reduce underflow when values are extremely small
-    km = max(K[j, ])
-    if (!is.finite(km) || km <= 0) km = 1
-    K[j, ] = K[j, ] / km
-    
-    # Normalize to weights; protect against zero/invalid denominators
-    den = sum(K[j, ])
-    if (!is.finite(den) || den <= 1e-12) den = 1e-12
-    W[j, ] = K[j, ] / den
+    post_alpha[d] = pri_alpha + sum(weight * n_dlt[obs_idx])
+    post_beta[d] = pri_beta + sum(weight * (n_treated[obs_idx] - n_dlt[obs_idx]))
   }
-  
-  # ---- Weighted pseudo-count update to Beta parameters ----
-  post_alpha = pri_alpha + drop(W %*% y_obs)
-  post_beta  = pri_beta  + drop(W %*% z_obs)
   
   return(list(post_alpha = post_alpha, post_beta = post_beta))
 }

@@ -99,10 +99,6 @@ get_OC_Insert_SKBD <- function(
     stop("`start_dose` must be a single integer in 1:n_dose (indexing prespecified doses).")
   }
   
-  # Standardize doses to [0,1]
-  dose_set_std <- (dose_set - dose_range[1]) / (dose_range[2] - dose_range[1])
-  ref_gap = min(diff(dose_set_std))
-  
   # kernel borrowing strengths
   if (!is.numeric(k_left) || length(k_left) != 1 || is.na(k_left) || k_left <= 0 || k_left >= 1) {
     stop("`k_left` must be a single number in (0, 1).")
@@ -115,6 +111,9 @@ get_OC_Insert_SKBD <- function(
       stop("`ref_gap` must be a positive finite scalar when provided.")
     }
   }
+  
+  # Standardize doses to [0,1]
+  dose_set_std <- (dose_set - dose_range[1]) / (dose_range[2] - dose_range[1])
   
   #------------------------------- Simulation containers ------------------------------------------
   n_dose     = length(tox_prob)       # number of dose levels
@@ -179,27 +178,13 @@ get_OC_Insert_SKBD <- function(
       n_treated_work[d] = n_treated_work[d] + cohort_size
       
       ## BKP posterior update for ALL doses
-      post_work = post_par_all(
-        n_dlt = n_dlt_work,
-        n_treated = n_treated_work,
-        dose_set = dose_set_work,
-        pri_alpha = pri_alpha,
-        pri_beta = pri_beta,
-        symmetric = symmetric,
-        k_left = k_left,
-        k_right = k_right,
-        ref_gap = ref_gap
-      )
-      post_alpha_work = post_work$post_alpha
-      post_beta_work  = post_work$post_beta
-      
-      
+      ref_gap = min(diff(dose_set_work))
       post_work_insert = post_par_all(
         n_dlt = n_dlt_work, 
         n_treated = n_treated_work, 
         dose_set = dose_set_work, 
-        pri_alpha = 0.01, 
-        pri_beta = 0.01, 
+        pri_alpha = 0.5, 
+        pri_beta = 0.5, 
         symmetric = TRUE, 
         k_left = 0.2,
         k_right = 0.2,
@@ -208,7 +193,7 @@ get_OC_Insert_SKBD <- function(
       
       post_alpha_work_insert = post_work_insert$post_alpha
       post_beta_work_insert  = post_work_insert$post_beta
-
+      
       # Determine if insertion is warranted
       res = insert_check(
         j = d,
@@ -232,7 +217,6 @@ get_OC_Insert_SKBD <- function(
       if (need_insert && sum(n_treated_work) <= (n_patients - cohort_size)) {
         
         tol = 1e-12
-        inserted_any = FALSE
         d_old = d  # keep the current dose index at trigger time (needed for boundary ins_true_prob)
         
         ## BELOW MIN: insert half + treat, then choose again + treat (ADM style)
@@ -240,113 +224,90 @@ get_OC_Insert_SKBD <- function(
           
           # need room for 2 extra cohorts (half-dose cohort + second inserted cohort)
           if (d == 1 && sum(n_treated_work) <= (n_patients - 2 * cohort_size)) {
+            # record first insertion cohort (once, and only if insertion happens)
+            if (insert_at_cohort[trial] == 0) {
+              insert_at_cohort[trial] = sum(n_treated_work) / cohort_size
+            }
             
             # insert half of current minimum
             halfdose = dose_set_work[1] / 2
             
-            # only insert if truly new and >0
-            if (is.finite(halfdose) && halfdose > tol && !any(abs(dose_set_work - halfdose) < tol)) {
-              
-              # record first insertion cohort (once, and only if insertion happens)
-              if (insert_at_cohort[trial] == 0) {
-                insert_at_cohort[trial] = sum(n_treated_work) / cohort_size
-              }
-              
-              
-              tox_half = ins_true_prob(
-                insert_code = LOC_BELOW_MIN,
-                d = d_old,
-                p = tox_prob_work,
-                target = target_prob,
-                LOC_BELOW_MIN = LOC_BELOW_MIN,
-                LOC_ABOVE_MAX = LOC_ABOVE_MAX
-              )
-              
-              ins1 = insert_sorted(
-                dose_set_work, tox_prob_work, n_dlt_work, n_treated_work, is_eliminated,
-                newdose = halfdose, tox_new = tox_half
-              )
-              dose_set_work  = ins1$dose_set_work
-              tox_prob_work  = ins1$tox_prob_work
-              n_dlt_work     = ins1$n_dlt_work
-              n_treated_work = ins1$n_treated_work
-              is_eliminated  = ins1$is_eliminated
-              n_dose_work    = length(dose_set_work)
-              
-              d_half = ins1$d_idx
-              
-              # treat one cohort at the halfdose
-              if (sum(n_treated_work) <= (n_patients - cohort_size)) {
-                n_dlt_work[d_half]     = n_dlt_work[d_half] + rbinom(1, cohort_size, tox_prob_work[d_half])
-                n_treated_work[d_half] = n_treated_work[d_half] + cohort_size
-              }
-              
-              n_insertions_trial = n_insertions_trial + 1
-              inserted_any = TRUE
-              
-              # choose again within (halfdose, old d1) i.e., (dose_set_work[1], dose_set_work[2])
-              if (sum(n_treated_work) <= (n_patients - cohort_size) && n_dose_work >= 2) {
-                sel = choose_newdose(
-                  dl = dose_set_work[1],
-                  dr = dose_set_work[2],
-                  dose_set_work = dose_set_work,
-                  n_dlt_work = n_dlt_work,
-                  n_treated_work = n_treated_work,
-                  pri_alpha = pri_alpha,
-                  pri_beta  = pri_beta,
-                  key_L = key_L,
-                  key_U = key_U,
-                  symmetric = symmetric,
-                  k_left = k_left,
-                  k_right = k_right,
-                  ref_gap = ref_gap
-                )
-                newdose = sel$newdose
-                
-                if (is.finite(newdose) &&
-                    (newdose > dose_set_work[1] + tol) && (newdose < dose_set_work[2] - tol) &&
-                    !any(abs(dose_set_work - newdose) < tol)) {
-                  
-                  tox_new = ins_true_prob(
-                    insert_code = 1L,  # between (1,2) on current grid
-                    d = 1L,
-                    p = tox_prob_work,
-                    target = target_prob,
-                    LOC_BELOW_MIN = LOC_BELOW_MIN,
-                    LOC_ABOVE_MAX = LOC_ABOVE_MAX
-                  )
-                  
-                  ins2 = insert_sorted(
-                    dose_set_work, tox_prob_work, n_dlt_work, n_treated_work, is_eliminated,
-                    newdose = newdose, tox_new = tox_new
-                  )
-                  dose_set_work  = ins2$dose_set_work
-                  tox_prob_work  = ins2$tox_prob_work
-                  n_dlt_work     = ins2$n_dlt_work
-                  n_treated_work = ins2$n_treated_work
-                  is_eliminated  = ins2$is_eliminated
-                  n_dose_work    = length(dose_set_work)
-                  
-                  d2 = ins2$d_idx
-                  
-                  # treat one cohort at newdose
-                  if (sum(n_treated_work) <= (n_patients - cohort_size)) {
-                    n_dlt_work[d2]     = n_dlt_work[d2] + rbinom(1, cohort_size, tox_prob_work[d2])
-                    n_treated_work[d2] = n_treated_work[d2] + cohort_size
-                  }
-                  
-                  n_insertions_trial = n_insertions_trial + 1
-                  inserted_any = TRUE
-                  d = d2
-                }else {
-                  d = d_half
-                }
-              }  else {
-                d = d_half
-              }
-            }
+            tox_half = ins_true_prob(
+              insert_code = LOC_BELOW_MIN,
+              d = d_old,
+              p = tox_prob_work,
+              target = target_prob,
+              LOC_BELOW_MIN = LOC_BELOW_MIN,
+              LOC_ABOVE_MAX = LOC_ABOVE_MAX
+            )
+            
+            ins1 = insert_sorted(
+              dose_set_work, tox_prob_work, n_dlt_work, n_treated_work, is_eliminated,
+              newdose = halfdose, tox_new = tox_half
+            )
+            dose_set_work  = ins1$dose_set_work
+            tox_prob_work  = ins1$tox_prob_work
+            n_dlt_work     = ins1$n_dlt_work
+            n_treated_work = ins1$n_treated_work
+            is_eliminated  = ins1$is_eliminated
+            n_dose_work    = length(dose_set_work)
+            
+            d_half = ins1$d_idx
+            
+            # treat one cohort at the halfdose
+            n_dlt_work[d_half]     = n_dlt_work[d_half] + rbinom(1, cohort_size, tox_prob_work[d_half])
+            n_treated_work[d_half] = n_treated_work[d_half] + cohort_size
+            
+            n_insertions_trial = n_insertions_trial + 1
+            
+            # choose again within (halfdose, old d1) i.e., (dose_set_work[1], dose_set_work[2])
+            sel = choose_newdose(
+              dl = dose_set_work[1],
+              dr = dose_set_work[2],
+              dose_set_work = dose_set_work,
+              n_dlt_work = n_dlt_work,
+              n_treated_work = n_treated_work,
+              pri_alpha = 0.3,
+              pri_beta  = 0.7,
+              key_L = key_L,
+              key_U = key_U,
+              symmetric = TRUE,
+              k_left = 0.2,
+              k_right = 0.2,
+              ref_gap = ref_gap
+            )
+            
+            newdose = sel$newdose
+            
+            tox_new = ins_true_prob(
+              insert_code = 1L,  # between (1,2) on current grid
+              d = 1L,
+              p = tox_prob_work,
+              target = target_prob,
+              LOC_BELOW_MIN = LOC_BELOW_MIN,
+              LOC_ABOVE_MAX = LOC_ABOVE_MAX
+            )
+            
+            ins2 = insert_sorted(
+              dose_set_work, tox_prob_work, n_dlt_work, n_treated_work, is_eliminated,
+              newdose = newdose, tox_new = tox_new
+            )
+            dose_set_work  = ins2$dose_set_work
+            tox_prob_work  = ins2$tox_prob_work
+            n_dlt_work     = ins2$n_dlt_work
+            n_treated_work = ins2$n_treated_work
+            is_eliminated  = ins2$is_eliminated
+            n_dose_work    = length(dose_set_work)
+            
+            d2 = ins2$d_idx
+            
+            # treat one cohort at newdose
+            n_dlt_work[d2]     = n_dlt_work[d2] + rbinom(1, cohort_size, tox_prob_work[d2])
+            n_treated_work[d2] = n_treated_work[d2] + cohort_size
+            
+            n_insertions_trial = n_insertions_trial + 1
+            d = d2
           }
-          
         } else {
           ## BETWEEN (i,i+1) or ABOVE MAX (metric one-shot)
           
@@ -359,86 +320,78 @@ get_OC_Insert_SKBD <- function(
             dl = dose_set_work[i]
             dr = dose_set_work[i + 1]
           }
-
+          
+          ref_gap = min(diff(dose_set_work))
           sel = choose_newdose(
             dl = dl, dr = dr,
             dose_set_work = dose_set_work,
             n_dlt_work = n_dlt_work,
             n_treated_work = n_treated_work,
-            pri_alpha = pri_alpha,
-            pri_beta  = pri_beta,
+            pri_alpha = 0.3,
+            pri_beta  = 0.7,
             key_L = key_L,
             key_U = key_U,
-            symmetric = symmetric,
-            k_left = k_left,
-            k_right = k_right,
+            symmetric = TRUE,
+            k_left = 0.2,
+            k_right = 0.2,
             ref_gap = ref_gap
           )
           newdose = sel$newdose
           
-          if (is.finite(newdose) &&
-              (newdose > dl + tol) && (newdose < dr - tol) &&
-              !any(abs(dose_set_work - newdose) < tol)) {
-            
-            if (insert_at_cohort[trial] == 0L) {
-              insert_at_cohort[trial] = sum(n_treated_work) / cohort_size
-            }
-            
-            tox_new = ins_true_prob(
-              insert_code = insert_code,
-              d = d_old,
-              p = tox_prob_work,
-              target = target_prob,
-              LOC_BELOW_MIN = LOC_BELOW_MIN,
-              LOC_ABOVE_MAX = LOC_ABOVE_MAX
-            )
-            
-            ins = insert_sorted(
-              dose_set_work, tox_prob_work, n_dlt_work, n_treated_work, is_eliminated,
-              newdose = newdose, tox_new = tox_new
-            )
-            dose_set_work  = ins$dose_set_work
-            tox_prob_work  = ins$tox_prob_work
-            n_dlt_work     = ins$n_dlt_work
-            n_treated_work = ins$n_treated_work
-            is_eliminated  = ins$is_eliminated
-            n_dose_work    = length(dose_set_work)
-            
-            d_new = ins$d_idx
-            
-            # treat one cohort at inserted dose
-            if (sum(n_treated_work) <= (n_patients - cohort_size)) {
-              n_dlt_work[d_new]     = n_dlt_work[d_new] + rbinom(1, cohort_size, tox_prob_work[d_new])
-              n_treated_work[d_new] = n_treated_work[d_new] + cohort_size
-            }
-            
-            n_insertions_trial = n_insertions_trial + 1L
-            inserted_any = TRUE
-            d = d_new
+          if (insert_at_cohort[trial] == 0L) {
+            insert_at_cohort[trial] = sum(n_treated_work) / cohort_size
           }
-        }
-        
-        # recompute BKP posterior after any insertion/treatment
-        if (inserted_any) {
-          post_work = post_par_all(
-            n_dlt = n_dlt_work,
-            n_treated = n_treated_work,
-            dose_set = dose_set_work,
-            pri_alpha = pri_alpha,
-            pri_beta = pri_beta,
-            symmetric = symmetric,
-            k_left = k_left,
-            k_right = k_right,
-            ref_gap = ref_gap
+          
+          tox_new = ins_true_prob(
+            insert_code = insert_code,
+            d = d_old,
+            p = tox_prob_work,
+            target = target_prob,
+            LOC_BELOW_MIN = LOC_BELOW_MIN,
+            LOC_ABOVE_MAX = LOC_ABOVE_MAX
           )
-          post_alpha_work = post_work$post_alpha
-          post_beta_work  = post_work$post_beta
+          
+          ins = insert_sorted(
+            dose_set_work, tox_prob_work, n_dlt_work, n_treated_work, is_eliminated,
+            newdose = newdose, tox_new = tox_new
+          )
+          dose_set_work  = ins$dose_set_work
+          tox_prob_work  = ins$tox_prob_work
+          n_dlt_work     = ins$n_dlt_work
+          n_treated_work = ins$n_treated_work
+          is_eliminated  = ins$is_eliminated
+          n_dose_work    = length(dose_set_work)
+          
+          d_new = ins$d_idx
+          
+          # treat one cohort at inserted dose
+          n_dlt_work[d_new]     = n_dlt_work[d_new] + rbinom(1, cohort_size, tox_prob_work[d_new])
+          n_treated_work[d_new] = n_treated_work[d_new] + cohort_size
+          
+          n_insertions_trial = n_insertions_trial + 1L
+          d = d_new
         }
       }
       #-------------- end insertion block ----------------------------------------------------------------------
       
       
       #--------------------- SKBD elimination & move rule ----------------------------------------------
+      # recompute BKP posterior
+      ref_gap = min(diff(dose_set_work))
+      post_work = post_par_all(
+        n_dlt = n_dlt_work,
+        n_treated = n_treated_work,
+        dose_set = dose_set_work,
+        pri_alpha = pri_alpha,
+        pri_beta = pri_beta,
+        symmetric = symmetric,
+        k_left = k_left,
+        k_right = k_right,
+        ref_gap = ref_gap
+      )
+      post_alpha_work = post_work$post_alpha
+      post_beta_work  = post_work$post_beta
+      
       # whether the trial is overdose
       overdose_prob = 1 - pbeta(target_prob, post_alpha_work[d], post_beta_work[d]) # P(pi_d > target_prob | data)
       
@@ -475,7 +428,7 @@ get_OC_Insert_SKBD <- function(
       }else{
         d = d
       }
-
+      
       # stop when total enrolled patients reaches n_patients
       if(sum(n_treated_work) >= n_patients){
         break
@@ -491,12 +444,27 @@ get_OC_Insert_SKBD <- function(
       sel_dose_idx[trial] = -1  # no dose should be selected as the MTD
       sel_dose[trial] = NA_real_
     }else{
-      tox_prob_hat = n_dlt_work[adm_idx] / n_treated_work[adm_idx]
+      ref_gap = min(diff(dose_set_work))
+      post_work = post_par_all(
+        n_dlt = n_dlt_work, 
+        n_treated = n_treated_work, 
+        dose_set = dose_set_work, 
+        pri_alpha = 0.01, 
+        pri_beta = 0.01, 
+        symmetric = TRUE, 
+        k_left = 0.2,
+        k_right = 0.2,
+        ref_gap = ref_gap
+      )
+      post_alpha_work = post_work$post_alpha[adm_idx]
+      post_beta_work  = post_work$post_beta[adm_idx]
+      
+      tox_prob_hat = post_alpha_work / (post_alpha_work + post_beta_work)
       tox_prob_hat = pava(tox_prob_hat)
       tox_prob_hat = tox_prob_hat + seq_along(tox_prob_hat) * 1e-10 # break ties by adding an increasingly small number
       
       sel_dose_idx[trial] = adm_idx[ which.min(abs(tox_prob_hat - target_prob))]
-      sel_dose[trial] = dose_set_work[sel_dose_idx[trial]]
+      sel_dose[trial] = dose_set_work[sel_dose_idx[trial]] * (dose_range[2] - dose_range[1]) + dose_range[1]
     }
     
     # save per-trial insertion count
@@ -505,7 +473,7 @@ get_OC_Insert_SKBD <- function(
     # save simdata rows
     temp = data.frame(
       Simulation = rep(trial, n_dose_work),
-      Dose = dose_set_work,
+      Dose = dose_set_work * (dose_range[2] - dose_range[1]) + dose_range[1],
       N = n_treated_work,
       X = n_dlt_work,
       Selection = rep(sel_dose_idx[trial], n_dose_work)
@@ -530,16 +498,16 @@ get_OC_Insert_SKBD <- function(
   #--------------------------------- summary ----------------------------------------------------------
   selpercent = rep(0, n_dose) # selection percentage at prespecified doses
   ptspercent = rep(0, n_dose) # percentage of patients at prespecified doses
-
+  
   for (i in 1:n_dose) {
-    selpercent[i] = sum(sel_dose == dose_set_std[i], na.rm = TRUE) / n_trial * 100
-    ptspercent[i] = sum(simdata$N[simdata$Dose == dose_set_std[i]]) / (n_trial * n_patients) * 100
+    selpercent[i] = sum(sel_dose == dose_set[i], na.rm = TRUE) / n_trial * 100
+    ptspercent[i] = sum(simdata$N[simdata$Dose == dose_set[i]]) / (n_trial * n_patients) * 100
   }
   
   ins.select = 100 - sum(selpercent) # selection percentage at inserted dose
   ins.pts = 100 - sum(ptspercent)    # percentage of patients at inserted dose
   
-  ins.dose = sel_dose[!(sel_dose %in% dose_set_std)]
+  ins.dose = sel_dose[!(sel_dose %in% dose_set)]
   ins.mean = mean(ins.dose, na.rm = TRUE)
   ins.sd   = sd(ins.dose, na.rm = TRUE)
   
@@ -547,7 +515,7 @@ get_OC_Insert_SKBD <- function(
   cohort_vec = insert_at_cohort[insert_at_cohort > 0]
   cohort.mean = if (length(cohort_vec) > 0) mean(cohort_vec) else NA_real_
   insTimes.median = median(n_insertions)
-
+  
   # cat("selection percentage at each prespecified dose level (%):\n")
   # cat(formatC(selpercent, digits = 2, format = "f"), sep = "  ", "\n")
   # cat("percentage of patients treated at prespecified dose level (%):\n")
@@ -564,7 +532,7 @@ get_OC_Insert_SKBD <- function(
   out <- list(
     simdata = simdata,
     sel_dose_idx = sel_dose_idx,
-    sel_dose_std = sel_dose,
+    sel_dose = sel_dose,
     n_insertions = n_insertions,
     insert_at_cohort = insert_at_cohort,
     selpercent = selpercent,
@@ -585,13 +553,19 @@ get_OC_Insert_SKBD <- function(
 
 
 
-
+trial = 1
 target_prob = 0.3
-tox_prob = c(0.01, 0.08, 0.12, 0.45, 0.5)
+## Scenario 1, MTD = 6.10
+# tox_prob = c(0.11, 0.22, 0.36, 0.43, 0.50)
+# dose_set = c(4.5, 5.5, 6.5, 7, 7.5)
+# dose_range = c(0, 10)
+## Scenario 5, MTD = 6.90
+tox_prob = c(0.24, 0.36, 0.43, 0.49, 0.53)
+dose_set = c(6.4, 7.4, 7.9, 8.4, 8.8)
+dose_range = c(0, 10)
+
 n_cohort = 10
 cohort_size = 3
-dose_set = c(10, 15, 20, 25, 30)
-dose_range = c(5, 45)
 C1 = 0.6
 C2 = 0.6
 start_dose = 1
@@ -609,3 +583,4 @@ shared = TRUE
 light_return = TRUE
 n_trial = 1000
 seed = 6
+
