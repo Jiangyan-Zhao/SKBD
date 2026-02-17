@@ -98,12 +98,10 @@ choose_newdose = function(
   y_obs    = n_dlt_work[obs_idx]
   n_obs    = n_treated_work[obs_idx]
   
-  eps = 1e-10
-  if ((dr - dl) <= 2*eps) {
-    return(list(newdose = NA_real_, q_max = NA_real_))
-  }
-  
-  grid = seq(dl + eps, dr - eps, length.out = M)
+  empr_rate = pava(y_obs / n_obs)
+  y_obs = empr_rate * n_obs
+
+  grid = seq(dl + 0.001, dr - 0.001, length.out = M)
   q_grid = rep(NA_real_, length(grid))
   
   for (g in seq_along(grid)) {
@@ -113,19 +111,13 @@ choose_newdose = function(
                k_right = k_right,
                ref_gap = ref_gap)
     
-    # stabilize normalization (avoid underflow -> all zeros)
-    km = max(k)
-    if (!is.finite(km) || km <= 0) next
-    k = k / km
+    w = k / sum(k)
     
-    den = sum(k)
-    if (!is.finite(den) || den <= 0) next
-    w = k / den
-    
-    alpha_d = max(pri_alpha + sum(w * y_obs), 1e-12)
-    beta_d  = max(pri_beta  + sum(w * (n_obs - y_obs)), 1e-12)
+    alpha_d = pri_alpha + sum(w * y_obs)
+    beta_d  = pri_beta  + sum(w * (n_obs - y_obs))
     
     q_grid[g] = pbeta(key_U, alpha_d, beta_d) - pbeta(key_L, alpha_d, beta_d)
+    # q_grid[g] = alpha_d / (alpha_d + beta_d)
   }
   
   if (all(is.na(q_grid))) {

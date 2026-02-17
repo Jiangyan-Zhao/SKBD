@@ -218,7 +218,7 @@ get_OC_Insert_SKBD <- function(
         
         tol = 1e-12
         d_old = d  # keep the current dose index at trigger time (needed for boundary ins_true_prob)
-        
+
         ## BELOW MIN: insert half + treat, then choose again + treat (ADM style)
         if (insert_code == LOC_BELOW_MIN) {
           
@@ -267,13 +267,13 @@ get_OC_Insert_SKBD <- function(
               dose_set_work = dose_set_work,
               n_dlt_work = n_dlt_work,
               n_treated_work = n_treated_work,
-              pri_alpha = 0.3,
-              pri_beta  = 0.7,
+              pri_alpha = target_prob,
+              pri_beta  = (1 - target_prob),
               key_L = key_L,
               key_U = key_U,
               symmetric = TRUE,
-              k_left = 0.2,
-              k_right = 0.2,
+              k_left = 0.7,
+              k_right = 0.7,
               ref_gap = ref_gap
             )
             
@@ -313,7 +313,7 @@ get_OC_Insert_SKBD <- function(
           
           # Determine eligible interval endpoints (dl, dr)
           if (insert_code == LOC_ABOVE_MAX) {
-            dl = dose_set_work[n_dose_work]
+            dl = tail(dose_set_work, 1)
             dr = min(1, 1.5*dl) # for safety (ADM-style upper bound)
           } else {
             i = as.integer(insert_code)       # eligible interval is (i, i+1)
@@ -321,19 +321,24 @@ get_OC_Insert_SKBD <- function(
             dr = dose_set_work[i + 1]
           }
           
+          if ((dr - dl) <= 0.002){
+            # cat("trial = ", trial, ", dl = ", dl,  ", dr = ", dr, "\n")
+            next
+          } 
+          
           ref_gap = min(diff(dose_set_work))
           sel = choose_newdose(
             dl = dl, dr = dr,
             dose_set_work = dose_set_work,
             n_dlt_work = n_dlt_work,
             n_treated_work = n_treated_work,
-            pri_alpha = 0.3,
-            pri_beta  = 0.7,
+            pri_alpha = target_prob,
+            pri_beta  = (1 - target_prob),
             key_L = key_L,
             key_U = key_U,
             symmetric = TRUE,
-            k_left = 0.2,
-            k_right = 0.2,
+            k_left = 0.7,
+            k_right = 0.7,
             ref_gap = ref_gap
           )
           newdose = sel$newdose
@@ -363,7 +368,7 @@ get_OC_Insert_SKBD <- function(
           n_dose_work    = length(dose_set_work)
           
           d_new = ins$d_idx
-          
+
           # treat one cohort at inserted dose
           n_dlt_work[d_new]     = n_dlt_work[d_new] + rbinom(1, cohort_size, tox_prob_work[d_new])
           n_treated_work[d_new] = n_treated_work[d_new] + cohort_size
@@ -553,17 +558,44 @@ get_OC_Insert_SKBD <- function(
 
 
 
-trial = 1
-target_prob = 0.3
+
 ## Scenario 1, MTD = 6.10
-# tox_prob = c(0.11, 0.22, 0.36, 0.43, 0.50)
-# dose_set = c(4.5, 5.5, 6.5, 7, 7.5)
-# dose_range = c(0, 10)
+tox_prob = c(0.11, 0.22, 0.36, 0.43, 0.50)
+dose_set = c(4.5, 5.5, 6.5, 7, 7.5)
+dose_range = c(0, 10)
+
+## Scenario 2, MTD = 7.70
+tox_prob = c(0.10, 0.15, 0.24, 0.36, 0.45)
+dose_set = c(5.5, 6.1, 7.1, 8.2, 9)
+dose_range = c(0, 10)
+
+## Scenario 3, MTD = 3.65
+tox_prob = c(0.5, 0.1, 0.18, 0.22, 0.36)
+dose_set = c(2.1, 2.6, 3.1, 3.3, 3.9)
+dose_range = c(0, 10)
+
+## Scenario 4, MTD = 4.45
+tox_prob = c(0.11, 0.24, 0.41, 0.5, 0.6)
+dose_set = c(3.3, 4.1, 5, 5.5, 6.1)
+dose_range = c(0, 10)
+
 ## Scenario 5, MTD = 6.90
 tox_prob = c(0.24, 0.36, 0.43, 0.49, 0.53)
 dose_set = c(6.4, 7.4, 7.9, 8.4, 8.8)
 dose_range = c(0, 10)
 
+## Scenario 6, MTD = 5.25
+tox_prob = c(0.03, 0.05, 0.10, 0.16, 0.24)
+dose_set = c(2.8, 3.1, 3.8, 4.3, 4.9)
+dose_range = c(0, 10)
+
+## Scenario 7, MTD = 2.05
+tox_prob = c(0.37, 0.5, 0.61, 0.70, 0.77)
+dose_set = c(2.2, 2.5, 2.8, 3.1, 3.4)
+dose_range = c(0, 10)
+
+trial = 1
+target_prob = 0.3
 n_cohort = 10
 cohort_size = 3
 C1 = 0.6
