@@ -81,8 +81,8 @@
 
 choose_newdose = function(
     dl, dr, dose_set_work, n_dlt_work, n_treated_work,
-    pri_alpha, pri_beta, key_L, key_U, symmetric,
-    k_left = 0.2, k_right = 0.8, ref_gap = NULL, M = 100
+    pri_alpha, pri_beta, key_L, key_U, symmetric = TRUE,
+    k_left = 0.2, k_right = 0.2, ref_gap = NULL, M = 100
 ){
   if (!is.finite(dl) || !is.finite(dr) || dr <= dl) {
     return(list(newdose = NA_real_, q_max = NA_real_))
@@ -126,12 +126,6 @@ choose_newdose = function(
   
   idx = which.max(q_grid)
   newdose = grid[idx]
-  
-  # tolerance de-dup
-  tol = 1e-12
-  if (any(abs(dose_set_work - newdose) < tol)) {
-    newdose = NA_real_
-  }
   
   list(newdose = newdose, q_max = q_grid[idx], grid = grid, q_grid = q_grid)
 }

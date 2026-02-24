@@ -7,10 +7,9 @@
 get_OC_Insert_SKBD(
   target_prob,
   tox_prob,
-  n_cohort,
-  cohort_size,
   dose_set,
-  dose_range,
+  n_cohort = 10,
+  cohort_size = 3,
   C1 = 0.6,
   C2 = 0.6,
   start_dose = 1,

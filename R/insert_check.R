@@ -23,8 +23,6 @@
 
 insert_check = function(
     j, post_alpha, post_beta, key_L, key_U, C1, C2, n_treated,
-    use_pava = TRUE,      # whether to apply ADM-style monotonicity
-    return_probs = TRUE,  # return prob vectors for debugging
     LOC_BELOW_MIN = -1L, LOC_ABOVE_MAX = -2L
 ) {
   
@@ -46,15 +44,11 @@ insert_check = function(
   # -----------------------------
   # Step B: ADM-style PAVA monotonic adjustment (optional)
   # -----------------------------
-  if (use_pava) {
-    prob_under_adj = rev(pava(rev(prob_under)))   # enforce non-increasing
-    prob_over_adj  = pava(prob_over)              # enforce non-decreasing
-    prob_target_adj = pmax(0, 1 - prob_under_adj - prob_over_adj)
-  } else {
-    prob_under_adj = prob_under
-    prob_over_adj  = prob_over
-    prob_target_adj = prob_target
-  }
+  
+  prob_under_adj = rev(pava(rev(prob_under)))   # enforce non-increasing
+  prob_over_adj  = pava(prob_over)              # enforce non-decreasing
+  prob_target_adj = pmax(0, 1 - prob_under_adj - prob_over_adj)
+
   
   # -----------------------------
   # Step C: Eq.(5) trigger using adjusted probabilities
@@ -93,16 +87,6 @@ insert_check = function(
     LOC_BELOW_MIN = LOC_BELOW_MIN,
     LOC_ABOVE_MAX = LOC_ABOVE_MAX
   )
-  
-  if (return_probs) {
-    out$prob_under_raw = prob_under
-    out$prob_over_raw  = prob_over
-    out$prob_target_raw = prob_target
-    
-    out$prob_under = prob_under_adj
-    out$prob_over  = prob_over_adj
-    out$prob_target = prob_target_adj
-  }
-  
+
   return(out)
 }

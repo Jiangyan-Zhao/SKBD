@@ -14,9 +14,9 @@ choose_newdose(
   pri_beta,
   key_L,
   key_U,
-  symmetric,
+  symmetric = TRUE,
   k_left = 0.2,
-  k_right = 0.8,
+  k_right = 0.2,
   ref_gap = NULL,
   M = 100
 )
