@@ -83,7 +83,7 @@ get_OC_Insert_SKBD <- function(
   if (is.unsorted(dose_set, strictly = TRUE)) {
     stop("`dose_set` must be strictly increasing (sorted).")
   }
-
+  
   # start_dose index (in prespecified doses)
   if (!int1(start_dose) || start_dose < 1 || start_dose > length(tox_prob)) {
     stop("`start_dose` must be a single integer in 1:n_dose (indexing prespecified doses).")
@@ -158,7 +158,7 @@ get_OC_Insert_SKBD <- function(
       if(n_treated_work[d] >= n_earlystop){
         break
       }
-
+      
       # Treat one cohort at the current dose level d
       n_dlt_work[d] = n_dlt_work[d] + rbinom(1, cohort_size, tox_prob_work[d])
       n_treated_work[d] = n_treated_work[d] + cohort_size
@@ -205,7 +205,7 @@ get_OC_Insert_SKBD <- function(
       if (need_insert && cohort< n_cohort) {
         
         d_old = d  # keep the current dose index at trigger time (needed for boundary ins_true_prob)
-
+        
         ## BELOW MIN: insert half + treat, then choose again + treat (ADM style)
         if (insert_code == LOC_BELOW_MIN) {
           
@@ -262,22 +262,27 @@ get_OC_Insert_SKBD <- function(
             next
           } 
           
-          ref_gap = min(diff(dose_set_work))
-          sel = choose_newdose(
-            dl = dl, dr = dr,
-            dose_set_work = dose_set_work,
-            n_dlt_work = n_dlt_work,
-            n_treated_work = n_treated_work,
-            pri_alpha = target_prob,
-            pri_beta  = (1 - target_prob),
-            key_L = key_L,
-            key_U = key_U,
-            symmetric = TRUE,
-            k_left = 0.2,
-            k_right = 0.2,
-            ref_gap = ref_gap
-          )
-          newdose = sel$newdose
+          if (insert_code == LOC_ABOVE_MAX) {
+            # Above the current maximum, directly insert at 1.5x of the prespecified max dose.
+            newdose = dr
+          } else {
+            ref_gap = min(diff(dose_set_work))
+            sel = choose_newdose(
+              dl = dl, dr = dr,
+              dose_set_work = dose_set_work,
+              n_dlt_work = n_dlt_work,
+              n_treated_work = n_treated_work,
+              pri_alpha = target_prob,
+              pri_beta  = (1 - target_prob),
+              key_L = key_L,
+              key_U = key_U,
+              symmetric = TRUE,
+              k_left = 0.2,
+              k_right = 0.2,
+              ref_gap = ref_gap
+            )
+            newdose = sel$newdose
+          }
           
           if (insert_at_cohort[trial] == 0L) {
             insert_at_cohort[trial] = sum(n_treated_work) / cohort_size
@@ -302,7 +307,7 @@ get_OC_Insert_SKBD <- function(
           n_treated_work = ins$n_treated_work
           is_eliminated  = ins$is_eliminated
           n_dose_work    = length(dose_set_work)
-
+          
           d = ins$d_idx
           next
         }
@@ -480,64 +485,3 @@ get_OC_Insert_SKBD <- function(
   if (!light_return) out$trial_detail <- trial_detail
   return(out)
 }
-
-
-
-
-# ## Scenario 1, MTD = 6.10
-# tox_prob = c(0.11, 0.22, 0.36, 0.43, 0.50)
-# dose_set = c(4.5, 5.5, 6.5, 7, 7.5)
-# dose_range = c(0, 10)
-# 
-# ## Scenario 2, MTD = 7.70
-# tox_prob = c(0.10, 0.15, 0.24, 0.36, 0.45)
-# dose_set = c(5.5, 6.1, 7.1, 8.2, 9)
-# dose_range = c(0, 10)
-# 
-# ## Scenario 3, MTD = 3.65
-# tox_prob = c(0.5, 0.1, 0.18, 0.22, 0.36)
-# dose_set = c(2.1, 2.6, 3.1, 3.3, 3.9)
-# dose_range = c(0, 10)
-# 
-# ## Scenario 4, MTD = 4.45
-# tox_prob = c(0.11, 0.24, 0.41, 0.5, 0.6)
-# dose_set = c(3.3, 4.1, 5, 5.5, 6.1)
-# dose_range = c(0, 10)
-# 
-# ## Scenario 5, MTD = 6.90
-# tox_prob = c(0.24, 0.36, 0.43, 0.49, 0.53)
-# dose_set = c(6.4, 7.4, 7.9, 8.4, 8.8)
-# dose_range = c(0, 10)
-# 
-# ## Scenario 6, MTD = 5.25
-# tox_prob = c(0.03, 0.05, 0.10, 0.16, 0.24)
-# dose_set = c(2.8, 3.1, 3.8, 4.3, 4.9)
-# dose_range = c(0, 10)
-# 
-# ## Scenario 7, MTD = 2.05
-# tox_prob = c(0.37, 0.5, 0.61, 0.70, 0.77)
-# dose_set = c(2.2, 2.5, 2.8, 3.1, 3.4)
-# dose_range = c(0, 10)
-# 
-# trial = 1
-# target_prob = 0.3
-# n_cohort = 10
-# cohort_size = 3
-# C1 = 0.6
-# C2 = 0.6
-# start_dose = 1
-# margin_left = 0.05
-# margin_right = 0.05
-# n_earlystop = 1000
-# cutoff_elimin = 0.95
-# extra_safe = FALSE
-# offset = 0.05
-# symmetric = FALSE
-# k_left = 0.2
-# k_right = 0.8
-# ref_gap = NULL
-# shared = TRUE
-# light_return = TRUE
-# n_trial = 1000
-# seed = 6
-
