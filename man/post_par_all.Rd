@@ -13,8 +13,7 @@ post_par_all(
   symmetric,
   k_left = 0.2,
   k_right = 0.8,
-  ref_gap = NULL,
-  ker_scale = TRUE
+  ref_gap = NULL
 )
 }
 \arguments{

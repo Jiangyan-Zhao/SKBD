@@ -70,7 +70,7 @@
 post_par_all = function(
     n_dlt, n_treated, dose_set,
     pri_alpha, pri_beta, symmetric,
-    k_left = 0.2, k_right = 0.8, ref_gap = NULL, ker_scale = TRUE
+    k_left = 0.2, k_right = 0.8, ref_gap = NULL
 ) {
   
   n_dose = length(dose_set)
@@ -94,11 +94,8 @@ post_par_all = function(
       k_right = k_right,
       ref_gap = ref_gap
     )
-    if(ker_scale){
-      weight = ker_vals[obs_idx] / sum(ker_vals[obs_idx])
-    }else{
-      weight = ker_vals[obs_idx]
-    }
+    
+    weight = ker_vals[obs_idx] / sum(ker_vals[obs_idx])
     
     post_alpha[d] = pri_alpha + sum(weight * n_dlt[obs_idx])
     post_beta[d] = pri_beta + sum(weight * (n_treated[obs_idx] - n_dlt[obs_idx]))

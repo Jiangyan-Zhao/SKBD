@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_OC_TITE_SKBD.R
 \name{get_OC_TITE_SKBD}
 \alias{get_OC_TITE_SKBD}
-\title{Operating Characteristics for the Time-to-Event Shared Keyboard Design}
+\title{Operating Characteristics for the TITE-SKBD Design}
 \usage{
 get_OC_TITE_SKBD(
   target_prob,
@@ -35,23 +35,133 @@ get_OC_TITE_SKBD(
 )
 }
 \arguments{
-\item{target_prob}{The target dose-limiting toxicity (DLT) rate}
+\item{target_prob}{Scalar in \eqn{(0,1)}. Target toxicity rate \eqn{\phi}.}
 
-\item{k_left}{Numeric scalar in \verb{(0,1)}. Left-side neighbor borrowing strength passed to \code{kernel_fun()}.}
+\item{tox_prob}{Numeric vector in \eqn{[0,1]}. True DLT probabilities at each dose level.}
 
-\item{k_right}{Numeric scalar in \verb{(0,1)}. Right-side neighbor borrowing strength passed to \code{kernel_fun()}
-(and used for symmetric borrowing when \code{symmetric=TRUE}).}
+\item{n_cohort}{Positive integer. Number of cohorts per simulated trial.}
 
-\item{ref_gap}{Optional positive scalar. Reference spacing passed to \code{kernel_fun()}. If \code{NULL},
-kernel defaults to the minimum adjacent spacing in \code{dose_set}.}
+\item{cohort_size}{Positive integer. Number of patients per cohort.}
 
-\item{accrual}{the accrual rate, i.e., the number of patients accrued in 1 unit of time}
+\item{symmetric}{Logical. If \code{TRUE}, use a symmetric borrowing kernel; otherwise allow
+asymmetric borrowing via \code{k_left} and \code{k_right}.}
 
-\item{prior_p}{a vector of length 3, which specifies the prior probability
-that the time to toxicity lies inside the time interval
-(0,\code{tau}/3), (\code{tau}/3,2\emph{\code{tau}/3), (2}\code{tau}/3,1).
-The default value is \code{prior_p=c(1/3,1/3,1/3)}.}
+\item{k_left, k_right}{Scalars in \eqn{(0,1)} controlling borrowing strength to the left and right
+neighbors when \code{shared = TRUE}. Typically \code{k_right > k_left} for safety.}
+
+\item{ref_gap}{Optional positive scalar. Reference dose gap used in kernel scaling.
+Note: in the current implementation, \code{ref_gap} is recomputed internally as
+\code{min(diff(dose_set_std))}.}
+
+\item{shared}{Logical. If \code{TRUE}, use kernel borrowing (TITE-SKBD). If \code{FALSE}, use
+within-dose updates (keyboard-style).}
+
+\item{dose_set}{Numeric vector of dose values. Defaults to \code{1:length(tox_prob)}.
+Internally standardized to \eqn{[0,1]} for kernel construction.}
+
+\item{n_earlystop}{Positive integer. Operational cap on the number of treated patients at a
+single dose; if reached, accrual at that dose stops.}
+
+\item{start_dose}{Positive integer. Starting dose index in \code{1:length(tox_prob)}.}
+
+\item{margin_left, margin_right}{Nonnegative scalars. Define the target key
+\eqn{(\phi-\epsilon_1,\phi+\epsilon_2)}.}
+
+\item{cutoff_elimin}{Scalar in \eqn{(0,1)}. Overdose elimination cutoff for
+\eqn{Pr(\pi(d)>\phi \mid \mathcal D)}.}
+
+\item{extraSafe}{Logical. If \code{TRUE}, use a more conservative elimination cutoff
+\code{cutoff_elimin - offset}.}
+
+\item{offset}{Scalar in \eqn{[0,0.5)}. Safety offset used when \code{extraSafe = TRUE}.}
+
+\item{tau}{Positive scalar. Length of the DLT assessment window (maximum follow-up time).}
+
+\item{accrual}{Positive scalar. Patient accrual rate parameter (used as \code{rate} for exponential,
+or to set the range for uniform inter-arrival times).}
+
+\item{alpha}{Positive scalar. Shape parameter used in \code{gen_tite()} for generating DLT times
+(interpretation depends on \code{dist_DLT}).}
+
+\item{piecewise}{Logical. If \code{TRUE}, use a piecewise weighting function for pending outcomes
+over thirds of \code{tau}, with probabilities \code{prior_p}.}
+
+\item{prior_p}{Numeric vector of length 3. Prior probabilities for the piecewise weighting
+segments; will be normalized to sum to 1 if needed.}
+
+\item{dist_DLT}{Character. Distribution for time-to-DLT generation in \code{gen_tite()}:
+one of \code{"weibull"}, \code{"loglogistic"}, \code{"uniform"}.}
+
+\item{dist_enter}{Character. Enrollment-time distribution: \code{"exp"} or \code{"uniform"}.}
+
+\item{light_return}{Logical. If \code{TRUE}, do not store full patient-level paths for each trial.
+If \code{FALSE}, return \code{dose_Paths} and \code{DLT_Paths}.}
+
+\item{n_trial}{Positive integer. Number of simulated trials.}
+
+\item{seed}{Integer. RNG seed for reproducibility.}
+}
+\value{
+A list containing operating characteristics and trial-level summaries:
+\describe{
+\item{\code{PCS}}{Percentage of correct selection (\%).}
+\item{\code{PCA}}{Percentage of correct allocation (\%).}
+\item{\code{above_MTD}}{Percentage of patients treated above the MTD region (\%).}
+\item{\code{ROD60}, \code{ROD80}}{Risk of overdosing (\%): proportion of trials where >60\% (or >80\%)
+of patients were treated above the target key.}
+\item{\code{dose_select}}{Selected MTD index for each trial; \code{-1} indicates no selection (early stop).}
+\item{\code{select_percent}}{Selection percentage by dose (including \code{-1} for no selection).}
+\item{\code{n_patient_mean}}{Average number of patients per trial.}
+\item{\code{n_DLT}}{Average number of DLTs per trial.}
+\item{\code{duration_mean}}{Average trial duration (in the same time unit as \code{tau}).}
+\item{\code{monotonic_percent}}{Percentage of trials where estimated toxicity means are monotone
+before isotonic adjustment.}
+\item{\code{Y}, \code{N}}{Matrices (\code{n_trial} by \code{n_dose}) of DLT counts and treated counts.}
+\item{\code{TR_MTD}, \code{TR_aboveMTD}, \code{overdosing60}, \code{overdosing80}}{Aliases for
+\code{PCA}, \code{above_MTD}, \code{ROD60}, \code{ROD80} (kept for backward compatibility).}
+\item{\code{dose_Paths}, \code{DLT_Paths}}{(Only if \code{light_return = FALSE}) Patient-level
+dose assignment paths and DLT indicators for each trial.}
+}
 }
 \description{
-A short description...
+Simulate phase I dose-finding trials under the time-to-event shared keyboard design (TITE-SKBD),
+which accommodates late-onset toxicities and pending outcomes via weighted (partial) follow-up.
+}
+\details{
+This function implements a cohort-wise trial simulation with time-to-event toxicity outcomes.
+Patients accrue according to \code{dist_enter} at rate \code{accrual}, and each patient has a
+DLT time generated under \code{dist_DLT} over a maximum assessment window \code{tau}.
+
+At each interim decision time, pending patients contribute fractional information through
+weights \eqn{\omega_i \in [0,1]} proportional to follow-up time, i.e., \eqn{\omega_i=u_i/\tau}
+for the uniform hazard setting, with an optional piecewise extension controlled by
+\code{piecewise} and \code{prior_p}. The design borrows information across dose levels using
+a kernel-weighted Beta pseudo-posterior when \code{shared = TRUE}; otherwise it reduces to
+a keyboard-style Beta-binomial update using only within-dose data.
+
+A safety suspension rule is enforced: dose escalation is not allowed until at least two
+patients at the current dose have completed the DLT assessment. Dose elimination is triggered
+when \eqn{Pr(\pi(d)>\phi \mid \mathcal D)} exceeds \code{cutoff_elimin} (or
+\code{cutoff_elimin - offset} when \code{extraSafe = TRUE}) and at least 3 patients at that
+dose have completed assessment.
+
+The final MTD is selected from admissible doses (treated and not eliminated) as the dose whose
+(isotonic-adjusted, if needed) posterior mean toxicity is closest to \code{target_prob}.
+}
+\examples{
+tox_prob <- c(0.05, 0.12, 0.20, 0.35, 0.50)
+out <- get_OC_TITE_SKBD(
+  target_prob = 0.20,
+  tox_prob = tox_prob,
+  n_cohort = 10,
+  cohort_size = 3,
+  tau = 3,
+  accrual = 2,
+  dist_DLT = "weibull",
+  dist_enter = "exp",
+  n_trial = 200,
+  seed = 1
+)
+out$PCS
+
 }
