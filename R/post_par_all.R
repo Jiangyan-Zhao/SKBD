@@ -66,7 +66,7 @@
 #' out$post_alpha
 #' out$post_beta
 #'
-#' @export
+#' @noRd
 post_par_all = function(
     n_dlt, n_treated, dose_set,
     pri_alpha, pri_beta, symmetric,

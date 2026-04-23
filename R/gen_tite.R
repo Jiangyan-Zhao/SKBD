@@ -68,7 +68,7 @@
 #' out2$n_DLT
 #'
 #' @importFrom stats rbinom runif
-#' @export
+#' @noRd
 
 gen_tite = function(n, pi, 
                     dist = c("weibull", "loglogistic", "uniform"), 

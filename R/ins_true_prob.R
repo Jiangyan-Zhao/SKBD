@@ -50,7 +50,7 @@
 #' # Above maximum
 #' ins_true_prob(insert_code = -2L, d = length(p), p = p, target = 0.25)
 #'
-#' @export
+#' @noRd
 
 ins_true_prob = function(
     insert_code, d, p, target,

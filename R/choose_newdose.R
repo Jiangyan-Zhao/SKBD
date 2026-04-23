@@ -77,7 +77,7 @@
 #' )
 #' out$newdose
 #'
-#' @export
+#' @noRd
 
 choose_newdose = function(
     dl, dr, dose_set_work, n_dlt_work, n_treated_work,

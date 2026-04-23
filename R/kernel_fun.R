@@ -59,7 +59,7 @@
 #' kernel_fun(dose = 0.50, dose_set = dose_set, symmetric = FALSE,
 #'            k_left = 0.2, k_right = 0.8, ref_gap = 0.25)
 #'
-#' @export
+#' @noRd
 kernel_fun <- function(
     dose, dose_set,
     symmetric = FALSE,

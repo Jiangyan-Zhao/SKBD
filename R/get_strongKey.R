@@ -31,7 +31,7 @@
 #' get_strongKey(alpha_Post = 3, beta_Post = 7, keys = keys)
 #'
 #' @importFrom stats pbeta
-#' @export
+#' @noRd
 get_strongKey <- function(
     alpha_Post, beta_Post, keys, 
     margin_left = 0.05, margin_right = 0.05

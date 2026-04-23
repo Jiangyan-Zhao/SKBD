@@ -22,7 +22,7 @@
 #' get_Key(0.30, 0.05, 0.05)
 #' get_Key(0.20, 0.03, 0.07)
 #'
-#' @export
+#' @noRd
 get_Key <- function(
     target_DLT, 
     margin_left = 0.05, 
