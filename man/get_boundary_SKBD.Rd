@@ -162,6 +162,3 @@ out_future <- get_boundary_SKBD(target_prob = target_prob,
 out_future$full_boundary_tab
 
 }
-\seealso{
-\code{\link{get_Key}}, \code{\link{get_strongKey}}, \code{\link{kernel_fun}}
-}

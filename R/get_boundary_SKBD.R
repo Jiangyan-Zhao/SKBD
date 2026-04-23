@@ -85,9 +85,6 @@
 #' }
 #' If \code{extra_safe=TRUE} and \code{d==1}, additional elements \code{cutoff} and \code{stop_boundary} are returned.
 #'
-#' @seealso
-#' \code{\link{get_Key}}, \code{\link{get_strongKey}}, \code{\link{kernel_fun}}
-#'
 #' @examples
 #' ## Example data across 5 doses:
 #' y <- c(0, 1, 2, 2, 0)
