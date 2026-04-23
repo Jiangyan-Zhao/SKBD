@@ -1,25 +1,92 @@
-# ============================================================
-# insert_check()  [BKP + ADM-style PAVA monotonicity]
-#   BKP-based insertion trigger (Eq.(5) logic) + monotonic stabilization.
-#
-# Step A: compute raw region probabilities at each dose:
-#   under[j]  = Pr(pi_j <= key_L | D) = pbeta(key_L; post_alpha[j], post_beta[j])
-#   over[j]   = Pr(pi_j >  key_U | D) = 1 - pbeta(key_U; post_alpha[j], post_beta[j])
-#   target[j] = Pr(key_L < pi_j <= key_U | D) = pbeta(key_U)-pbeta(key_L)
-#
-# Step B: enforce monotonicity via PAVA (ADM style):
-#   under_pava  : non-increasing with dose index
-#   over_pava   : non-decreasing with dose index
-#   target_pava : complement, clamped at >=0
-#
-# Step C: apply Eq.(5) trigger using (optionally) PAVA-adjusted under/over.
-#
-# Output scheme (Scheme A):
-#   insert_code = NA         : no insertion
-#   insert_code = -1L        : below minimum
-#   insert_code = -2L        : above maximum
-#   insert_code = i >= 1     : between (i, i+1)
-# ============================================================
+#' @title Check Whether Dose Insertion Should Be Triggered
+#'
+#' @description
+#' Determine whether a new dose should be inserted around the current dose level
+#' based on posterior interval probabilities under the insertion rule.
+#'
+#' @details
+#' This function implements the insertion trigger by comparing posterior
+#' probabilities of being below, within, or above the target key at each
+#' currently available dose level.
+#'
+#' For dose \eqn{j}, define
+#' \deqn{
+#' \Pr(\pi_j \le \mathrm{key\_L} \mid \mathcal D),
+#' }
+#' \deqn{
+#' \Pr(\pi_j > \mathrm{key\_U} \mid \mathcal D),
+#' }
+#' and
+#' \deqn{
+#' \Pr(\mathrm{key\_L} < \pi_j \le \mathrm{key\_U} \mid \mathcal D),
+#' }
+#' where \eqn{\pi_j} is the toxicity probability at dose \eqn{j}.
+#'
+#' To stabilize the insertion decision under finite samples, the raw posterior
+#' probabilities are adjusted by isotonic regression using the pool-adjacent-
+#' violators algorithm (PAVA): the probability of being below the target key is
+#' enforced to be non-increasing across doses, and the probability of being
+#' above the target key is enforced to be non-decreasing across doses.
+#'
+#' The function then checks whether the evidence around the current dose
+#' supports inserting a new dose between two adjacent doses or outside the
+#' current dose range. Interior insertion is triggered when the left dose has
+#' sufficiently large posterior probability of being below the target key and
+#' the right dose has sufficiently large posterior probability of being above
+#' the target key. Boundary insertion is treated similarly at the lower and
+#' upper ends of the dose range.
+#'
+#' @param j Positive integer. Index of the current dose level.
+#' @param post_alpha Numeric vector of posterior alpha parameters for the Beta
+#' distributions at all current dose levels.
+#' @param post_beta Numeric vector of posterior beta parameters for the Beta
+#' distributions at all current dose levels. Must have the same length as
+#' \code{post_alpha}.
+#' @param key_L Scalar in \eqn{(0,1)}. Lower boundary of the target key.
+#' @param key_U Scalar in \eqn{(0,1)}. Upper boundary of the target key, with
+#' \code{key_L < key_U}.
+#' @param C1 Scalar in \eqn{[0,1]}. Threshold for the posterior probability of
+#' being below the target key.
+#' @param C2 Scalar in \eqn{[0,1]}. Threshold for the posterior probability of
+#' being above the target key.
+#' @param n_treated Integer vector giving the number of treated patients at each
+#' current dose level. Must have the same length as \code{post_alpha}.
+#' @param LOC_BELOW_MIN Integer code used to indicate insertion below the
+#' minimum current dose. Default is \code{-1L}.
+#' @param LOC_ABOVE_MAX Integer code used to indicate insertion above the
+#' maximum current dose. Default is \code{-2L}.
+#'
+#' @return
+#' A list with components:
+#' \describe{
+#'   \item{\code{need_insert}}{Logical. Whether dose insertion is triggered.}
+#'   \item{\code{insert_code}}{Integer insertion code. \code{NA} means no
+#'   insertion; \code{LOC_BELOW_MIN} means insertion below the minimum current
+#'   dose; \code{LOC_ABOVE_MAX} means insertion above the maximum current dose;
+#'   a positive integer \code{i} means insertion between doses \code{i} and
+#'   \code{i + 1}.}
+#'   \item{\code{LOC_BELOW_MIN}}{The code used for lower-boundary insertion.}
+#'   \item{\code{LOC_ABOVE_MAX}}{The code used for upper-boundary insertion.}
+#' }
+#'
+#' @examples
+#' post_alpha <- c(1.5, 2.0, 3.5, 5.0)
+#' post_beta  <- c(8.5, 7.0, 5.5, 4.0)
+#' n_treated  <- c(3, 3, 6, 6)
+#'
+#' insert_check(
+#'   j = 2,
+#'   post_alpha = post_alpha,
+#'   post_beta = post_beta,
+#'   key_L = 0.15,
+#'   key_U = 0.25,
+#'   C1 = 0.6,
+#'   C2 = 0.6,
+#'   n_treated = n_treated
+#' )
+#'
+#' @importFrom stats pbeta
+#' @noRd
 
 insert_check = function(
     j, post_alpha, post_beta, key_L, key_U, C1, C2, n_treated,

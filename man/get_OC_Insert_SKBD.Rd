@@ -85,6 +85,11 @@ per-trial details in \code{trial_detail}.}
 \value{
 A list with components:
 \describe{
+\item{\code{sel_pct_prespec}}{Numeric vector. Selection percentage (\%) at each prespecified dose.}
+\item{\code{pts_pct_prespec}}{Numeric vector. Patient allocation percentage (\%) at each prespecified dose.}
+\item{\code{insertion}}{A list summarizing inserted-dose behavior:
+\code{sel_pct}, \code{pts_pct}, \code{dose_mean}, \code{dose_sd}, \code{trial_pct},
+\code{cohort_mean}, \code{n_median}.}
 \item{\code{simdata}}{A data frame storing per-trial, per-dose counts:
 \code{Simulation}, \code{Dose}, \code{N} (treated), \code{X} (DLTs), and \code{Selection}.}
 \item{\code{sel_dose_idx}}{Integer vector of selected dose indices on the \emph{working} grid
@@ -93,11 +98,6 @@ for each trial; \code{-1} indicates early stop / no selection.}
 \item{\code{n_insertions}}{Integer vector. Number of insertions performed in each trial.}
 \item{\code{insert_at_cohort}}{Integer vector. Cohort index when the first insertion occurs
 (\code{0} if no insertion).}
-\item{\code{sel_pct_prespec}}{Numeric vector. Selection percentage (\%) at each prespecified dose.}
-\item{\code{pts_pct_prespec}}{Numeric vector. Patient allocation percentage (\%) at each prespecified dose.}
-\item{\code{insertion}}{A list summarizing inserted-dose behavior:
-\code{sel_pct}, \code{pts_pct}, \code{dose_mean}, \code{dose_sd}, \code{trial_pct},
-\code{cohort_mean}, \code{n_median}.}
 \item{\code{trial_detail}}{(Only if \code{light_return = FALSE}) A list of length \code{n_trial}
 with per-trial working grids, counts, elimination flags, insertion info, and early-stop indicator.}
 }

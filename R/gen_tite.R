@@ -1,12 +1,74 @@
-## generative the time-to-event data
-# n: Sample size (number of patients)
-# pi: toxicity probability
-# dist: the underlying distribution of the time to toxicity outcomes.
-# alpha: a number from (0,1) that controls alpha*100% events in (0, 1/2T). 
-#              The default is \code{alpha=0.5}. 
-# tau: the DLT assessment window
-
-#' @noRd
+#' @title Generate Time-to-DLT Data for TITE Simulations
+#'
+#' @description
+#' Generate patient-level toxicity outcomes and time-to-DLT data under a
+#' prespecified time-to-event model for use in TITE dose-finding simulations.
+#'
+#' @details
+#' This function simulates \eqn{n} patients with marginal DLT probability
+#' \eqn{\pi} within an assessment window of length \code{tau}. Three
+#' time-to-event models are supported:
+#'
+#' \itemize{
+#'   \item \code{"weibull"}: DLT times are generated from a Weibull distribution.
+#'   \item \code{"loglogistic"}: DLT times are generated from a log-logistic distribution.
+#'   \item \code{"uniform"}: DLT occurrence is first generated from a Bernoulli
+#'   distribution with probability \code{pi}, and conditional on DLT, the event
+#'   time is sampled uniformly on \eqn{(0, \tau)}.
+#' }
+#'
+#' For \code{"weibull"} and \code{"loglogistic"}, the parameter \code{alpha}
+#' controls the fraction of DLT events expected to occur in the first half of
+#' the assessment window. Specifically, \code{alpha * pi} is treated as the DLT
+#' probability by time \eqn{\tau/2}. For patients without a DLT within
+#' \code{tau}, the corresponding event time is recorded as \code{Inf}.
+#'
+#' @param n Positive integer. Number of patients to simulate.
+#' @param pi Scalar in \eqn{(0,1)}. Marginal probability of experiencing a DLT
+#' within the assessment window \code{tau}.
+#' @param dist Character string specifying the time-to-DLT distribution.
+#' Must be one of \code{"weibull"}, \code{"loglogistic"}, or \code{"uniform"}.
+#' @param alpha Scalar in \eqn{(0,1)} controlling the early-event proportion for
+#' \code{"weibull"} and \code{"loglogistic"} models. Under these models,
+#' \code{alpha * pi} is the DLT probability by time \eqn{\tau/2}. This argument
+#' is ignored when \code{dist = "uniform"}.
+#' @param tau Positive scalar. Length of the DLT assessment window.
+#'
+#' @return
+#' A list with components:
+#' \describe{
+#'   \item{\code{DLT}}{A binary vector of length \code{n}, where 1 indicates a
+#'   DLT within \code{tau} and 0 otherwise.}
+#'   \item{\code{time_DLT}}{A numeric vector of length \code{n} giving the
+#'   event time for each patient. Patients without a DLT within \code{tau} are
+#'   assigned \code{Inf}.}
+#'   \item{\code{n_DLT}}{Total number of DLTs, equal to \code{sum(DLT)}.}
+#' }
+#'
+#' @examples
+#' set.seed(1)
+#'
+#' out1 <- gen_tite(
+#'   n = 6,
+#'   pi = 0.25,
+#'   dist = "weibull",
+#'   alpha = 0.5,
+#'   tau = 3
+#' )
+#' out1$n_DLT
+#' out1$DLT
+#' out1$time_DLT
+#'
+#' out2 <- gen_tite(
+#'   n = 6,
+#'   pi = 0.25,
+#'   dist = "uniform",
+#'   tau = 3
+#' )
+#' out2$n_DLT
+#'
+#' @importFrom stats rbinom runif
+#' @export
 
 gen_tite = function(n, pi, 
                     dist = c("weibull", "loglogistic", "uniform"), 

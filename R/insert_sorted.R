@@ -64,7 +64,7 @@
 #' out$dose_set_work
 #' out$d_idx
 #'
-#' @export
+#' @noRd
 insert_sorted = function(
     dose_set_work, tox_prob_work, n_dlt_work, n_treated_work,
     is_eliminated, newdose, tox_new

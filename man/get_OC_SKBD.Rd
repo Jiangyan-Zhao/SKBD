@@ -129,14 +129,12 @@ regression (via \code{pava()}, assumed available in the package) to observed rat
 among admissible doses and choosing the dose closest to \code{target_prob}.
 }
 \examples{
-\dontrun{
 res <- get_OC_SKBD(
   target_prob = 0.30,
   tox_prob = c(0.05, 0.12, 0.30, 0.45, 0.60),
   n_cohort = 10, cohort_size = 3
 )
 str(res)
-}
 
 }
 \references{
