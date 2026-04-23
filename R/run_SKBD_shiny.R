@@ -169,11 +169,11 @@ run_SKBD_shiny <- function(launch.browser = TRUE) {
       }
 
       data.frame(
-        metric = c("MTD", "PCS", "PCA", "ROD60", "ROD80"),
+        metric = c("PCS", "PCA", "Above MTD", "ROD60", "ROD80"),
         value = c(
-          res$result$MTD,
           round(res$result$PCS, 4),
           round(res$result$PCA, 4),
+          round(res$result$above_MTD, 4),
           round(res$result$ROD60, 4),
           round(res$result$ROD80, 4)
         )
