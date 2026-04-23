@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_boundary_SKBD.R
 \name{get_boundary_SKBD}
 \alias{get_boundary_SKBD}
-\title{Pre-tabulated Decision Tables for the Shared Keyboard Design (SKBD)}
+\title{Pre-tabulated Decision Boundaries for the Shared Keyboard Design}
 \usage{
 get_boundary_SKBD(
   target_prob,

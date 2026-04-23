@@ -78,7 +78,7 @@ PUA = function(dose_set, target_prob, n_scenarios = 1000,
     ## Step 2: sample M ~ Beta(max{J-j, 0.5}, 1)
     M = rbeta(1, max(n_dose - d, 0.5), 1)
     
-    ## Step 3: rejective sampling
+    ## Step 3: rejection sampling
     B = target_prob + (1 - target_prob) * M # upper bound B
     
     n_repeat = 0
@@ -92,15 +92,15 @@ PUA = function(dose_set, target_prob, n_scenarios = 1000,
       gap_left  = if(d > 1) tox_prob[s, d] - tox_prob[s, d - 1] else NA
       gap_right = if(d < n_dose) tox_prob[s, d + 1] - tox_prob[s, d] else NA
       
-      # well-defined MTD, see 21_Zhou_PS_iBOIN
-      definited_condition = (
+      # well-definited MTD, see 21_Zhou_PS_iBOIN
+      is_admissible = (
         tox_prob[s, d] >= target_prob - margin_left &&
           tox_prob[s, d] <= target_prob + margin_right &&
           (is.na(gap_left)  || (gap_left  > 0.05 && gap_left  < 0.3)) &&
           (is.na(gap_right) || (gap_right > 0.05 && gap_right < 0.3))
       )
       
-      if(definited_condition) {
+      if(is_admissible) {
         s = s + 1
         break
       }

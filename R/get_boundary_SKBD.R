@@ -1,4 +1,4 @@
-#' @title Pre-tabulated Decision Tables for the Shared Keyboard Design (SKBD)
+#' @title Pre-tabulated Decision Boundaries for the Shared Keyboard Design
 #'
 #' @description
 #' \code{get_boundary_SKBD()} generates pre-tabulated dose escalation/de-escalation

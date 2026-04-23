@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_OC_Insert_SKBD.R
 \name{get_OC_Insert_SKBD}
 \alias{get_OC_Insert_SKBD}
-\title{Operating characteristics for the inserted Shared Keyboard design}
+\title{Operating Characteristics for the Dose-Insertion Shared Keyboard Design}
 \usage{
 get_OC_Insert_SKBD(
   target_prob,

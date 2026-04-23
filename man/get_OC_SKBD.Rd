@@ -125,7 +125,7 @@ The design identifies the strongest key (toxicity interval with largest posterio
 probability) and applies the standard keyboard escalation/de-escalation rule relative
 to the target key. An overdose-control rule eliminates overly toxic doses and all
 higher doses. At the end of the trial, the MTD is selected by applying isotonic
-regression (via \code{pava()}, assumed available in the package) to observed rates
+regression to observed rates
 among admissible doses and choosing the dose closest to \code{target_prob}.
 }
 \examples{

@@ -19,7 +19,7 @@
 #' A safety suspension rule is enforced: dose escalation is not allowed until at least two
 #' patients at the current dose have completed the DLT assessment. Dose elimination is triggered
 #' when \eqn{Pr(\pi(d)>\phi \mid \mathcal D)} exceeds \code{cutoff_elimin} (or
-#' \code{cutoff_elimin - offset} when \code{extraSafe = TRUE}) and at least 3 patients at that
+#' \code{cutoff_elimin - offset} when \code{extra_safe = TRUE}) and at least 3 patients at that
 #' dose have completed assessment.
 #'
 #' The final MTD is selected from admissible doses (treated and not eliminated) as the dose whose
@@ -47,9 +47,9 @@
 #' \eqn{(\phi-\epsilon_1,\phi+\epsilon_2)}.
 #' @param cutoff_elimin Scalar in \eqn{(0,1)}. Overdose elimination cutoff for
 #' \eqn{Pr(\pi(d)>\phi \mid \mathcal D)}.
-#' @param extraSafe Logical. If \code{TRUE}, use a more conservative elimination cutoff
+#' @param extra_safe Logical. If \code{TRUE}, use a more conservative elimination cutoff
 #' \code{cutoff_elimin - offset}.
-#' @param offset Scalar in \eqn{[0,0.5)}. Safety offset used when \code{extraSafe = TRUE}.
+#' @param offset Scalar in \eqn{[0,0.5)}. Safety offset used when \code{extra_safe = TRUE}.
 #' @param tau Positive scalar. Length of the DLT assessment window (maximum follow-up time).
 #' @param accrual Positive scalar. Patient accrual rate parameter (used as \code{rate} for exponential,
 #' or to set the range for uniform inter-arrival times).
@@ -116,7 +116,7 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
                         n_earlystop = 1000, start_dose = 1,
                         margin_left = 0.05, margin_right = 0.05, 
                         cutoff_elimin = 0.95,
-                        extraSafe = FALSE, offset = 0.05, 
+                        extra_safe = FALSE, offset = 0.05, 
                         tau = 3, accrual = 2, alpha = 0.5,
                         piecewise = FALSE, prior_p = rep(1/3,3), 
                         dist_DLT = c("weibull", "loglogistic", "uniform"),
@@ -373,7 +373,7 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
         # determine which dose level should be eliminated
         for(d_j in 1:n_dose_exist){
           overdose_prob = 1 - pbeta(target_prob, post_alpha[d_j], post_beta[d_j])
-          if(extraSafe){
+          if(extra_safe){
             is_overdose = overdose_prob > cutoff_elimin - offset
           } else {
             is_overdose = overdose_prob > cutoff_elimin

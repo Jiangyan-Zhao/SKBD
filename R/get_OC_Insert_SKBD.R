@@ -1,4 +1,4 @@
-#' @title Operating characteristics for the inserted Shared Keyboard design
+#' @title Operating Characteristics for the Dose-Insertion Shared Keyboard Design
 #' 
 #' @description 
 #' Simulate phase I dose-finding trials under the inserted Shared Keyboard design (Insert-SKBD),

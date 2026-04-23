@@ -20,7 +20,7 @@ get_OC_TITE_SKBD(
   margin_left = 0.05,
   margin_right = 0.05,
   cutoff_elimin = 0.95,
-  extraSafe = FALSE,
+  extra_safe = FALSE,
   offset = 0.05,
   tau = 3,
   accrual = 2,
@@ -70,10 +70,10 @@ single dose; if reached, accrual at that dose stops.}
 \item{cutoff_elimin}{Scalar in \eqn{(0,1)}. Overdose elimination cutoff for
 \eqn{Pr(\pi(d)>\phi \mid \mathcal D)}.}
 
-\item{extraSafe}{Logical. If \code{TRUE}, use a more conservative elimination cutoff
+\item{extra_safe}{Logical. If \code{TRUE}, use a more conservative elimination cutoff
 \code{cutoff_elimin - offset}.}
 
-\item{offset}{Scalar in \eqn{[0,0.5)}. Safety offset used when \code{extraSafe = TRUE}.}
+\item{offset}{Scalar in \eqn{[0,0.5)}. Safety offset used when \code{extra_safe = TRUE}.}
 
 \item{tau}{Positive scalar. Length of the DLT assessment window (maximum follow-up time).}
 
@@ -142,7 +142,7 @@ a keyboard-style Beta-binomial update using only within-dose data.
 A safety suspension rule is enforced: dose escalation is not allowed until at least two
 patients at the current dose have completed the DLT assessment. Dose elimination is triggered
 when \eqn{Pr(\pi(d)>\phi \mid \mathcal D)} exceeds \code{cutoff_elimin} (or
-\code{cutoff_elimin - offset} when \code{extraSafe = TRUE}) and at least 3 patients at that
+\code{cutoff_elimin - offset} when \code{extra_safe = TRUE}) and at least 3 patients at that
 dose have completed assessment.
 
 The final MTD is selected from admissible doses (treated and not eliminated) as the dose whose
