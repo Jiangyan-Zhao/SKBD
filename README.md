@@ -172,3 +172,18 @@ scen
 core simulation and decision-table tools for the shared keyboard
 framework. Additional examples, validation materials, and extended
 documentation can be added as the package evolves.
+
+## Interactive Shiny app
+
+You can launch an interactive Shiny interface to explore SKBD decision
+boundaries and run basic operating-characteristic simulations:
+
+```r
+run_SKBD_shiny()
+```
+
+If needed, install Shiny first:
+
+```r
+install.packages("shiny")
+```
