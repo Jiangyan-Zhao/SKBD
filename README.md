@@ -1,6 +1,11 @@
 
 # SKBD
 
+<!-- badges: start -->
+
+[![R-CMD-check](https://github.com/Jiangyan-Zhao/SKBD/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Jiangyan-Zhao/SKBD/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
 `SKBD` implements the shared keyboard design (SKBD) for model-assisted
 phase I dose-finding trials. The package provides tools for
 
@@ -173,18 +178,3 @@ scen
 core simulation and decision-table tools for the shared keyboard
 framework. Additional examples, validation materials, and extended
 documentation can be added as the package evolves.
-
-## Interactive Shiny app
-
-You can launch an interactive Shiny interface to explore SKBD decision
-boundaries and run basic operating-characteristic simulations:
-
-```r
-run_SKBD_shiny()
-```
-
-If needed, install Shiny first:
-
-```r
-install.packages("shiny")
-```

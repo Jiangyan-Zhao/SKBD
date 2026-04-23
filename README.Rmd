@@ -11,6 +11,10 @@ knitr::opts_chunk$set(
 
 # SKBD
 
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/Jiangyan-Zhao/SKBD/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Jiangyan-Zhao/SKBD/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
 `SKBD` implements the shared keyboard design (SKBD) for model-assisted phase I dose-finding trials. The package provides tools for
 
 - constructing decision tables for the shared keyboard design,
