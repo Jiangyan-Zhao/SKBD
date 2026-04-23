@@ -1,5 +1,5 @@
 ## the pseudo uniform algorithm
-#' @noRd
+#' @export
 PUA = function(dose_set, target_prob, n_scenarios = 1000, 
                margin_left = 0.05, margin_right = 0.05, seed = 6){
   set.seed(seed)

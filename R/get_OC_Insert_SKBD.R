@@ -56,6 +56,11 @@
 #'
 #' @return A list with components:
 #' \describe{
+#'   \item{\code{sel_pct_prespec}}{Numeric vector. Selection percentage (%) at each prespecified dose.}
+#'   \item{\code{pts_pct_prespec}}{Numeric vector. Patient allocation percentage (%) at each prespecified dose.}
+#'   \item{\code{insertion}}{A list summarizing inserted-dose behavior:
+#'     \code{sel_pct}, \code{pts_pct}, \code{dose_mean}, \code{dose_sd}, \code{trial_pct},
+#'     \code{cohort_mean}, \code{n_median}.}
 #'   \item{\code{simdata}}{A data frame storing per-trial, per-dose counts:
 #'     \code{Simulation}, \code{Dose}, \code{N} (treated), \code{X} (DLTs), and \code{Selection}.}
 #'   \item{\code{sel_dose_idx}}{Integer vector of selected dose indices on the *working* grid
@@ -64,11 +69,6 @@
 #'   \item{\code{n_insertions}}{Integer vector. Number of insertions performed in each trial.}
 #'   \item{\code{insert_at_cohort}}{Integer vector. Cohort index when the first insertion occurs
 #'     (\code{0} if no insertion).}
-#'   \item{\code{sel_pct_prespec}}{Numeric vector. Selection percentage (%) at each prespecified dose.}
-#'   \item{\code{pts_pct_prespec}}{Numeric vector. Patient allocation percentage (%) at each prespecified dose.}
-#'   \item{\code{insertion}}{A list summarizing inserted-dose behavior:
-#'     \code{sel_pct}, \code{pts_pct}, \code{dose_mean}, \code{dose_sd}, \code{trial_pct},
-#'     \code{cohort_mean}, \code{n_median}.}
 #'   \item{\code{trial_detail}}{(Only if \code{light_return = FALSE}) A list of length \code{n_trial}
 #'     with per-trial working grids, counts, elimination flags, insertion info, and early-stop indicator.}
 #' }
@@ -537,12 +537,6 @@ get_OC_Insert_SKBD <- function(
   ins_n_median = median(n_insertions)
   
   out <- list(
-    simdata = simdata,
-    sel_dose_idx = sel_dose_idx,
-    sel_dose = sel_dose,
-    n_insertions = n_insertions,
-    insert_at_cohort = insert_at_cohort,
-    
     # prespecified-dose summaries
     sel_pct_prespec = sel_pct_prespec,
     pts_pct_prespec = pts_pct_prespec,
@@ -556,7 +550,14 @@ get_OC_Insert_SKBD <- function(
       trial_pct   = ins_trial_pct,
       cohort_mean = ins_cohort_mean,
       n_median    = ins_n_median
-    )
+    ),
+    
+    # others
+    simdata = simdata,
+    sel_dose_idx = sel_dose_idx,
+    sel_dose = sel_dose,
+    n_insertions = n_insertions,
+    insert_at_cohort = insert_at_cohort
   )
   
   if (!light_return) out$trial_detail = trial_detail
