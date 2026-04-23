@@ -31,7 +31,7 @@ remotes::install_github("Jiangyan-Zhao/SKBD")
 
 Then load the package:
 
-```{r load, eval = TRUE}
+```{r load}
 library(SKBD)
 ```
 
@@ -70,14 +70,13 @@ This returns a keyboard-style table with escalation, de-escalation, and eliminat
 
 The standard SKBD can be evaluated under a prespecified toxicity scenario as follows:
 
-```{r oc-skbd, eval = FALSE}
+```{r oc-skbd}
 out_skbd <- get_OC_SKBD(
   target_prob = 0.30,
   tox_prob = c(0.05, 0.12, 0.30, 0.45, 0.60),
   n_cohort = 10,
   cohort_size = 3,
-  n_trial = 1000,
-  seed = 1
+  n_trial = 1000
 )
 
 out_skbd$PCS
@@ -91,7 +90,7 @@ The returned object includes accuracy and safety summaries such as percent corre
 
 Late-onset toxicity can be handled through the time-to-event shared keyboard design:
 
-```{r oc-tite, eval = FALSE}
+```{r oc-tite}
 out_tite <- get_OC_TITE_SKBD(
   target_prob = 0.20,
   tox_prob = c(0.05, 0.12, 0.20, 0.35, 0.50),
@@ -101,8 +100,7 @@ out_tite <- get_OC_TITE_SKBD(
   accrual = 2,
   dist_DLT = "weibull",
   dist_enter = "exp",
-  n_trial = 1000,
-  seed = 1
+  n_trial = 1000
 )
 
 out_tite$PCS
@@ -120,8 +118,7 @@ out_insert <- get_OC_Insert_SKBD(
   target_prob = 0.30,
   tox_prob = c(0.14, 0.45, 0.63, 0.74, 0.80),
   dose_set = c(5, 15, 25, 35, 45),
-  n_trial = 1000,
-  seed = 1
+  n_trial = 1000
 )
 
 out_insert$insertion
@@ -137,8 +134,7 @@ For random-scenario simulation studies, `PUA()` can be used to generate monotone
 scen <- PUA(
   dose_set = 1:5,
   target_prob = 0.30,
-  n_scenarios = 5,
-  seed = 1
+  n_scenarios = 5
 )
 
 scen

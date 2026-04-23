@@ -84,13 +84,15 @@ out_skbd <- get_OC_SKBD(
   tox_prob = c(0.05, 0.12, 0.30, 0.45, 0.60),
   n_cohort = 10,
   cohort_size = 3,
-  n_trial = 1000,
-  seed = 1
+  n_trial = 1000
 )
 
 out_skbd$PCS
+#> [1] 61.8
 out_skbd$PCA
+#> [1] 37.49
 out_skbd$ROD60
+#> [1] 1.8
 ```
 
 The returned object includes accuracy and safety summaries such as
@@ -112,12 +114,13 @@ out_tite <- get_OC_TITE_SKBD(
   accrual = 2,
   dist_DLT = "weibull",
   dist_enter = "exp",
-  n_trial = 1000,
-  seed = 1
+  n_trial = 1000
 )
 
 out_tite$PCS
+#> [1] 44.3
 out_tite$duration_mean
+#> [1] 23.56665
 ```
 
 This version accounts for pending toxicity outcomes through weighted
@@ -133,8 +136,7 @@ out_insert <- get_OC_Insert_SKBD(
   target_prob = 0.30,
   tox_prob = c(0.14, 0.45, 0.63, 0.74, 0.80),
   dose_set = c(5, 15, 25, 35, 45),
-  n_trial = 1000,
-  seed = 1
+  n_trial = 1000
 )
 
 out_insert$insertion
@@ -153,17 +155,16 @@ monotone dose-toxicity curves with a well-defined target dose.
 scen <- PUA(
   dose_set = 1:5,
   target_prob = 0.30,
-  n_scenarios = 5,
-  seed = 1
+  n_scenarios = 5
 )
 
 scen
-#>             [,1]       [,2]       [,3]      [,4]      [,5]
-#> [1,] 0.304335745 0.39434054 0.56858852 0.6099661 0.7859140
-#> [2,] 0.146375863 0.31107683 0.36861725 0.4184044 0.6036545
-#> [3,] 0.005657248 0.14591625 0.21621189 0.2793444 0.3392232
-#> [4,] 0.055515879 0.09811095 0.15308823 0.2082252 0.2894720
-#> [5,] 0.001261344 0.06313353 0.08246636 0.3172587 0.5577054
+#>            [,1]       [,2]      [,3]      [,4]      [,5]
+#> [1,] 0.01944263 0.02871687 0.1536818 0.1940659 0.2761874
+#> [2,] 0.04828428 0.25536821 0.3181795 0.5105885 0.5796248
+#> [3,] 0.19502259 0.27180464 0.5551730 0.6691403 0.7765835
+#> [4,] 0.17182210 0.33929376 0.4044292 0.6745865 0.8366659
+#> [5,] 0.09726789 0.10416956 0.1283349 0.1508885 0.2799666
 ```
 
 ## Development notes
