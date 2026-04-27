@@ -10,7 +10,7 @@ ui <- shiny::fluidPage(
   ),
   shiny::tabsetPanel(
     shiny::tabPanel(
-      title = "Boundary (SKBD)",
+      title = "Trial Setting",
       shiny::fluidRow(
         shiny::column(
           width = 4,
@@ -53,7 +53,7 @@ ui <- shiny::fluidPage(
               ),
               shiny::column(
                 width = 4,
-                shiny::numericInput("b_earlystop", "Display columns up to #patients", value = 1000, min = 1, step = 1)
+                shiny::numericInput("b_earlystop", "Display columns up to #patients", value = 30, min = 1, step = 1)
               )
             )
           ),
