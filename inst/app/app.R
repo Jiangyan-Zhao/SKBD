@@ -3,40 +3,103 @@ if (!requireNamespace("shiny", quietly = TRUE)) {
 }
 
 ui <- shiny::fluidPage(
-  shiny::titlePanel("SKBD Interactive Explorer"),
+  shiny::tags$head(
+    shiny::tags$style(shiny::HTML("
+      body { background-color: #efefef; font-family: 'Helvetica Neue', Arial, sans-serif; }
+      .app-title-wrap { text-align: center; margin-top: 10px; margin-bottom: 18px; }
+      .app-title { color: #7d1a8e; font-size: 42px; font-weight: 500; margin-bottom: 6px; }
+      .app-subtitle { color: #4b4b4b; font-size: 22px; margin-bottom: 4px; }
+      .app-meta { color: #8c8c8c; font-size: 16px; font-style: italic; margin-bottom: 12px; }
+      .nav-tabs > li > a { color: #1d2a7a; font-size: 24px; padding: 14px 22px; }
+      .panel-card {
+        background: #bce6e7;
+        border: 1px solid #add8da;
+        border-radius: 4px;
+        padding: 20px;
+        margin-bottom: 18px;
+      }
+      .panel-heading {
+        color: #890b97;
+        text-align: center;
+        font-size: 30px;
+        font-weight: 700;
+        margin-bottom: 14px;
+      }
+      .btn-primary {
+        background-color: #2d79be !important;
+        border-color: #236299 !important;
+      }
+      .result-box {
+        background: #ffffff;
+        border: 1px solid #dadada;
+        border-radius: 4px;
+        padding: 14px;
+        min-height: 500px;
+      }
+      .result-title { color: #ff7d5a; font-size: 30px; margin-bottom: 10px; }
+      .help-text { font-size: 18px; color: #444; margin-bottom: 12px; }
+    "))
+  ),
+  shiny::div(
+    class = "app-title-wrap",
+    shiny::div(class = "app-title", "SKBD: a Bayesian toxicity probability interval design explorer"),
+    shiny::div(class = "app-subtitle", "Interactive app for dose-finding boundary and operating characteristics"),
+    shiny::div(class = "app-meta", "Version 1.0.0 | Style inspired by trialdesign.org")
+  ),
   shiny::tabsetPanel(
     shiny::tabPanel(
       title = "Boundary (SKBD)",
-      shiny::sidebarLayout(
-        shiny::sidebarPanel(
-          shiny::numericInput("b_target", "Target toxicity (phi)", value = 0.30, min = 0.01, max = 0.99, step = 0.01),
-          shiny::textInput("b_y", "DLTs by dose (comma separated)", value = "0,1,2,2,0"),
-          shiny::textInput("b_n", "Treated by dose (comma separated)", value = "3,6,9,3,0"),
-          shiny::numericInput("b_d", "Current dose index d", value = 3, min = 1, step = 1),
-          shiny::selectInput("b_type", "Table type", choices = c("continue", "baseline"), selected = "continue"),
-          shiny::actionButton("b_run", "Run boundary")
+      shiny::fluidRow(
+        shiny::column(
+          width = 4,
+          shiny::div(
+            class = "panel-card",
+            shiny::div(class = "panel-heading", "Trial Setting"),
+            shiny::numericInput("b_target", "Target toxicity (phi)", value = 0.30, min = 0.01, max = 0.99, step = 0.01),
+            shiny::textInput("b_y", "DLTs by dose (comma separated)", value = "0,1,2,2,0"),
+            shiny::textInput("b_n", "Treated by dose (comma separated)", value = "3,6,9,3,0"),
+            shiny::numericInput("b_d", "Current dose index d", value = 3, min = 1, step = 1),
+            shiny::selectInput("b_type", "Table type", choices = c("continue", "baseline"), selected = "continue"),
+            shiny::actionButton("b_run", "Get Decision Table", class = "btn-primary btn-block")
+          )
         ),
-        shiny::mainPanel(
-          shiny::verbatimTextOutput("b_msg"),
-          shiny::tableOutput("b_table")
+        shiny::column(
+          width = 8,
+          shiny::div(
+            class = "result-box",
+            shiny::div(class = "result-title", "Decision Table"),
+            shiny::div(class = "help-text", "Dose escalation/de-escalation recommendation generated from SKBD."),
+            shiny::verbatimTextOutput("b_msg"),
+            shiny::tableOutput("b_table")
+          )
         )
       )
     ),
     shiny::tabPanel(
       title = "OC Simulation (SKBD)",
-      shiny::sidebarLayout(
-        shiny::sidebarPanel(
-          shiny::numericInput("o_target", "Target toxicity (phi)", value = 0.30, min = 0.01, max = 0.99, step = 0.01),
-          shiny::textInput("o_tox", "True toxicity probs (comma separated)", value = "0.05,0.12,0.30,0.45,0.60"),
-          shiny::numericInput("o_ncohort", "Number of cohorts", value = 10, min = 1, step = 1),
-          shiny::numericInput("o_csize", "Cohort size", value = 3, min = 1, step = 1),
-          shiny::numericInput("o_ntrial", "Number of simulated trials", value = 500, min = 10, step = 10),
-          shiny::numericInput("o_seed", "Seed", value = 1, min = 1, step = 1),
-          shiny::actionButton("o_run", "Run simulation")
+      shiny::fluidRow(
+        shiny::column(
+          width = 4,
+          shiny::div(
+            class = "panel-card",
+            shiny::div(class = "panel-heading", "Simulation"),
+            shiny::numericInput("o_target", "Target toxicity (phi)", value = 0.30, min = 0.01, max = 0.99, step = 0.01),
+            shiny::textInput("o_tox", "True toxicity probs (comma separated)", value = "0.05,0.12,0.30,0.45,0.60"),
+            shiny::numericInput("o_ncohort", "Number of cohorts", value = 10, min = 1, step = 1),
+            shiny::numericInput("o_csize", "Cohort size", value = 3, min = 1, step = 1),
+            shiny::numericInput("o_ntrial", "Number of simulated trials", value = 500, min = 10, step = 10),
+            shiny::numericInput("o_seed", "Seed", value = 1, min = 1, step = 1),
+            shiny::actionButton("o_run", "Run Simulation", class = "btn-primary btn-block")
+          )
         ),
-        shiny::mainPanel(
-          shiny::verbatimTextOutput("o_msg"),
-          shiny::tableOutput("o_summary")
+        shiny::column(
+          width = 8,
+          shiny::div(
+            class = "result-box",
+            shiny::div(class = "result-title", "Operating Characteristics"),
+            shiny::verbatimTextOutput("o_msg"),
+            shiny::tableOutput("o_summary")
+          )
         )
       )
     )
