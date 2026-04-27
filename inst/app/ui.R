@@ -109,7 +109,9 @@ ui <- shiny::fluidPage(
             ),
             shiny::conditionalPanel(
               condition = "input.o_input_method == 'upload'",
-              shiny::fileInput("o_scenario_file", "Scenario CSV", accept = c(".csv", ".txt"))
+              shiny::fileInput("o_scenario_file", "Scenario CSV", accept = c(".csv", ".txt")),
+              shiny::downloadButton("o_download_template", "Download CSV Template", class = "btn-default btn-sim"),
+              shiny::div(class = "small-note", "Please download and fill in this template to avoid upload format errors.")
             ),
             shiny::fluidRow(
               shiny::column(8, shiny::numericInput("o_ntrial", "Number of Simulations", value = 1000, min = 10, step = 10)),

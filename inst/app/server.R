@@ -141,6 +141,23 @@ server <- function(input, output, session) {
     nrow = 4,
     byrow = TRUE
   )
+  uploaded_scenario_mat <- shiny::reactiveVal(NULL)
+  output$o_download_template <- shiny::downloadHandler(
+    filename = function() {
+      sprintf("scenario_template_%sdose.csv", scenario_dim$n_dose)
+    },
+    content = function(file) {
+      n_dose <- scenario_dim$n_dose
+      n_scenario <- max(3L, scenario_dim$n_scenario)
+      template <- as.data.frame(
+        matrix("", nrow = n_scenario, ncol = n_dose + 1),
+        stringsAsFactors = FALSE
+      )
+      colnames(template) <- c("", paste0("Dose", seq_len(n_dose)))
+      template[[1]] <- paste("Scenario", seq_len(n_scenario))
+      utils::write.csv(template, file = file, row.names = FALSE, quote = FALSE, na = "")
+    }
+  )
 
   shiny::observe({
     n_dose_input <- input$b_n_dose
@@ -169,17 +186,20 @@ server <- function(input, output, session) {
 
   shiny::observeEvent(input$o_scenario_file, {
     shiny::req(input$o_scenario_file)
-    dat <- try(
-      utils::read.csv(
-        input$o_scenario_file$datapath,
-        check.names = FALSE,
-        stringsAsFactors = FALSE
-      ),
-      silent = TRUE
+    parsers <- list(
+      function(path) utils::read.csv(path, check.names = FALSE, stringsAsFactors = FALSE),
+      function(path) utils::read.csv2(path, check.names = FALSE, stringsAsFactors = FALSE),
+      function(path) utils::read.delim(path, check.names = FALSE, stringsAsFactors = FALSE)
     )
-    if (inherits(dat, "try-error") || !nrow(dat) || !ncol(dat)) {
+    dat_list <- lapply(parsers, function(parse_fun) {
+      try(parse_fun(input$o_scenario_file$datapath), silent = TRUE)
+    })
+    dat_list <- Filter(function(x) !inherits(x, "try-error") && nrow(x) && ncol(x), dat_list)
+    if (!length(dat_list)) {
+      shiny::showNotification("Scenario file format is invalid.", type = "error")
       return()
     }
+    dat <- dat_list[[which.max(vapply(dat_list, ncol, integer(1)))]]
 
     numeric_dat <- as.data.frame(lapply(dat, function(x) {
       suppressWarnings(as.numeric(trimws(as.character(x))))
@@ -213,13 +233,7 @@ server <- function(input, output, session) {
     }
 
     scenario_dim$n_scenario <- nrow(mat)
-    session$onFlushed(function() {
-      for (i in seq_len(nrow(mat))) {
-        for (j in seq_len(ncol(mat))) {
-          shiny::updateNumericInput(session, paste0("o_scn_", i, "_", j), value = mat[i, j])
-        }
-      }
-    }, once = TRUE)
+    uploaded_scenario_mat(mat)
   })
 
   output$o_scenario_grid <- shiny::renderUI({
@@ -231,7 +245,14 @@ server <- function(input, output, session) {
       shiny::tags$tr(
         shiny::tags$td(paste("Scenario", i)),
         lapply(seq_len(n_dose), function(j) {
-          default_value <- if (i <= nrow(scenario_defaults) && j <= ncol(scenario_defaults)) scenario_defaults[i, j] else 0.3
+          uploaded_mat <- uploaded_scenario_mat()
+          default_value <- if (!is.null(uploaded_mat) && i <= nrow(uploaded_mat) && j <= ncol(uploaded_mat)) {
+            uploaded_mat[i, j]
+          } else if (i <= nrow(scenario_defaults) && j <= ncol(scenario_defaults)) {
+            scenario_defaults[i, j]
+          } else {
+            0.3
+          }
           shiny::tags$td(
             shiny::numericInput(
               inputId = paste0("o_scn_", i, "_", j),
