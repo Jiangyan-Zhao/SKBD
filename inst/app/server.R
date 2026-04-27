@@ -72,13 +72,47 @@ server <- function(input, output, session) {
     "Boundary table generated successfully."
   })
 
-  output$b_table <- shiny::renderTable({
+  output$b_table <- DT::renderDataTable({
     res <- boundary_res()
     if (!is.null(res$error)) {
       return(NULL)
     }
-    as.data.frame(res$result$boundary_tab)
-  }, rownames = TRUE)
+
+    boundary_df <- as.data.frame(res$result$boundary_tab, stringsAsFactors = FALSE)
+    boundary_df <- cbind(Decision = rownames(boundary_df), boundary_df, row.names = NULL)
+    colnames(boundary_df) <- c(" ", as.character(seq_len(ncol(boundary_df) - 1)))
+
+    for (nm in colnames(boundary_df)[-1]) {
+      vals <- suppressWarnings(as.numeric(boundary_df[[nm]]))
+      boundary_df[[nm]] <- ifelse(is.na(vals), "NA", as.character(as.integer(round(vals))))
+    }
+
+    DT::datatable(
+      boundary_df,
+      rownames = FALSE,
+      extensions = "Buttons",
+      options = list(
+        dom = "Bfrtip",
+        buttons = c("copy", "csv", "excel", "print"),
+        paging = FALSE,
+        searching = FALSE,
+        info = FALSE,
+        ordering = FALSE,
+        scrollX = TRUE
+      )
+    )
+  })
+
+  output$b_note <- shiny::renderUI({
+    res <- boundary_res()
+    if (!is.null(res$error)) {
+      return(NULL)
+    }
+    shiny::tags$p(
+      shiny::HTML("<strong>Note.</strong> # of DLT is the number of patients with at least 1 DLT. When none of the actions (i.e., escalate, de-escalate, or eliminate) is triggered, stay at the current dose for treating the next cohort of patients. \"NA\" means that a boundary is not available under the current setting."),
+      style = "margin-top: 8px; font-weight: 600;"
+    )
+  })
 
   output$b_extra_safe_table <- shiny::renderTable({
     res <- boundary_res()
