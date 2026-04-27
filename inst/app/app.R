@@ -4,7 +4,15 @@ if (!requireNamespace("shiny", quietly = TRUE)) {
 
 ui <- shiny::fluidPage(
   shiny::tags$head(
-    shiny::tags$style(shiny::HTML("\n      body { background-color: #efefef; font-family: 'Helvetica Neue', Arial, sans-serif; }\n      .app-title-wrap { text-align: center; margin-top: 10px; margin-bottom: 18px; }\n      .app-title { color: #7d1a8e; font-size: 42px; font-weight: 500; margin-bottom: 6px; }\n      .app-subtitle { color: #4b4b4b; font-size: 22px; margin-bottom: 4px; }\n      .app-meta { color: #8c8c8c; font-size: 16px; font-style: italic; margin-bottom: 12px; }\n      .nav-tabs > li > a { color: #1d2a7a; font-size: 24px; padding: 14px 22px; }\n      .panel-card {\n        background: #bce6e7;\n        border: 1px solid #add8da;\n        border-radius: 4px;\n        padding: 16px;\n        margin-bottom: 14px;\n      }\n      .panel-heading {\n        color: #890b97;\n        text-align: center;\n        font-size: 28px;\n        font-weight: 700;\n        margin-bottom: 12px;\n      }\n      .btn-primary {\n        background-color: #2d79be !important;\n        border-color: #236299 !important;\n      }\n      .result-box {\n        background: #ffffff;\n        border: 1px solid #dadada;\n        border-radius: 4px;\n        padding: 14px;\n        min-height: 500px;\n      }\n      .result-title { color: #ff7d5a; font-size: 30px; margin-bottom: 10px; }\n      .help-text { font-size: 18px; color: #444; margin-bottom: 12px; }\n      .small-note { color: #555; font-size: 13px; margin-top: -6px; margin-bottom: 8px; }\n    "))
+    shiny::tags$style(shiny::HTML("\n      body { background-color: #efefef; font-family: 'Helvetica Neue', Arial, sans-serif; }\n      .app-title-wrap { text-align: center; margin-top: 10px; margin-bottom: 18px; }\n      .app-title { color: #7d1a8e; font-size: 42px; font-weight: 500; margin-bottom: 6px; }\n      .app-subtitle { color: #4b4b4b; font-size: 22px; margin-bottom: 4px; }\n      .app-meta { color: #8c8c8c; font-size: 16px; font-style: italic; margin-bottom: 12px; }\n      .nav-tabs > li > a { color: #1d2a7a; font-size: 24px; padding: 14px 22px; }\n      .panel-card {\n        background: #bce6e7;\n        border: 1px solid #add8da;\n        border-radius: 4px;\n        padding: 16px;\n        margin-bottom: 14px;\n      }\n      .panel-heading {\n        color: #890b97;\n        text-align: center;\n        font-size: 28px;\n        font-weight: 700;\n        margin-bottom: 12px;\n      }\n      .btn-primary {\n        background-color: #2d79be !important;\n        border-color: #236299 !important;\n      }\n      .result-box {\n        background: #ffffff;\n        border: 1px solid #dadada;\n        border-radius: 4px;\n        padding: 14px;\n        min-height: 500px;\n      }\n      .result-title { color: #ff7d5a; font-size: 30px; margin-bottom: 10px; }\n      .help-text { font-size: 18px; color: #444; margin-bottom: 12px; }\n      .small-note { color: #555; font-size: 13px; margin-top: -6px; margin-bottom: 8px; }
+      .dose-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 16px;
+      }
+      .dose-grid .form-group {
+        margin-bottom: 8px;
+      }\n    "))
   ),
   shiny::div(
     class = "app-title-wrap",
@@ -21,10 +29,13 @@ ui <- shiny::fluidPage(
           shiny::div(
             class = "panel-card",
             shiny::div(class = "panel-heading", "Doses"),
-            shiny::textInput("b_y", "DLTs by dose (comma separated)", value = "0,1,2,2,0"),
-            shiny::textInput("b_n", "Treated by dose (comma separated)", value = "3,6,9,3,0"),
-            shiny::numericInput("b_d", "Current dose index d", value = 3, min = 1, step = 1),
-            shiny::selectInput("b_type", "Table type", choices = c("continue", "baseline"), selected = "continue")
+            shiny::div(
+              class = "dose-grid",
+              shiny::textInput("b_y", "DLTs by dose (comma separated)", value = "0,1,2,2,0"),
+              shiny::textInput("b_n", "Treated by dose (comma separated)", value = "3,6,9,3,0"),
+              shiny::numericInput("b_d", "Current dose index d", value = 3, min = 1, step = 1),
+              shiny::selectInput("b_type", "Table type", choices = c("continue", "baseline"), selected = "continue")
+            )
           ),
           shiny::div(
             class = "panel-card",
