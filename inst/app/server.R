@@ -347,7 +347,13 @@ server <- function(input, output, session) {
       one <- res$result[[i]]
       select_pct <- as.numeric(one$select_percent[seq_len(n_dose)])
       mean_treated <- colMeans(one$N)
-      early_stop <- if ("-1" %in% names(one$select_percent)) as.numeric(one$select_percent[["-1"]]) else 0
+      early_stop <- if (!is.null(one$dose_select)) {
+        mean(as.numeric(one$dose_select) == -1, na.rm = TRUE) * 100
+      } else if (length(one$select_percent) >= (n_dose + 1L)) {
+        as.numeric(one$select_percent[n_dose + 1L])
+      } else {
+        0
+      }
 
       rows[[length(rows) + 1L]] <- c(
         Metric = paste0("Scenario", i),
