@@ -1,10 +1,13 @@
 if (!requireNamespace("shiny", quietly = TRUE)) {
   stop("Package 'shiny' is required to run this app. Please install it first.")
 }
+if (!requireNamespace("DT", quietly = TRUE)) {
+  stop("Package 'DT' is required to run this app. Please install it first.")
+}
 
 ui <- shiny::fluidPage(
   shiny::tags$head(
-    shiny::tags$style(shiny::HTML("\n      body { background-color: #efefef; font-family: 'Helvetica Neue', Arial, sans-serif; }\n      .app-title-wrap { text-align: center; margin-top: 10px; margin-bottom: 18px; }\n      .app-title { color: #7d1a8e; font-size: 42px; font-weight: 500; margin-bottom: 6px; }\n      .app-subtitle { color: #4b4b4b; font-size: 22px; margin-bottom: 4px; }\n      .app-meta { color: #8c8c8c; font-size: 16px; font-style: italic; margin-bottom: 12px; }\n      .nav-tabs > li > a { color: #1d2a7a; font-size: 24px; padding: 14px 22px; }\n      .panel-card {\n        background: #bce6e7;\n        border: 1px solid #add8da;\n        border-radius: 4px;\n        padding: 16px;\n        margin-bottom: 14px;\n      }\n      .panel-heading {\n        color: #890b97;\n        text-align: center;\n        font-size: 20px;\n        font-weight: 700;\n        margin-bottom: 12px;\n      }\n      .btn-primary {\n        background-color: #2d79be !important;\n        border-color: #236299 !important;\n      }\n      .result-box {\n        background: #ffffff;\n        border: 1px solid #dadada;\n        border-radius: 4px;\n        padding: 14px;\n        min-height: 500px;\n      }\n      .result-title { color: #ff7d5a; font-size: 30px; margin-bottom: 10px; }\n      .help-text { font-size: 18px; color: #444; margin-bottom: 12px; }\n      .small-note { color: #555; font-size: 13px; margin-top: -6px; margin-bottom: 8px; }\n      .dose-grid {\n        display: grid;\n        grid-template-columns: repeat(2, minmax(0, 1fr));\n        gap: 10px 16px;\n      }\n      .dose-grid .form-group {\n        margin-bottom: 8px;\n      }\n      .sim-grid-wrap {\n        max-height: 220px;\n        overflow-y: auto;\n        border: 1px solid #cfdfe0;\n        background: #f5f8f8;\n        padding: 8px;\n        margin-top: 8px;\n      }\n      .sim-grid-table {\n        width: 100%;\n        border-collapse: collapse;\n      }\n      .sim-grid-table th,\n      .sim-grid-table td {\n        border: 1px solid #d8d8d8;\n        padding: 4px;\n        text-align: center;\n      }\n      .sim-grid-table th {\n        background: #f0f0f0;\n        font-weight: 600;\n      }\n      .sim-grid-table .form-group {\n        margin-bottom: 0;\n      }\n      .btn-sim {\n        width: 100%;\n        margin-top: 4px;\n      }\n    "))
+    shiny::tags$style(shiny::HTML("\n      body { background-color: #efefef; font-family: 'Helvetica Neue', Arial, sans-serif; }\n      .app-title-wrap { text-align: center; margin-top: 10px; margin-bottom: 18px; }\n      .app-title { color: #7d1a8e; font-size: 42px; font-weight: 500; margin-bottom: 6px; }\n      .app-subtitle { color: #4b4b4b; font-size: 22px; margin-bottom: 4px; }\n      .app-meta { color: #8c8c8c; font-size: 16px; font-style: italic; margin-bottom: 12px; }\n      .nav-tabs > li > a { color: #1d2a7a; font-size: 24px; padding: 14px 22px; }\n      .panel-card {\n        background: #bce6e7;\n        border: 1px solid #add8da;\n        border-radius: 4px;\n        padding: 16px;\n        margin-bottom: 14px;\n      }\n      .panel-heading {\n        color: #890b97;\n        text-align: center;\n        font-size: 20px;\n        font-weight: 700;\n        margin-bottom: 12px;\n      }\n      .btn-primary {\n        background-color: #2d79be !important;\n        border-color: #236299 !important;\n      }\n      .result-box {\n        background: #ffffff;\n        border: 1px solid #dadada;\n        border-radius: 4px;\n        padding: 14px;\n        min-height: 500px;\n      }\n      .result-title { color: #ff7d5a; font-size: 30px; margin-bottom: 10px; }\n      .help-text { font-size: 18px; color: #444; margin-bottom: 12px; }\n      .small-note { color: #555; font-size: 13px; margin-top: -6px; margin-bottom: 8px; }\n      .dose-grid {\n        display: grid;\n        grid-template-columns: repeat(2, minmax(0, 1fr));\n        gap: 10px 16px;\n      }\n      .dose-grid .form-group {\n        margin-bottom: 8px;\n      }\n      .sim-grid-wrap {\n        max-height: 220px;\n        overflow-y: auto;\n        border: 1px solid #cfdfe0;\n        background: #f5f8f8;\n        padding: 8px;\n        margin-top: 8px;\n      }\n      .sim-grid-table {\n        width: 100%;\n        border-collapse: collapse;\n      }\n      .sim-grid-table th,\n      .sim-grid-table td {\n        border: 1px solid #d8d8d8;\n        padding: 4px;\n        text-align: center;\n      }\n      .sim-grid-table th {\n        background: #f0f0f0;\n        font-weight: 600;\n      }\n      .sim-grid-table .form-group {\n        margin-bottom: 0;\n      }\n      .btn-sim {\n        width: 100%;\n        margin-top: 4px;\n      }\n      .result-actions {\n        margin-top: 10px;\n      }\n      .dataTables_wrapper .dataTables_filter input {\n        margin-left: 0.5em;\n      }\n      table.dataTable tbody tr td {\n        vertical-align: middle;\n      }\n    "))
   ),
   shiny::div(
     class = "app-title-wrap",
@@ -134,7 +137,11 @@ ui <- shiny::fluidPage(
             class = "result-box",
             shiny::div(class = "result-title", "Operating Characteristics"),
             shiny::verbatimTextOutput("o_msg"),
-            shiny::tableOutput("o_summary")
+            DT::dataTableOutput("o_summary"),
+            shiny::div(
+              class = "result-actions",
+              shiny::downloadButton("o_download_csv", "Download Summary (CSV)", class = "btn-primary")
+            )
           )
         )
       )
@@ -361,11 +368,9 @@ server <- function(input, output, session) {
     sprintf("Simulation completed successfully for %d scenarios.", nrow(res$tox_mat))
   })
 
-  output$o_summary <- shiny::renderTable({
+  oc_summary_df <- shiny::reactive({
     res <- oc_res()
-    if (!is.null(res$error)) {
-      return(NULL)
-    }
+    shiny::req(is.null(res$error))
 
     n_dose <- ncol(res$tox_mat)
     rows <- list()
@@ -383,14 +388,42 @@ server <- function(input, output, session) {
 
     out_df <- do.call(rbind.data.frame, c(rows, stringsAsFactors = FALSE))
     colnames(out_df) <- c("Metric", paste0("Dose ", seq_len(n_dose)), "Number of Patients", "% Early Stopping")
-
-    numeric_cols <- setdiff(names(out_df), "Metric")
-    for (nm in numeric_cols) {
-      out_df[[nm]] <- suppressWarnings(as.numeric(out_df[[nm]]))
-      out_df[[nm]] <- ifelse(is.na(out_df[[nm]]), "", sprintf("%.2f", out_df[[nm]]))
-    }
     out_df
-  }, rownames = FALSE)
+  })
+
+  output$o_summary <- DT::renderDataTable({
+    out_df <- oc_summary_df()
+
+    display_df <- out_df
+    numeric_cols <- setdiff(names(display_df), "Metric")
+    for (nm in numeric_cols) {
+      display_df[[nm]] <- suppressWarnings(as.numeric(display_df[[nm]]))
+      display_df[[nm]] <- ifelse(is.na(display_df[[nm]]), "", sprintf("%.2f", display_df[[nm]]))
+    }
+
+    DT::datatable(
+      display_df,
+      rownames = FALSE,
+      extensions = "Buttons",
+      options = list(
+        dom = "Bfrtip",
+        buttons = c("copy", "csv", "excel", "print"),
+        pageLength = 16,
+        lengthChange = FALSE,
+        ordering = FALSE,
+        scrollX = TRUE
+      )
+    )
+  })
+
+  output$o_download_csv <- shiny::downloadHandler(
+    filename = function() {
+      paste0("skbd_operating_characteristics_", Sys.Date(), ".csv")
+    },
+    content = function(file) {
+      utils::write.csv(oc_summary_df(), file, row.names = FALSE)
+    }
+  )
 }
 
 shiny::shinyApp(ui = ui, server = server)
