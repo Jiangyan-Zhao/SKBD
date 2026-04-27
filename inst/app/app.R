@@ -242,10 +242,10 @@ server <- function(input, output, session) {
   scenario_dim <- shiny::reactiveValues(n_scenario = 4, n_dose = 5)
   scenario_defaults <- matrix(
     c(
-      0.30, 0.47, 0.53, 0.58, 0.64,
-      0.11, 0.30, 0.45, 0.56, 0.67,
-      0.02, 0.07, 0.13, 0.30, 0.47,
-      0.05, 0.08, 0.12, 0.15, 0.30
+      0.08, 0.30, 0.38, 0.42, 0.52,
+      0.04, 0.07, 0.30, 0.35, 0.42,
+      0.06, 0.07, 0.12, 0.30, 0.40,
+      0.01, 0.02, 0.04, 0.06, 0.30
     ),
     nrow = 4,
     byrow = TRUE
