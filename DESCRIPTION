@@ -18,8 +18,9 @@ NeedsCompilation: no
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Depends: R (>= 3.5.0)
-Imports: 
-Suggests: shiny,
-    DT,
+Imports:
+    shiny,
+    DT
+Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

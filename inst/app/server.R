@@ -306,5 +306,5 @@ server <- function(input, output, session) {
         scrollX = TRUE
       )
     )
-  })
+  }, server = FALSE)
 }
