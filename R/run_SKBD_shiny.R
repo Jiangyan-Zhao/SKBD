@@ -27,10 +27,6 @@
 #'
 #' @export
 run_SKBD_shiny <- function(launch.browser = TRUE) {
-  if (!requireNamespace("shiny", quietly = TRUE)) {
-    stop("Package 'shiny' is required to run this app. Please install it first.")
-  }
-
   app_dir <- system.file("app", package = "SKBD")
   if (app_dir == "") {
     stop("Cannot find Shiny app directory in installed package.")
