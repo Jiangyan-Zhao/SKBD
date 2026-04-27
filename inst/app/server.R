@@ -294,7 +294,7 @@ server <- function(input, output, session) {
       extensions = "Buttons",
       options = list(
         dom = "Bfrtip",
-        buttons = c("copy", "excel", "print"),
+        buttons = c("copy", "csv", "excel", "print"),
         pageLength = 16,
         lengthChange = FALSE,
         ordering = FALSE,
@@ -302,13 +302,4 @@ server <- function(input, output, session) {
       )
     )
   })
-
-  output$o_download_csv <- shiny::downloadHandler(
-    filename = function() {
-      paste0("skbd_operating_characteristics_", Sys.Date(), ".csv")
-    },
-    content = function(file) {
-      utils::write.csv(oc_summary_df(), file, row.names = FALSE)
-    }
-  )
 }

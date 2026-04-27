@@ -129,11 +129,7 @@ ui <- shiny::fluidPage(
             class = "result-box",
             shiny::div(class = "result-title", "Operating Characteristics"),
             shiny::verbatimTextOutput("o_msg"),
-            DT::dataTableOutput("o_summary"),
-            shiny::div(
-              class = "result-actions",
-              shiny::downloadButton("o_download_csv", "Download Summary (CSV)", class = "btn-primary")
-            )
+            DT::dataTableOutput("o_summary")
           )
         )
       )
