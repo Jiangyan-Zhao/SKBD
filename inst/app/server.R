@@ -294,7 +294,12 @@ server <- function(input, output, session) {
       extensions = "Buttons",
       options = list(
         dom = "Bfrtip",
-        buttons = c("copy", "csv", "excel", "print"),
+        buttons = list(
+          list(extend = "copy", title = "SKBD_summary_", exportOptions = list(modifier = list(page = "all"))),
+          list(extend = "csv", filename = "SKBD_summary_", exportOptions = list(modifier = list(page = "all"))),
+          list(extend = "excel", filename = "SKBD_summary_", exportOptions = list(modifier = list(page = "all"))),
+          list(extend = "print", title = "SKBD_summary_", exportOptions = list(modifier = list(page = "all")))
+        ),
         pageLength = 16,
         lengthChange = FALSE,
         ordering = FALSE,
