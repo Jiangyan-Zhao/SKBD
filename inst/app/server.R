@@ -152,15 +152,41 @@ server <- function(input, output, session) {
 
   shiny::observeEvent(input$o_scenario_file, {
     shiny::req(input$o_scenario_file)
-    dat <- try(utils::read.csv(input$o_scenario_file$datapath, check.names = FALSE), silent = TRUE)
+    dat <- try(
+      utils::read.csv(
+        input$o_scenario_file$datapath,
+        check.names = FALSE,
+        stringsAsFactors = FALSE
+      ),
+      silent = TRUE
+    )
     if (inherits(dat, "try-error") || !nrow(dat) || !ncol(dat)) {
       return()
     }
-    mat <- as.matrix(dat)
-    suppressWarnings(storage.mode(mat) <- "numeric")
-    if (any(is.na(mat))) {
+
+    numeric_dat <- as.data.frame(lapply(dat, function(x) {
+      suppressWarnings(as.numeric(trimws(as.character(x))))
+    }))
+    numeric_col <- vapply(numeric_dat, function(x) all(!is.na(x)), logical(1))
+
+    if (!all(numeric_col)) {
+      if (ncol(numeric_dat) > 1 && !numeric_col[1] && all(numeric_col[-1])) {
+        numeric_dat <- numeric_dat[, -1, drop = FALSE]
+      } else {
+        shiny::showNotification(
+          "Scenario file format is invalid. Use numeric toxicity values (optionally with a text Scenario column in the first column).",
+          type = "error"
+        )
+        return()
+      }
+    }
+
+    mat <- as.matrix(numeric_dat)
+    if (any(is.na(mat)) || !nrow(mat) || !ncol(mat)) {
+      shiny::showNotification("Scenario file format is invalid.", type = "error")
       return()
     }
+
     scenario_dim$n_scenario <- nrow(mat)
     scenario_dim$n_dose <- ncol(mat)
     session$onFlushed(function() {
@@ -330,10 +356,10 @@ server <- function(input, output, session) {
       options = list(
         dom = "Bfrtip",
         buttons = list(
-          list(extend = "copy", title = "SKBD_summary_", exportOptions = list(modifier = list(page = "all"))),
-          list(extend = "csv", filename = "SKBD_summary_", exportOptions = list(modifier = list(page = "all"))),
-          list(extend = "excel", filename = "SKBD_summary_", exportOptions = list(modifier = list(page = "all"))),
-          list(extend = "print", title = "SKBD_summary_", exportOptions = list(modifier = list(page = "all")))
+          list(extend = "copy", title = "SKBD_summary", exportOptions = list(modifier = list(page = "all"))),
+          list(extend = "csv", filename = "SKBD_summary", exportOptions = list(modifier = list(page = "all"))),
+          list(extend = "excel", filename = "SKBD_summary", exportOptions = list(modifier = list(page = "all"))),
+          list(extend = "print", title = "SKBD_summary", exportOptions = list(modifier = list(page = "all")))
         ),
         pageLength = 16,
         lengthChange = FALSE,
