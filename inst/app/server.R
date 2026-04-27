@@ -9,6 +9,10 @@ server <- function(input, output, session) {
     as.numeric(vals)
   }
 
+  output$app_version <- shiny::renderText({
+    sprintf("Version %s | Style inspired by trialdesign.org", as.character(utils::packageVersion("SKBD")))
+  })
+
   boundary_res <- shiny::eventReactive(input$b_run, {
     y <- parse_num_vec(input$b_y)
     n <- parse_num_vec(input$b_n)
@@ -225,10 +229,10 @@ server <- function(input, output, session) {
     for (i in seq_len(nrow(tox_mat))) {
       out <- try(
         SKBD::get_OC_SKBD(
-          target_prob = input$o_target,
+          target_prob = input$b_target,
           tox_prob = as.numeric(tox_mat[i, ]),
-          n_cohort = as.integer(input$o_ncohort),
-          cohort_size = as.integer(input$o_csize),
+          n_cohort = as.integer(input$b_ncohort),
+          cohort_size = as.integer(input$b_csize),
           n_trial = as.integer(input$o_ntrial),
           seed = as.integer(input$o_seed + i - 1L)
         ),
@@ -290,7 +294,7 @@ server <- function(input, output, session) {
       extensions = "Buttons",
       options = list(
         dom = "Bfrtip",
-        buttons = c("copy", "csv", "excel", "print"),
+        buttons = c("copy", "excel", "print"),
         pageLength = 16,
         lengthChange = FALSE,
         ordering = FALSE,

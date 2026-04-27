@@ -4,9 +4,9 @@ ui <- shiny::fluidPage(
   ),
   shiny::div(
     class = "app-title-wrap",
-    shiny::div(class = "app-title", "SKBD: a Bayesian toxicity probability interval design explorer"),
-    shiny::div(class = "app-subtitle", "Interactive app for dose-finding boundary and operating characteristics"),
-    shiny::div(class = "app-meta", "Version 1.0.0 | Style inspired by trialdesign.org")
+    shiny::div(class = "app-title", "SKBD: Shared Keyboard Design"),
+    shiny::div(class = "app-subtitle", "Jiangyan Zhao · Xian Shi · Jin Xu"),
+    shiny::div(class = "app-meta", shiny::textOutput("app_version", inline = TRUE))
   ),
   shiny::tabsetPanel(
     shiny::tabPanel(
@@ -109,9 +109,6 @@ ui <- shiny::fluidPage(
               condition = "input.o_input_method == 'upload'",
               shiny::fileInput("o_scenario_file", "Scenario CSV", accept = c(".csv", ".txt"))
             ),
-            shiny::numericInput("o_target", "Target toxicity (phi)", value = 0.30, min = 0.01, max = 0.99, step = 0.01),
-            shiny::numericInput("o_ncohort", "Number of cohorts", value = 10, min = 1, step = 1),
-            shiny::numericInput("o_csize", "Cohort size", value = 3, min = 1, step = 1),
             shiny::fluidRow(
               shiny::column(8, shiny::numericInput("o_ntrial", "Number of Simulations", value = 1000, min = 10, step = 10)),
               shiny::column(4, shiny::numericInput("o_seed", "Set Seed", value = 6, min = 1, step = 1))
