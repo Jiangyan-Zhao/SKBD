@@ -81,7 +81,9 @@ ui <- shiny::fluidPage(
             shiny::div(class = "result-title", "Decision Table"),
             shiny::div(class = "help-text", "Dose escalation/de-escalation recommendation generated from SKBD."),
             shiny::verbatimTextOutput("b_msg"),
-            shiny::tableOutput("b_table"),
+            shiny::tags$p(shiny::strong("Table 1: Dose escalation/de-escalation rule.")),
+            DT::dataTableOutput("b_table"),
+            shiny::uiOutput("b_note"),
             shiny::br(),
             shiny::tableOutput("b_extra_safe_table")
           )
