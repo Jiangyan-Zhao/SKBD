@@ -4,41 +4,7 @@ if (!requireNamespace("shiny", quietly = TRUE)) {
 
 ui <- shiny::fluidPage(
   shiny::tags$head(
-    shiny::tags$style(shiny::HTML("
-      body { background-color: #efefef; font-family: 'Helvetica Neue', Arial, sans-serif; }
-      .app-title-wrap { text-align: center; margin-top: 10px; margin-bottom: 18px; }
-      .app-title { color: #7d1a8e; font-size: 42px; font-weight: 500; margin-bottom: 6px; }
-      .app-subtitle { color: #4b4b4b; font-size: 22px; margin-bottom: 4px; }
-      .app-meta { color: #8c8c8c; font-size: 16px; font-style: italic; margin-bottom: 12px; }
-      .nav-tabs > li > a { color: #1d2a7a; font-size: 24px; padding: 14px 22px; }
-      .panel-card {
-        background: #bce6e7;
-        border: 1px solid #add8da;
-        border-radius: 4px;
-        padding: 20px;
-        margin-bottom: 18px;
-      }
-      .panel-heading {
-        color: #890b97;
-        text-align: center;
-        font-size: 30px;
-        font-weight: 700;
-        margin-bottom: 14px;
-      }
-      .btn-primary {
-        background-color: #2d79be !important;
-        border-color: #236299 !important;
-      }
-      .result-box {
-        background: #ffffff;
-        border: 1px solid #dadada;
-        border-radius: 4px;
-        padding: 14px;
-        min-height: 500px;
-      }
-      .result-title { color: #ff7d5a; font-size: 30px; margin-bottom: 10px; }
-      .help-text { font-size: 18px; color: #444; margin-bottom: 12px; }
-    "))
+    shiny::tags$style(shiny::HTML("\n      body { background-color: #efefef; font-family: 'Helvetica Neue', Arial, sans-serif; }\n      .app-title-wrap { text-align: center; margin-top: 10px; margin-bottom: 18px; }\n      .app-title { color: #7d1a8e; font-size: 42px; font-weight: 500; margin-bottom: 6px; }\n      .app-subtitle { color: #4b4b4b; font-size: 22px; margin-bottom: 4px; }\n      .app-meta { color: #8c8c8c; font-size: 16px; font-style: italic; margin-bottom: 12px; }\n      .nav-tabs > li > a { color: #1d2a7a; font-size: 24px; padding: 14px 22px; }\n      .panel-card {\n        background: #bce6e7;\n        border: 1px solid #add8da;\n        border-radius: 4px;\n        padding: 16px;\n        margin-bottom: 14px;\n      }\n      .panel-heading {\n        color: #890b97;\n        text-align: center;\n        font-size: 28px;\n        font-weight: 700;\n        margin-bottom: 12px;\n      }\n      .btn-primary {\n        background-color: #2d79be !important;\n        border-color: #236299 !important;\n      }\n      .result-box {\n        background: #ffffff;\n        border: 1px solid #dadada;\n        border-radius: 4px;\n        padding: 14px;\n        min-height: 500px;\n      }\n      .result-title { color: #ff7d5a; font-size: 30px; margin-bottom: 10px; }\n      .help-text { font-size: 18px; color: #444; margin-bottom: 12px; }\n      .small-note { color: #555; font-size: 13px; margin-top: -6px; margin-bottom: 8px; }\n    "))
   ),
   shiny::div(
     class = "app-title-wrap",
@@ -54,12 +20,32 @@ ui <- shiny::fluidPage(
           width = 4,
           shiny::div(
             class = "panel-card",
-            shiny::div(class = "panel-heading", "Trial Setting"),
-            shiny::numericInput("b_target", "Target toxicity (phi)", value = 0.30, min = 0.01, max = 0.99, step = 0.01),
+            shiny::div(class = "panel-heading", "Doses"),
             shiny::textInput("b_y", "DLTs by dose (comma separated)", value = "0,1,2,2,0"),
             shiny::textInput("b_n", "Treated by dose (comma separated)", value = "3,6,9,3,0"),
             shiny::numericInput("b_d", "Current dose index d", value = 3, min = 1, step = 1),
-            shiny::selectInput("b_type", "Table type", choices = c("continue", "baseline"), selected = "continue"),
+            shiny::selectInput("b_type", "Table type", choices = c("continue", "baseline"), selected = "continue")
+          ),
+          shiny::div(
+            class = "panel-card",
+            shiny::div(class = "panel-heading", "Target Probability"),
+            shiny::numericInput("b_target", "Target toxicity (phi)", value = 0.30, min = 0.01, max = 0.99, step = 0.01),
+            shiny::numericInput("b_margin_left", "Acceptable interval lower margin", value = 0.05, min = 0.001, max = 0.49, step = 0.01),
+            shiny::numericInput("b_margin_right", "Acceptable interval upper margin", value = 0.05, min = 0.001, max = 0.49, step = 0.01)
+          ),
+          shiny::div(
+            class = "panel-card",
+            shiny::div(class = "panel-heading", "Sample Size"),
+            shiny::numericInput("b_csize", "Cohort size", value = 3, min = 1, step = 1),
+            shiny::numericInput("b_ncohort", "Number of cohorts", value = 10, min = 1, step = 1),
+            shiny::numericInput("b_earlystop", "Display columns up to #patients", value = 1000, min = 1, step = 1)
+          ),
+          shiny::div(
+            class = "panel-card",
+            shiny::div(class = "panel-heading", "Overdose Control"),
+            shiny::numericInput("b_cutoff", "Eliminate if Pr(p_d > phi | data) >", value = 0.95, min = 0.5, max = 0.999, step = 0.01),
+            shiny::checkboxInput("b_extra_safe", "Apply extra-safe stopping rule at lowest dose", value = FALSE),
+            shiny::numericInput("b_offset", "Extra-safe offset", value = 0.05, min = 0, max = 0.49, step = 0.01),
             shiny::actionButton("b_run", "Get Decision Table", class = "btn-primary btn-block")
           )
         ),
@@ -70,7 +56,9 @@ ui <- shiny::fluidPage(
             shiny::div(class = "result-title", "Decision Table"),
             shiny::div(class = "help-text", "Dose escalation/de-escalation recommendation generated from SKBD."),
             shiny::verbatimTextOutput("b_msg"),
-            shiny::tableOutput("b_table")
+            shiny::tableOutput("b_table"),
+            shiny::br(),
+            shiny::tableOutput("b_extra_safe_table")
           )
         )
       )
@@ -108,25 +96,33 @@ ui <- shiny::fluidPage(
 
 server <- function(input, output, session) {
   parse_num_vec <- function(x) {
-    vals <- trimws(strsplit(x, ",", fixed = TRUE)[[1]])
+    parts <- strsplit(x, ",", fixed = TRUE)[[1]]
+    vals <- trimws(parts)
+    vals <- vals[nzchar(vals)]
+    if (!length(vals)) {
+      return(numeric(0))
+    }
     as.numeric(vals)
   }
 
   boundary_res <- shiny::eventReactive(input$b_run, {
     y <- parse_num_vec(input$b_y)
     n <- parse_num_vec(input$b_n)
+    n_dose <- length(y)
 
     validate_msg <- NULL
-    if (any(is.na(y)) || any(is.na(n))) {
+    if (!length(y) || !length(n)) {
+      validate_msg <- "DLTs by dose and Treated by dose cannot be empty."
+    } else if (any(is.na(y)) || any(is.na(n))) {
       validate_msg <- "Input y/n contains non-numeric values."
     } else if (length(y) != length(n)) {
       validate_msg <- "Vectors y and n must have the same length."
-    } else if (length(y) != input$n_dose) {
-      validate_msg <- "Number of doses must match the length of DLTs by dose."
-    } else if (length(n) != input$n_dose) {
-      validate_msg <- "Number of doses must match the length of Number treated by dose."
-    } else if (input$b_d < 1 || input$b_d > input$n_dose) {
-      validate_msg <- "Current dose index d is out of range."
+    } else if (any(y < 0) || any(n < 0) || any(y > n)) {
+      validate_msg <- "Require 0 <= y <= n for every dose."
+    } else if (input$b_d < 1 || input$b_d > n_dose) {
+      validate_msg <- sprintf("Current dose index d must be between 1 and %d.", n_dose)
+    } else if ((input$b_target - input$b_margin_left) <= 0 || (input$b_target + input$b_margin_right) >= 1) {
+      validate_msg <- "Target probability interval must stay inside (0, 1)."
     }
 
     if (!is.null(validate_msg)) {
@@ -139,6 +135,14 @@ server <- function(input, output, session) {
         d = as.integer(input$b_d),
         y = y,
         n = n,
+        n_cohort = as.integer(input$b_ncohort),
+        cohort_size = as.integer(input$b_csize),
+        n_earlystop = as.integer(input$b_earlystop),
+        margin_left = input$b_margin_left,
+        margin_right = input$b_margin_right,
+        cutoff_elimin = input$b_cutoff,
+        extra_safe = isTRUE(input$b_extra_safe),
+        offset = input$b_offset,
         table_type = input$b_type
       ),
       silent = TRUE
@@ -165,6 +169,14 @@ server <- function(input, output, session) {
       return(NULL)
     }
     as.data.frame(res$result$boundary_tab)
+  }, rownames = TRUE)
+
+  output$b_extra_safe_table <- shiny::renderTable({
+    res <- boundary_res()
+    if (!is.null(res$error) || is.null(res$result$stop_boundary)) {
+      return(NULL)
+    }
+    as.data.frame(res$result$stop_boundary)
   }, rownames = TRUE)
 
   oc_res <- shiny::eventReactive(input$o_run, {
