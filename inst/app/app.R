@@ -29,9 +29,15 @@ ui <- shiny::fluidPage(
           shiny::div(
             class = "panel-card",
             shiny::div(class = "panel-heading", "Target Probability"),
-            shiny::numericInput("b_target", "Target toxicity (phi)", value = 0.30, min = 0.01, max = 0.99, step = 0.01),
-            shiny::numericInput("b_margin_left", "Acceptable interval lower margin", value = 0.05, min = 0.001, max = 0.49, step = 0.01),
-            shiny::numericInput("b_margin_right", "Acceptable interval upper margin", value = 0.05, min = 0.001, max = 0.49, step = 0.01)
+            shiny::numericInput("b_target", "Target Toxicity Probability ϕ :", value = 0.30, min = 0.01, max = 0.99, step = 0.01),
+            shiny::sliderInput(
+              "b_interval",
+              "Acceptable toxicity probability interval:",
+              min = 0,
+              max = 1,
+              value = c(0.25, 0.35),
+              step = 0.01
+            )
           ),
           shiny::div(
             class = "panel-card",
@@ -109,6 +115,9 @@ server <- function(input, output, session) {
     y <- parse_num_vec(input$b_y)
     n <- parse_num_vec(input$b_n)
     n_dose <- length(y)
+    interval <- input$b_interval
+    margin_left <- input$b_target - interval[1]
+    margin_right <- interval[2] - input$b_target
 
     validate_msg <- NULL
     if (!length(y) || !length(n)) {
@@ -121,8 +130,10 @@ server <- function(input, output, session) {
       validate_msg <- "Require 0 <= y <= n for every dose."
     } else if (input$b_d < 1 || input$b_d > n_dose) {
       validate_msg <- sprintf("Current dose index d must be between 1 and %d.", n_dose)
-    } else if ((input$b_target - input$b_margin_left) <= 0 || (input$b_target + input$b_margin_right) >= 1) {
+    } else if (length(interval) != 2 || any(is.na(interval)) || interval[1] <= 0 || interval[2] >= 1) {
       validate_msg <- "Target probability interval must stay inside (0, 1)."
+    } else if (interval[1] >= input$b_target || interval[2] <= input$b_target) {
+      validate_msg <- "Target toxicity probability must be inside the acceptable interval."
     }
 
     if (!is.null(validate_msg)) {
@@ -138,8 +149,8 @@ server <- function(input, output, session) {
         n_cohort = as.integer(input$b_ncohort),
         cohort_size = as.integer(input$b_csize),
         n_earlystop = as.integer(input$b_earlystop),
-        margin_left = input$b_margin_left,
-        margin_right = input$b_margin_right,
+        margin_left = margin_left,
+        margin_right = margin_right,
         cutoff_elimin = input$b_cutoff,
         extra_safe = isTRUE(input$b_extra_safe),
         offset = input$b_offset,
