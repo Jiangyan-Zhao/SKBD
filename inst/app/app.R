@@ -121,7 +121,11 @@ server <- function(input, output, session) {
       validate_msg <- "Input y/n contains non-numeric values."
     } else if (length(y) != length(n)) {
       validate_msg <- "Vectors y and n must have the same length."
-    } else if (input$b_d < 1 || input$b_d > length(y)) {
+    } else if (length(y) != input$n_dose) {
+      validate_msg <- "Number of doses must match the length of DLTs by dose."
+    } else if (length(n) != input$n_dose) {
+      validate_msg <- "Number of doses must match the length of Number treated by dose."
+    } else if (input$b_d < 1 || input$b_d > input$n_dose) {
       validate_msg <- "Current dose index d is out of range."
     }
 
