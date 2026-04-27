@@ -260,6 +260,16 @@ server <- function(input, output, session) {
     shiny::req(is.null(res$error))
 
     n_dose <- ncol(res$tox_mat)
+    method_label <- if (identical(input$o_input_method, "upload")) {
+      file_name <- input$o_scenario_file$name
+      if (!is.null(file_name) && nzchar(file_name)) {
+        sprintf("Upload scenario file (%s)", file_name)
+      } else {
+        "Upload scenario file"
+      }
+    } else {
+      "Type in"
+    }
     rows <- list()
     for (i in seq_along(res$result)) {
       one <- res$result[[i]]
@@ -267,14 +277,39 @@ server <- function(input, output, session) {
       mean_treated <- colMeans(one$N)
       early_stop <- if ("-1" %in% names(one$select_percent)) as.numeric(one$select_percent[["-1"]]) else 0
 
-      rows[[length(rows) + 1L]] <- c(Metric = paste0("Scenario", i), as.list(rep(NA_real_, n_dose + 2L)))
-      rows[[length(rows) + 1L]] <- c(Metric = "True DLT rate", as.list(res$tox_mat[i, ]), list(NA_real_, NA_real_))
-      rows[[length(rows) + 1L]] <- c(Metric = "Selection %", as.list(select_pct), list(NA_real_, early_stop))
-      rows[[length(rows) + 1L]] <- c(Metric = "# Pts treated", as.list(mean_treated), list(one$n_patient_mean, NA_real_))
+      rows[[length(rows) + 1L]] <- c(
+        Metric = paste0("Scenario", i),
+        `Scenario Input Method` = method_label,
+        as.list(rep(NA_real_, n_dose + 2L))
+      )
+      rows[[length(rows) + 1L]] <- c(
+        Metric = "True DLT rate",
+        `Scenario Input Method` = "",
+        as.list(res$tox_mat[i, ]),
+        list(NA_real_, NA_real_)
+      )
+      rows[[length(rows) + 1L]] <- c(
+        Metric = "Selection %",
+        `Scenario Input Method` = "",
+        as.list(select_pct),
+        list(NA_real_, early_stop)
+      )
+      rows[[length(rows) + 1L]] <- c(
+        Metric = "# Pts treated",
+        `Scenario Input Method` = "",
+        as.list(mean_treated),
+        list(one$n_patient_mean, NA_real_)
+      )
     }
 
     out_df <- do.call(rbind.data.frame, c(rows, stringsAsFactors = FALSE))
-    colnames(out_df) <- c("Metric", paste0("Dose ", seq_len(n_dose)), "Number of Patients", "% Early Stopping")
+    colnames(out_df) <- c(
+      "Metric",
+      "Scenario Input Method",
+      paste0("Dose ", seq_len(n_dose)),
+      "Number of Patients",
+      "% Early Stopping"
+    )
     out_df
   })
 
@@ -282,7 +317,7 @@ server <- function(input, output, session) {
     out_df <- oc_summary_df()
 
     display_df <- out_df
-    numeric_cols <- setdiff(names(display_df), "Metric")
+    numeric_cols <- setdiff(names(display_df), c("Metric", "Scenario Input Method"))
     for (nm in numeric_cols) {
       display_df[[nm]] <- suppressWarnings(as.numeric(display_df[[nm]]))
       display_df[[nm]] <- ifelse(is.na(display_df[[nm]]), "", sprintf("%.2f", display_df[[nm]]))
