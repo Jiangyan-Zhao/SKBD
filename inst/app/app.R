@@ -47,7 +47,8 @@ ui <- shiny::fluidPage(
               min = 0,
               max = 1,
               value = c(0.25, 0.35),
-              step = 0.01
+              step = 0.01,
+              width = "100%"
             )
           ),
           shiny::div(
