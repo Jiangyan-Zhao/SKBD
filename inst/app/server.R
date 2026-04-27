@@ -240,24 +240,36 @@ server <- function(input, output, session) {
     n_scenario <- scenario_dim$n_scenario
     n_dose <- scenario_dim$n_dose
     header <- c("Scenario", paste0("D", seq_len(n_dose)))
+    uploaded_mat <- uploaded_scenario_mat()
 
     row_nodes <- lapply(seq_len(n_scenario), function(i) {
+      row_values <- numeric(n_dose)
+      for (j in seq_len(n_dose)) {
+        base_value <- if (!is.null(uploaded_mat) && i <= nrow(uploaded_mat) && j <= ncol(uploaded_mat)) {
+          uploaded_mat[i, j]
+        } else if (i <= nrow(scenario_defaults) && j <= ncol(scenario_defaults)) {
+          scenario_defaults[i, j]
+        } else if (j == 1) {
+          0.05
+        } else {
+          row_values[j - 1] + 0.06
+        }
+
+        row_values[j] <- base_value
+        if (j > 1) {
+          row_values[j] <- max(row_values[j], row_values[j - 1] + 0.06)
+        }
+        row_values[j] <- min(row_values[j], 0.99)
+      }
+
       shiny::tags$tr(
         shiny::tags$td(paste("Scenario", i)),
         lapply(seq_len(n_dose), function(j) {
-          uploaded_mat <- uploaded_scenario_mat()
-          default_value <- if (!is.null(uploaded_mat) && i <= nrow(uploaded_mat) && j <= ncol(uploaded_mat)) {
-            uploaded_mat[i, j]
-          } else if (i <= nrow(scenario_defaults) && j <= ncol(scenario_defaults)) {
-            scenario_defaults[i, j]
-          } else {
-            0.3
-          }
           shiny::tags$td(
             shiny::numericInput(
               inputId = paste0("o_scn_", i, "_", j),
               label = NULL,
-              value = default_value,
+              value = row_values[j],
               min = 0,
               max = 1,
               step = 0.01,
@@ -332,16 +344,6 @@ server <- function(input, output, session) {
     shiny::req(is.null(res$error))
 
     n_dose <- ncol(res$tox_mat)
-    method_label <- if (identical(input$o_input_method, "upload")) {
-      file_name <- input$o_scenario_file$name
-      if (!is.null(file_name) && nzchar(file_name)) {
-        sprintf("Upload scenario file (%s)", file_name)
-      } else {
-        "Upload scenario file"
-      }
-    } else {
-      "Type in"
-    }
     rows <- list()
     for (i in seq_along(res$result)) {
       one <- res$result[[i]]
@@ -357,24 +359,20 @@ server <- function(input, output, session) {
 
       rows[[length(rows) + 1L]] <- c(
         Metric = paste0("Scenario", i),
-        `Scenario Input Method` = method_label,
         as.list(rep(NA_real_, n_dose + 2L))
       )
       rows[[length(rows) + 1L]] <- c(
         Metric = "True DLT rate",
-        `Scenario Input Method` = "",
         as.list(res$tox_mat[i, ]),
         list(NA_real_, NA_real_)
       )
       rows[[length(rows) + 1L]] <- c(
         Metric = "Selection %",
-        `Scenario Input Method` = "",
         as.list(select_pct),
         list(NA_real_, early_stop)
       )
       rows[[length(rows) + 1L]] <- c(
         Metric = "# Pts treated",
-        `Scenario Input Method` = "",
         as.list(mean_treated),
         list(one$n_patient_mean, NA_real_)
       )
@@ -383,7 +381,6 @@ server <- function(input, output, session) {
     out_df <- do.call(rbind.data.frame, c(rows, stringsAsFactors = FALSE))
     colnames(out_df) <- c(
       "Metric",
-      "Scenario Input Method",
       paste0("Dose ", seq_len(n_dose)),
       "Number of Patients",
       "% Early Stopping"
@@ -395,7 +392,7 @@ server <- function(input, output, session) {
     out_df <- oc_summary_df()
 
     display_df <- out_df
-    numeric_cols <- setdiff(names(display_df), c("Metric", "Scenario Input Method"))
+    numeric_cols <- setdiff(names(display_df), "Metric")
     for (nm in numeric_cols) {
       display_df[[nm]] <- suppressWarnings(as.numeric(display_df[[nm]]))
       display_df[[nm]] <- ifelse(is.na(display_df[[nm]]), "", sprintf("%.2f", display_df[[nm]]))
