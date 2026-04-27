@@ -16,22 +16,26 @@ server <- function(input, output, session) {
   boundary_res <- shiny::eventReactive(input$b_run, {
     y <- parse_num_vec(input$b_y)
     n <- parse_num_vec(input$b_n)
-    n_dose <- length(y)
+    n_dose <- as.integer(input$b_n_dose)
     interval <- input$b_interval
     margin_left <- input$b_target - interval[1]
     margin_right <- interval[2] - input$b_target
 
     validate_msg <- NULL
-    if (!length(y) || !length(n)) {
+    if (is.na(n_dose) || n_dose < 1) {
+      validate_msg <- "Number of doses must be a positive integer."
+    } else if (!length(y) || !length(n)) {
       validate_msg <- "DLTs by dose and Treated by dose cannot be empty."
     } else if (any(is.na(y)) || any(is.na(n))) {
       validate_msg <- "Input y/n contains non-numeric values."
-    } else if (length(y) != length(n)) {
-      validate_msg <- "Vectors y and n must have the same length."
+    } else if (length(y) != n_dose || length(n) != n_dose) {
+      validate_msg <- sprintf("Vectors y and n must each contain exactly %d values.", n_dose)
     } else if (any(y < 0) || any(n < 0) || any(y > n)) {
       validate_msg <- "Require 0 <= y <= n for every dose."
     } else if (input$b_d < 1 || input$b_d > n_dose) {
       validate_msg <- sprintf("Current dose index d must be between 1 and %d.", n_dose)
+    } else if (input$b_start_dose < 1 || input$b_start_dose > n_dose) {
+      validate_msg <- sprintf("Starting dose level must be between 1 and %d.", n_dose)
     } else if (length(interval) != 2 || any(is.na(interval)) || interval[1] <= 0 || interval[2] >= 1) {
       validate_msg <- "Target probability interval must stay inside (0, 1)."
     } else if (interval[1] >= input$b_target || interval[2] <= input$b_target) {
@@ -138,6 +142,19 @@ server <- function(input, output, session) {
     byrow = TRUE
   )
 
+  shiny::observe({
+    n_dose_input <- input$b_n_dose
+    n_dose <- if (is.null(n_dose_input) || is.na(n_dose_input)) 5L else as.integer(n_dose_input)
+    n_dose <- max(1L, n_dose)
+    scenario_dim$n_dose <- n_dose
+    start_dose <- input$b_start_dose
+    if (is.null(start_dose) || is.na(start_dose)) start_dose <- 1L
+    current_d <- input$b_d
+    if (is.null(current_d) || is.na(current_d)) current_d <- 1L
+    shiny::updateNumericInput(session, "b_start_dose", min = 1, max = n_dose, value = min(as.integer(start_dose), n_dose))
+    shiny::updateNumericInput(session, "b_d", min = 1, max = n_dose, value = min(as.integer(current_d), n_dose))
+  })
+
   shiny::observeEvent(input$o_add_scn, {
     scenario_dim$n_scenario <- scenario_dim$n_scenario + 1
   })
@@ -187,8 +204,15 @@ server <- function(input, output, session) {
       return()
     }
 
+    if (ncol(mat) != scenario_dim$n_dose) {
+      shiny::showNotification(
+        sprintf("Scenario file must contain exactly %d dose columns to align with Trial Setting.", scenario_dim$n_dose),
+        type = "error"
+      )
+      return()
+    }
+
     scenario_dim$n_scenario <- nrow(mat)
-    scenario_dim$n_dose <- ncol(mat)
     session$onFlushed(function() {
       for (i in seq_len(nrow(mat))) {
         for (j in seq_len(ncol(mat))) {
@@ -257,6 +281,7 @@ server <- function(input, output, session) {
         SKBD::get_OC_SKBD(
           target_prob = input$b_target,
           tox_prob = as.numeric(tox_mat[i, ]),
+          start_dose = as.integer(input$b_start_dose),
           n_cohort = as.integer(input$b_ncohort),
           cohort_size = as.integer(input$b_csize),
           n_trial = as.integer(input$o_ntrial),

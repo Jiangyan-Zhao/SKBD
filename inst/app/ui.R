@@ -19,6 +19,8 @@ ui <- shiny::fluidPage(
             shiny::div(class = "panel-heading", "Doses"),
             shiny::div(
               class = "dose-grid",
+              shiny::numericInput("b_n_dose", "Number of doses:", value = 5, min = 1, step = 1),
+              shiny::numericInput("b_start_dose", "Starting dose level:", value = 1, min = 1, step = 1),
               shiny::textInput("b_y", "DLTs by dose (comma separated)", value = "0,1,2,2,0"),
               shiny::textInput("b_n", "Treated by dose (comma separated)", value = "3,6,9,3,0"),
               shiny::numericInput("b_d", "Current dose index d", value = 3, min = 1, step = 1),
