@@ -54,16 +54,35 @@ ui <- shiny::fluidPage(
           shiny::div(
             class = "panel-card",
             shiny::div(class = "panel-heading", "Sample Size"),
-            shiny::numericInput("b_csize", "Cohort size", value = 3, min = 1, step = 1),
-            shiny::numericInput("b_ncohort", "Number of cohorts", value = 10, min = 1, step = 1),
-            shiny::numericInput("b_earlystop", "Display columns up to #patients", value = 1000, min = 1, step = 1)
+            shiny::fluidRow(
+              shiny::column(
+                width = 4,
+                shiny::numericInput("b_csize", "Cohort size", value = 3, min = 1, step = 1)
+              ),
+              shiny::column(
+                width = 4,
+                shiny::numericInput("b_ncohort", "Number of cohorts", value = 10, min = 1, step = 1)
+              ),
+              shiny::column(
+                width = 4,
+                shiny::numericInput("b_earlystop", "Display columns up to #patients", value = 1000, min = 1, step = 1)
+              )
+            )
           ),
           shiny::div(
             class = "panel-card",
             shiny::div(class = "panel-heading", "Overdose Control"),
-            shiny::numericInput("b_cutoff", "Eliminate if Pr(p_d > phi | data) >", value = 0.95, min = 0.5, max = 0.999, step = 0.01),
+            shiny::fluidRow(
+              shiny::column(
+                width = 6,
+                shiny::numericInput("b_cutoff", "Eliminate if Pr(p_d > phi | data) >", value = 0.95, min = 0.5, max = 0.999, step = 0.01)
+              ),
+              shiny::column(
+                width = 6,
+                shiny::numericInput("b_offset", "Extra-safe offset", value = 0.05, min = 0, max = 0.49, step = 0.01)
+              )
+            ),
             shiny::checkboxInput("b_extra_safe", "Apply extra-safe stopping rule at lowest dose", value = FALSE),
-            shiny::numericInput("b_offset", "Extra-safe offset", value = 0.05, min = 0, max = 0.49, step = 0.01),
             shiny::actionButton("b_run", "Get Decision Table", class = "btn-primary btn-block")
           )
         ),
