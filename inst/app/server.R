@@ -1,22 +1,62 @@
 server <- function(input, output, session) {
-  parse_num_vec <- function(x) {
-    parts <- strsplit(x, ",", fixed = TRUE)[[1]]
-    vals <- trimws(parts)
-    vals <- vals[nzchar(vals)]
-    if (!length(vals)) {
-      return(numeric(0))
-    }
-    as.numeric(vals)
-  }
-
   output$app_version <- shiny::renderText({
     sprintf("Version %s | Style inspired by trialdesign.org", as.character(utils::packageVersion("SKBD")))
   })
 
-  boundary_res <- shiny::eventReactive(input$b_run, {
-    y <- parse_num_vec(input$b_y)
-    n <- parse_num_vec(input$b_n)
+  output$b_y_inputs <- shiny::renderUI({
     n_dose <- as.integer(input$b_n_dose)
+    if (is.na(n_dose) || n_dose < 1) n_dose <- 1L
+    default_y <- c(0, 1, 2, 2, 0)
+    shiny::tagList(
+      shiny::tags$label("DLTs by dose"),
+      shiny::fluidRow(
+        lapply(seq_len(n_dose), function(i) {
+          shiny::column(
+            width = 12 / min(5, n_dose),
+            shiny::numericInput(
+              inputId = paste0("b_y_", i),
+              label = paste0("D", i),
+              value = if (i <= length(default_y)) default_y[i] else 0,
+              min = 0,
+              step = 1
+            )
+          )
+        })
+      )
+    )
+  })
+
+  output$b_n_inputs <- shiny::renderUI({
+    n_dose <- as.integer(input$b_n_dose)
+    if (is.na(n_dose) || n_dose < 1) n_dose <- 1L
+    default_n <- c(3, 6, 9, 3, 0)
+    shiny::tagList(
+      shiny::tags$label("Treated by dose"),
+      shiny::fluidRow(
+        lapply(seq_len(n_dose), function(i) {
+          shiny::column(
+            width = 12 / min(5, n_dose),
+            shiny::numericInput(
+              inputId = paste0("b_n_", i),
+              label = paste0("D", i),
+              value = if (i <= length(default_n)) default_n[i] else 0,
+              min = 0,
+              step = 1
+            )
+          )
+        })
+      )
+    )
+  })
+
+  boundary_res <- shiny::eventReactive(input$b_run, {
+    n_dose <- as.integer(input$b_n_dose)
+    y <- vapply(seq_len(n_dose), function(i) {
+      as.numeric(input[[paste0("b_y_", i)]])
+    }, numeric(1))
+    n <- vapply(seq_len(n_dose), function(i) {
+      as.numeric(input[[paste0("b_n_", i)]])
+    }, numeric(1))
     interval <- input$b_interval
     margin_left <- input$b_target - interval[1]
     margin_right <- interval[2] - input$b_target
