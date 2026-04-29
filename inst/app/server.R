@@ -3,24 +3,63 @@ server <- function(input, output, session) {
     sprintf("Version %s | Style inspired by trialdesign.org", as.character(utils::packageVersion("SKBD")))
   })
 
-  shiny::observe({
+  output$b_y_inputs <- shiny::renderUI({
     n_dose <- as.integer(input$b_n_dose)
     if (is.na(n_dose) || n_dose < 1) {
       n_dose <- 1L
     }
 
-    dose_levels <- paste0("D", seq_len(n_dose))
-    dose_label <- sprintf("(%s, comma separated)", paste(dose_levels, collapse = "-"))
-
-    shiny::updateTextInput(
-      session,
-      "b_y",
-      label = sprintf("DLTs by dose %s", dose_label)
+    shiny::tags$table(
+      class = "sim-grid-table",
+      shiny::tags$thead(
+        shiny::tags$tr(lapply(seq_len(n_dose), function(i) shiny::tags$th(paste0("D", i))))
+      ),
+      shiny::tags$tbody(
+        shiny::tags$tr(
+          lapply(seq_len(n_dose), function(i) {
+            shiny::tags$td(
+              shiny::numericInput(
+                inputId = paste0("b_y_", i),
+                label = NULL,
+                value = 0,
+                min = 0,
+                step = 1,
+                width = "80px"
+              )
+            )
+          })
+        )
+      )
     )
-    shiny::updateTextInput(
-      session,
-      "b_n",
-      label = sprintf("Treated by dose %s", dose_label)
+  })
+
+  output$b_n_inputs <- shiny::renderUI({
+    n_dose <- as.integer(input$b_n_dose)
+    if (is.na(n_dose) || n_dose < 1) {
+      n_dose <- 1L
+    }
+
+    shiny::tags$table(
+      class = "sim-grid-table",
+      shiny::tags$thead(
+        shiny::tags$tr(lapply(seq_len(n_dose), function(i) shiny::tags$th(paste0("D", i))))
+      ),
+      shiny::tags$tbody(
+        shiny::tags$tr(
+          lapply(seq_len(n_dose), function(i) {
+            shiny::tags$td(
+              shiny::numericInput(
+                inputId = paste0("b_n_", i),
+                label = NULL,
+                value = 0,
+                min = 0,
+                step = 1,
+                width = "80px"
+              )
+            )
+          })
+        )
+      )
     )
   })
 

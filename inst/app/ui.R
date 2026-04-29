@@ -112,11 +112,15 @@ ui <- shiny::fluidPage(
             ),
             shiny::fluidRow(
               shiny::column(
-                width = 6,
+                width = 12,
+                shiny::tags$label(shiny::strong("DLTs by dose:")),
                 shiny::uiOutput("b_y_inputs")
-              ),
+              )
+            ),
+            shiny::fluidRow(
               shiny::column(
-                width = 6,
+                width = 12,
+                shiny::tags$label(shiny::strong("Treated by dose:")),
                 shiny::uiOutput("b_n_inputs")
               )
             ),
