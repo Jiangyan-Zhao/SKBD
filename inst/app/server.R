@@ -40,6 +40,8 @@ server <- function(input, output, session) {
       validate_msg <- "Target probability interval must stay inside (0, 1)."
     } else if (interval[1] >= input$b_target || interval[2] <= input$b_target) {
       validate_msg <- "Target toxicity probability must be inside the acceptable interval."
+    } else if (is.na(input$b_k_left) || is.na(input$b_k_right) || input$b_k_left <= 0 || input$b_k_left >= 1 || input$b_k_right <= 0 || input$b_k_right >= 1) {
+      validate_msg <- "k_left and k_right must both be within (0, 1)."
     }
 
     if (!is.null(validate_msg)) {
@@ -49,6 +51,9 @@ server <- function(input, output, session) {
     out <- try(
       SKBD::get_boundary_SKBD(
         target_prob = input$b_target,
+        symmetric = isTRUE(input$b_symmetric),
+        k_left = input$b_k_left,
+        k_right = input$b_k_right,
         d = as.integer(input$b_d),
         y = y,
         n = n,
@@ -313,6 +318,9 @@ server <- function(input, output, session) {
       out <- try(
         SKBD::get_OC_SKBD(
           target_prob = input$b_target,
+          symmetric = isTRUE(input$b_symmetric),
+          k_left = input$b_k_left,
+          k_right = input$b_k_right,
           tox_prob = as.numeric(tox_mat[i, ]),
           start_dose = as.integer(input$b_start_dose),
           n_cohort = as.integer(input$b_ncohort),

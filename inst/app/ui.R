@@ -44,6 +44,21 @@ ui <- shiny::fluidPage(
           ),
           shiny::div(
             class = "panel-card",
+            shiny::div(class = "panel-heading", "Kernel Setting"),
+            shiny::checkboxInput("b_symmetric", "Use symmetric kernel", value = FALSE),
+            shiny::fluidRow(
+              shiny::column(
+                width = 6,
+                shiny::numericInput("b_k_left", "k_left", value = 0.2, min = 0.001, max = 0.999, step = 0.01)
+              ),
+              shiny::column(
+                width = 6,
+                shiny::numericInput("b_k_right", "k_right", value = 0.8, min = 0.001, max = 0.999, step = 0.01)
+              )
+            )
+          ),
+          shiny::div(
+            class = "panel-card",
             shiny::div(class = "panel-heading", "Sample Size"),
             shiny::fluidRow(
               shiny::column(
