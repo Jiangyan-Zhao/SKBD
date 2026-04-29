@@ -53,6 +53,8 @@
 #' @param n Integer vector of length \eqn{J} giving the number of treated patients at each dose.
 #' @param n_cohort Total number of cohorts in the trial (used to define the maximal table size).
 #' @param cohort_size Number of patients per cohort (used for cohort-aligned \code{boundary_tab} output).
+#' @param shared Logical; if \code{TRUE}, use kernel-weighted borrowing across doses.
+#'        If \code{FALSE}, use only current-dose data (identity kernel; no borrowing).
 #' @param symmetric Logical; if \code{TRUE}, use a symmetric kernel; otherwise use an asymmetric kernel.
 #' @param k_left Numeric scalar in `(0,1)`. Left-side neighbor borrowing strength passed to `kernel_fun()`.
 #' @param k_right Numeric scalar in `(0,1)`. Right-side neighbor borrowing strength passed to `kernel_fun()`
@@ -121,6 +123,7 @@ get_boundary_SKBD <- function(target_prob, d,
                               n_cohort = 10, cohort_size = 3,
                               symmetric = FALSE,
                               k_left = 0.2, k_right = 0.8, ref_gap = NULL,
+                              shared = TRUE,
                               dose_set = 1:length(y),
                               n_earlystop = 1000,
                               margin_left = 0.05, margin_right = 0.05,
@@ -158,14 +161,18 @@ get_boundary_SKBD <- function(target_prob, d,
   if (max(dose_set) == min(dose_set)) stop("dose_set must have at least two distinct values.")
   dose_set_std <- (dose_set - min(dose_set)) / (max(dose_set) - min(dose_set))
   
-  ker_vals <- kernel_fun(
-    dose = dose_set_std[d],
-    dose_set = dose_set_std,
-    symmetric = symmetric,
-    k_left = k_left,
-    k_right = k_right,
-    ref_gap = ref_gap
-  )
+  ker_vals <- if (shared) {
+    kernel_fun(
+      dose = dose_set_std[d],
+      dose_set = dose_set_std,
+      symmetric = symmetric,
+      k_left = k_left,
+      k_right = k_right,
+      ref_gap = ref_gap
+    )
+  } else {
+    as.numeric(seq_along(dose_set_std) == d)
+  }
   
   ## ---------------------------
   ## Define borrowing weights (normalize over observed doses + current dose)
