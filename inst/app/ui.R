@@ -22,25 +22,6 @@ ui <- shiny::fluidPage(
                 width = 6,
                 shiny::numericInput("b_n_dose", "Number of doses:", value = 5, min = 1, step = 1),
                 shiny::numericInput("b_start_dose", "Starting dose level:", value = 1, min = 1, step = 1)
-              ),
-              shiny::column(
-                width = 6,
-                shiny::div(
-                  class = "dose-alert-box",
-                  shiny::div(class = "dose-alert-title", "⚠ Important: Current trial data"),
-                  shiny::div(
-                    class = "dose-alert-note",
-                    "Please keep these four fields consistent with the ongoing cohort. Values should be comma-separated, one value per dose level."
-                  ),
-                  shiny::textInput("b_y", "DLTs by dose (comma separated)", value = "0,1,2,2,0"),
-                  shiny::textInput("b_n", "Treated by dose (comma separated)", value = "3,6,9,3,0"),
-                  shiny::numericInput("b_d", "Current dose index d", value = 3, min = 1, step = 1),
-                  shiny::selectInput("b_type", "Table type", choices = c("continue", "baseline"), selected = "continue"),
-                  shiny::tags$div(
-                    class = "small-note",
-                    "Tip: continue uses accumulated trial data; baseline shows the base keyboard rule at the current dose."
-                  )
-                )
               )
             )
           ),
@@ -95,6 +76,22 @@ ui <- shiny::fluidPage(
         ),
         shiny::column(
           width = 8,
+          shiny::div(
+            class = "dose-alert-box",
+            shiny::div(class = "dose-alert-title", "⚠ Important: Current trial data"),
+            shiny::div(
+              class = "dose-alert-note",
+              "Please keep these four fields consistent with the ongoing cohort. Values should be comma-separated, one value per dose level."
+            ),
+            shiny::textInput("b_y", "DLTs by dose (comma separated)", value = "0,1,2,2,0"),
+            shiny::textInput("b_n", "Treated by dose (comma separated)", value = "3,6,9,3,0"),
+            shiny::numericInput("b_d", "Current dose index d", value = 3, min = 1, step = 1),
+            shiny::selectInput("b_type", "Table type", choices = c("continue", "baseline"), selected = "continue"),
+            shiny::tags$div(
+              class = "small-note",
+              "Tip: continue uses accumulated trial data; baseline shows the base keyboard rule at the current dose."
+            )
+          ),
           shiny::div(
             class = "result-box",
             shiny::div(class = "result-title", "Decision Table"),
