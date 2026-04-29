@@ -103,6 +103,7 @@ server <- function(input, output, session) {
     out <- try(
       SKBD::get_boundary_SKBD(
         target_prob = input$b_target,
+        shared = isTRUE(input$b_shared),
         symmetric = isTRUE(input$b_symmetric),
         k_left = input$b_k_left,
         k_right = input$b_k_right,
@@ -370,6 +371,7 @@ server <- function(input, output, session) {
       out <- try(
         SKBD::get_OC_SKBD(
           target_prob = input$b_target,
+          shared = isTRUE(input$b_shared),
           symmetric = isTRUE(input$b_symmetric),
           k_left = input$b_k_left,
           k_right = input$b_k_right,
