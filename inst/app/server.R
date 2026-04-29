@@ -1,14 +1,4 @@
 server <- function(input, output, session) {
-  parse_num_vec <- function(x) {
-    parts <- strsplit(x, ",", fixed = TRUE)[[1]]
-    vals <- trimws(parts)
-    vals <- vals[nzchar(vals)]
-    if (!length(vals)) {
-      return(numeric(0))
-    }
-    as.numeric(vals)
-  }
-
   output$app_version <- shiny::renderText({
     sprintf("Version %s | Style inspired by trialdesign.org", as.character(utils::packageVersion("SKBD")))
   })
@@ -35,9 +25,13 @@ server <- function(input, output, session) {
   })
 
   boundary_res <- shiny::eventReactive(input$b_run, {
-    y <- parse_num_vec(input$b_y)
-    n <- parse_num_vec(input$b_n)
     n_dose <- as.integer(input$b_n_dose)
+    y <- vapply(seq_len(n_dose), function(i) {
+      as.numeric(input[[paste0("b_y_", i)]])
+    }, numeric(1))
+    n <- vapply(seq_len(n_dose), function(i) {
+      as.numeric(input[[paste0("b_n_", i)]])
+    }, numeric(1))
     interval <- input$b_interval
     margin_left <- input$b_target - interval[1]
     margin_right <- interval[2] - input$b_target

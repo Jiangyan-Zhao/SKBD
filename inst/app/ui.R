@@ -113,11 +113,11 @@ ui <- shiny::fluidPage(
             shiny::fluidRow(
               shiny::column(
                 width = 6,
-                shiny::textInput("b_y", "DLTs by dose (comma separated)", value = "0,1,2,2,0")
+                shiny::uiOutput("b_y_inputs")
               ),
               shiny::column(
                 width = 6,
-                shiny::textInput("b_n", "Treated by dose (comma separated)", value = "3,6,9,3,0")
+                shiny::uiOutput("b_n_inputs")
               )
             ),
             shiny::fluidRow(
