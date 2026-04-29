@@ -303,18 +303,21 @@ server <- function(input, output, session) {
     row_nodes <- lapply(seq_len(n_scenario), function(i) {
       row_values <- numeric(n_dose)
       for (j in seq_len(n_dose)) {
+        auto_generated <- FALSE
         base_value <- if (!is.null(uploaded_mat) && i <= nrow(uploaded_mat) && j <= ncol(uploaded_mat)) {
           uploaded_mat[i, j]
         } else if (i <= nrow(scenario_defaults) && j <= ncol(scenario_defaults)) {
           scenario_defaults[i, j]
         } else if (j == 1) {
+          auto_generated <- TRUE
           0.05
         } else {
+          auto_generated <- TRUE
           row_values[j - 1] + 0.06
         }
 
         row_values[j] <- base_value
-        if (j > 1) {
+        if (auto_generated && j > 1) {
           row_values[j] <- max(row_values[j], row_values[j - 1] + 0.06)
         }
         row_values[j] <- min(row_values[j], 0.99)
