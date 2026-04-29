@@ -108,16 +108,16 @@ ui <- shiny::fluidPage(
             shiny::div(class = "dose-alert-title", "⚠ Important: Current trial data"),
             shiny::div(
               class = "dose-alert-note",
-              "Please keep these four fields consistent with the ongoing cohort. Values should be comma-separated, one value per dose level."
+              "Please keep these four fields consistent with the ongoing cohort. Enter one value per dose level (D1, D2, ...)."
             ),
             shiny::fluidRow(
               shiny::column(
                 width = 6,
-                shiny::textInput("b_y", "DLTs by dose (comma separated)", value = "0,1,2,2,0")
+                shiny::uiOutput("b_y_inputs")
               ),
               shiny::column(
                 width = 6,
-                shiny::textInput("b_n", "Treated by dose (comma separated)", value = "3,6,9,3,0")
+                shiny::uiOutput("b_n_inputs")
               )
             ),
             shiny::fluidRow(
