@@ -13,6 +13,27 @@ server <- function(input, output, session) {
     sprintf("Version %s | Style inspired by trialdesign.org", as.character(utils::packageVersion("SKBD")))
   })
 
+  shiny::observe({
+    n_dose <- as.integer(input$b_n_dose)
+    if (is.na(n_dose) || n_dose < 1) {
+      n_dose <- 1L
+    }
+
+    dose_levels <- paste0("D", seq_len(n_dose))
+    dose_label <- sprintf("(%s, comma separated)", paste(dose_levels, collapse = "-"))
+
+    shiny::updateTextInput(
+      session,
+      "b_y",
+      label = sprintf("DLTs by dose %s", dose_label)
+    )
+    shiny::updateTextInput(
+      session,
+      "b_n",
+      label = sprintf("Treated by dose %s", dose_label)
+    )
+  })
+
   boundary_res <- shiny::eventReactive(input$b_run, {
     y <- parse_num_vec(input$b_y)
     n <- parse_num_vec(input$b_n)
