@@ -37,9 +37,7 @@ server <- function(input, output, session) {
     margin_right <- interval[2] - input$b_target
 
     validate_msg <- NULL
-    if (is.na(n_dose) || n_dose < 1) {
-      validate_msg <- "Number of doses must be a positive integer."
-    } else if (!length(y) || !length(n)) {
+    if (!length(y) || !length(n)) {
       validate_msg <- "DLTs by dose and Treated by dose cannot be empty."
     } else if (any(is.na(y)) || any(is.na(n))) {
       validate_msg <- "Input y/n contains non-numeric values."

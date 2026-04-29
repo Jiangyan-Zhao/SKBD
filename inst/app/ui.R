@@ -108,7 +108,7 @@ ui <- shiny::fluidPage(
             shiny::div(class = "dose-alert-title", "⚠ Important: Current trial data"),
             shiny::div(
               class = "dose-alert-note",
-              "Please keep these four fields consistent with the ongoing cohort. Values should be comma-separated, one value per dose level."
+              "Please keep these four fields consistent with the ongoing cohort. Enter one value per dose level (D1, D2, ...)."
             ),
             shiny::fluidRow(
               shiny::column(
