@@ -3,66 +3,34 @@ server <- function(input, output, session) {
     sprintf("Version %s | Style inspired by trialdesign.org", as.character(utils::packageVersion("SKBD")))
   })
 
-  output$b_y_inputs <- shiny::renderUI({
+  shiny::observe({
     n_dose <- as.integer(input$b_n_dose)
-    if (is.na(n_dose) || n_dose < 1) n_dose <- 1L
-    default_y <- c(0, 1, 2, 2, 0)
-    col_width <- max(1L, floor(12 / min(n_dose, 6L)))
-    shiny::tagList(
-      shiny::tags$label("DLTs by dose"),
-      shiny::fluidRow(
-        lapply(seq_len(n_dose), function(i) {
-          shiny::column(
-            width = col_width,
-            shiny::numericInput(
-              inputId = paste0("b_y_", i),
-              label = paste0("D", i),
-              value = if (i <= length(default_y)) default_y[i] else 0,
-              min = 0,
-              step = 1
-            )
-          )
-        })
-      )
-    )
-  })
+    if (is.na(n_dose) || n_dose < 1) {
+      n_dose <- 1L
+    }
 
-  output$b_n_inputs <- shiny::renderUI({
-    n_dose <- as.integer(input$b_n_dose)
-    if (is.na(n_dose) || n_dose < 1) n_dose <- 1L
-    default_n <- c(3, 6, 9, 3, 0)
-    col_width <- max(1L, floor(12 / min(n_dose, 6L)))
-    shiny::tagList(
-      shiny::tags$label("Treated by dose"),
-      shiny::fluidRow(
-        lapply(seq_len(n_dose), function(i) {
-          shiny::column(
-            width = col_width,
-            shiny::numericInput(
-              inputId = paste0("b_n_", i),
-              label = paste0("D", i),
-              value = if (i <= length(default_n)) default_n[i] else 0,
-              min = 0,
-              step = 1
-            )
-          )
-        })
-      )
+    dose_levels <- paste0("D", seq_len(n_dose))
+    dose_label <- sprintf("(%s, comma separated)", paste(dose_levels, collapse = "-"))
+
+    shiny::updateTextInput(
+      session,
+      "b_y",
+      label = sprintf("DLTs by dose %s", dose_label)
+    )
+    shiny::updateTextInput(
+      session,
+      "b_n",
+      label = sprintf("Treated by dose %s", dose_label)
     )
   })
 
   boundary_res <- shiny::eventReactive(input$b_run, {
     n_dose <- as.integer(input$b_n_dose)
-    if (is.na(n_dose) || n_dose < 1) {
-      return(list(error = "Number of doses must be a positive integer."))
-    }
     y <- vapply(seq_len(n_dose), function(i) {
-      val <- input[[paste0("b_y_", i)]]
-      if (is.null(val) || !length(val)) NA_real_ else as.numeric(val[1])
+      as.numeric(input[[paste0("b_y_", i)]])
     }, numeric(1))
     n <- vapply(seq_len(n_dose), function(i) {
-      val <- input[[paste0("b_n_", i)]]
-      if (is.null(val) || !length(val)) NA_real_ else as.numeric(val[1])
+      as.numeric(input[[paste0("b_n_", i)]])
     }, numeric(1))
     interval <- input$b_interval
     margin_left <- input$b_target - interval[1]
