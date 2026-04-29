@@ -40,8 +40,8 @@ server <- function(input, output, session) {
       validate_msg <- "Target probability interval must stay inside (0, 1)."
     } else if (interval[1] >= input$b_target || interval[2] <= input$b_target) {
       validate_msg <- "Target toxicity probability must be inside the acceptable interval."
-    } else if (is.na(input$b_k_left) || is.na(input$b_k_right) || input$b_k_left <= 0 || input$b_k_left >= 1 || input$b_k_right <= 0 || input$b_k_right >= 1) {
-      validate_msg <- "k_left and k_right must both be within (0, 1)."
+    } else if (is.na(input$b_k_left) || is.na(input$b_k_right) || input$b_k_left < 0 || input$b_k_left > 1 || input$b_k_right < 0 || input$b_k_right > 1) {
+      validate_msg <- "Left-side and right-side borrowing strengths must both be within [0, 1]."
     }
 
     if (!is.null(validate_msg)) {

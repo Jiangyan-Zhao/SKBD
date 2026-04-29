@@ -58,11 +58,11 @@ ui <- shiny::fluidPage(
             shiny::fluidRow(
               shiny::column(
                 width = 6,
-                shiny::sliderInput("b_k_left", "k_left", value = 0.2, min = 0.001, max = 0.999, step = 0.01, width = "100%")
+                shiny::sliderInput("b_k_left", "Left-side borrowing strength", value = 0.2, min = 0, max = 1, step = 0.01, width = "100%")
               ),
               shiny::column(
                 width = 6,
-                shiny::sliderInput("b_k_right", "k_right", value = 0.8, min = 0.001, max = 0.999, step = 0.01, width = "100%")
+                shiny::sliderInput("b_k_right", "Right-side borrowing strength", value = 0.8, min = 0, max = 1, step = 0.01, width = "100%")
               )
             )
           ),
