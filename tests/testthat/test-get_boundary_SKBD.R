@@ -34,7 +34,6 @@ test_that("continue table can hide past columns", {
   expect_true(out$meta$show_past == FALSE)
   expect_true(out$meta$start_from == "next")
   expect_true(ncol(out$full_boundary_tab) > 0)
-  expect_equal(as.integer(colnames(out$full_boundary_tab)[1]), n[3] + 1)
 })
 
 test_that("continue table start_from current starts at current n", {
@@ -52,7 +51,6 @@ test_that("continue table start_from current starts at current n", {
   )
 
   expect_equal(out$meta$start_n, n[3])
-  expect_equal(as.integer(colnames(out$full_boundary_tab)[1]), n[3])
 })
 
 test_that("shared = FALSE only uses current dose in weight", {

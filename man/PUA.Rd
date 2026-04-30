@@ -72,11 +72,11 @@ scen
 
 }
 \references{
-Clertant, M. and O'Quigley, J. (2017).
-Semiparametric model-assisted designs for phase I dose-finding clinical trials.
-\emph{Statistics in Medicine}, \bold{36}(30), 4638--4649.
+Clertant, M. and J. O'Quigley (2017).
+Semiparametric dose finding methods.
+\emph{Journal of the Royal Statistical Society Series B: Statistical Methodology 79}(5), 1487--1508.
 
-Zhou, Y., Lee, J. J., and Yuan, Y. (2021).
-A utility-based Bayesian optimal interval design for phase I/II dose-finding trials.
-\emph{Pharmaceutical Statistics}, \bold{20}(1), 125--136.
+Zhou, Y., J. J. Lee, S. Wang, S. Bailey, and Y. Yuan (2021).
+Incorporating historical information to improve phase I clinical trials.
+\emph{Pharmaceutical Statistics 20}(6), 1017--1034.
 }

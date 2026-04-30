@@ -134,3 +134,8 @@ out <- get_OC_Insert_SKBD(
 out$insertion$trial_pct
 
 }
+\references{
+Chu, Y., H. Pan, and Y. Yuan (2016).
+Adaptive dose modification for phase I clinical trials.
+\emph{Statistics in Medicine 35}(20), 3497--3508.
+}

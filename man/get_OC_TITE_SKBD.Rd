@@ -165,3 +165,8 @@ out <- get_OC_TITE_SKBD(
 out$PCS
 
 }
+\references{
+Lin, R. and Y. Yuan (2020).
+Time-to-event model-assisted designs for dose-finding trials with delayed toxicity.
+\emph{Biostatistics 21}(4), 807--824.
+}

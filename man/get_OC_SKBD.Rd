@@ -88,11 +88,11 @@ dose/DLT paths to reduce memory usage. If \code{FALSE}, returns
 \value{
 A list with components:
 \itemize{
-\item \code{PCS}: percent correct selection (in \\%).
-\item \code{PCA}: percent correct allocation (in \\%).
-\item \code{above_MTD}: percent treated above the MTD (in \\%).
-\item \code{ROD60}, \code{ROD80}: risk of overdosing (in \\%), defined as the percent of trials
-with >60\\% or >80\\% patients treated above the MTD.
+\item \code{PCS}: percent correct selection (in \%).
+\item \code{PCA}: percent correct allocation (in \%).
+\item \code{above_MTD}: percent treated above the MTD (in \%).
+\item \code{ROD60}, \code{ROD80}: risk of overdosing (in \%), defined as the percent of trials
+with >60\% or >80\% patients treated above the MTD.
 \item \code{dose_select}: length-\code{n_trial} vector of selected MTD indices; \code{-1} indicates no MTD.
 \item \code{select_percent}: selection percentages for each dose and \code{-1}.
 \item \code{n_patient_mean}: mean number of patients per trial.
@@ -140,5 +140,5 @@ str(res)
 \references{
 Yan, F., Mandrekar, S. J., and Yuan, Y. (2017).
 Keyboard: A Novel Bayesian Toxicity Probability Interval Design for Phase I Clinical Trials.
-\emph{Clinical Cancer Research}, \bold{23}(15), 3994--4003. doi:10.1158/1078-0432.CCR-17-0220.
+\emph{Clinical Cancer Research 23}(15), 3994--4003.
 }

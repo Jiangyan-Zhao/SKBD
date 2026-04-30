@@ -73,6 +73,11 @@
 #'     with per-trial working grids, counts, elimination flags, insertion info, and early-stop indicator.}
 #' }
 #'
+#' @references
+#' Chu, Y., H. Pan, and Y. Yuan (2016). 
+#' Adaptive dose modification for phase I clinical trials.
+#' \emph{Statistics in Medicine 35}(20), 3497--3508.
+#' 
 #' @examples
 #' tox_prob <- c(0.14, 0.45, 0.63, 0.74, 0.80)
 #' dose_set <- c(5, 15, 25, 35, 45)

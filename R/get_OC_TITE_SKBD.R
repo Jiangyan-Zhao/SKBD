@@ -88,6 +88,11 @@
 #'     dose assignment paths and DLT indicators for each trial.}
 #' }
 #'
+#' @references
+#' Lin, R. and Y. Yuan (2020). 
+#' Time-to-event model-assisted designs for dose-finding trials with delayed toxicity. 
+#' \emph{Biostatistics 21}(4), 807--824.
+#' 
 #' @examples
 #' tox_prob <- c(0.05, 0.12, 0.20, 0.35, 0.50)
 #' out <- get_OC_TITE_SKBD(
