@@ -15,6 +15,7 @@ get_boundary_SKBD(
   k_left = 0.2,
   k_right = 0.8,
   ref_gap = NULL,
+  shared = TRUE,
   dose_set = 1:length(y),
   n_earlystop = 1000,
   margin_left = 0.05,
@@ -49,6 +50,9 @@ get_boundary_SKBD(
 
 \item{ref_gap}{Optional positive scalar. Reference spacing passed to \code{kernel_fun()}. If \code{NULL},
 kernel defaults to the minimum adjacent spacing in \code{dose_set}.}
+
+\item{shared}{Logical; if \code{TRUE}, use kernel-weighted borrowing across doses.
+If \code{FALSE}, use only current-dose data (identity kernel; no borrowing).}
 
 \item{dose_set}{Numeric vector of dose labels (default \code{1:length(y)}). Used only to compute kernel distances.}
 

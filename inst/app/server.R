@@ -1,30 +1,82 @@
 server <- function(input, output, session) {
-  parse_num_vec <- function(x) {
-    parts <- strsplit(x, ",", fixed = TRUE)[[1]]
-    vals <- trimws(parts)
-    vals <- vals[nzchar(vals)]
-    if (!length(vals)) {
-      return(numeric(0))
-    }
-    as.numeric(vals)
-  }
-
   output$app_version <- shiny::renderText({
     sprintf("Version %s | Style inspired by trialdesign.org", as.character(utils::packageVersion("SKBD")))
   })
 
-  boundary_res <- shiny::eventReactive(input$b_run, {
-    y <- parse_num_vec(input$b_y)
-    n <- parse_num_vec(input$b_n)
+  output$b_y_inputs <- shiny::renderUI({
     n_dose <- as.integer(input$b_n_dose)
+    if (is.na(n_dose) || n_dose < 1) {
+      n_dose <- 1L
+    }
+
+    shiny::tags$table(
+      class = "sim-grid-table",
+      shiny::tags$thead(
+        shiny::tags$tr(lapply(seq_len(n_dose), function(i) shiny::tags$th(paste0("D", i))))
+      ),
+      shiny::tags$tbody(
+        shiny::tags$tr(
+          lapply(seq_len(n_dose), function(i) {
+            shiny::tags$td(
+              shiny::numericInput(
+                inputId = paste0("b_y_", i),
+                label = NULL,
+                value = 0,
+                min = 0,
+                step = 1,
+                width = "80px"
+              )
+            )
+          })
+        )
+      )
+    )
+  })
+
+  output$b_n_inputs <- shiny::renderUI({
+    n_dose <- as.integer(input$b_n_dose)
+    if (is.na(n_dose) || n_dose < 1) {
+      n_dose <- 1L
+    }
+
+    shiny::tags$table(
+      class = "sim-grid-table",
+      shiny::tags$thead(
+        shiny::tags$tr(lapply(seq_len(n_dose), function(i) shiny::tags$th(paste0("D", i))))
+      ),
+      shiny::tags$tbody(
+        shiny::tags$tr(
+          lapply(seq_len(n_dose), function(i) {
+            shiny::tags$td(
+              shiny::numericInput(
+                inputId = paste0("b_n_", i),
+                label = NULL,
+                value = 0,
+                min = 0,
+                step = 1,
+                width = "80px"
+              )
+            )
+          })
+        )
+      )
+    )
+  })
+
+  boundary_res <- shiny::eventReactive(input$b_run, {
+    n_dose <- as.integer(input$b_n_dose)
+    y <- vapply(seq_len(n_dose), function(i) {
+      as.numeric(input[[paste0("b_y_", i)]])
+    }, numeric(1))
+    n <- vapply(seq_len(n_dose), function(i) {
+      as.numeric(input[[paste0("b_n_", i)]])
+    }, numeric(1))
     interval <- input$b_interval
     margin_left <- input$b_target - interval[1]
     margin_right <- interval[2] - input$b_target
 
     validate_msg <- NULL
-    if (is.na(n_dose) || n_dose < 1) {
-      validate_msg <- "Number of doses must be a positive integer."
-    } else if (!length(y) || !length(n)) {
+    if (!length(y) || !length(n)) {
       validate_msg <- "DLTs by dose and Treated by dose cannot be empty."
     } else if (any(is.na(y)) || any(is.na(n))) {
       validate_msg <- "Input y/n contains non-numeric values."
@@ -40,6 +92,8 @@ server <- function(input, output, session) {
       validate_msg <- "Target probability interval must stay inside (0, 1)."
     } else if (interval[1] >= input$b_target || interval[2] <= input$b_target) {
       validate_msg <- "Target toxicity probability must be inside the acceptable interval."
+    } else if (is.na(input$b_k_left) || is.na(input$b_k_right) || input$b_k_left < 0 || input$b_k_left > 1 || input$b_k_right < 0 || input$b_k_right > 1) {
+      validate_msg <- "Left-side and right-side borrowing strengths must both be within [0, 1]."
     }
 
     if (!is.null(validate_msg)) {
@@ -49,6 +103,10 @@ server <- function(input, output, session) {
     out <- try(
       SKBD::get_boundary_SKBD(
         target_prob = input$b_target,
+        shared = isTRUE(input$b_shared),
+        symmetric = isTRUE(input$b_symmetric),
+        k_left = input$b_k_left,
+        k_right = input$b_k_right,
         d = as.integer(input$b_d),
         y = y,
         n = n,
@@ -245,18 +303,21 @@ server <- function(input, output, session) {
     row_nodes <- lapply(seq_len(n_scenario), function(i) {
       row_values <- numeric(n_dose)
       for (j in seq_len(n_dose)) {
+        auto_generated <- FALSE
         base_value <- if (!is.null(uploaded_mat) && i <= nrow(uploaded_mat) && j <= ncol(uploaded_mat)) {
           uploaded_mat[i, j]
         } else if (i <= nrow(scenario_defaults) && j <= ncol(scenario_defaults)) {
           scenario_defaults[i, j]
         } else if (j == 1) {
+          auto_generated <- TRUE
           0.05
         } else {
+          auto_generated <- TRUE
           row_values[j - 1] + 0.06
         }
 
         row_values[j] <- base_value
-        if (j > 1) {
+        if (auto_generated && j > 1) {
           row_values[j] <- max(row_values[j], row_values[j - 1] + 0.06)
         }
         row_values[j] <- min(row_values[j], 0.99)
@@ -313,6 +374,10 @@ server <- function(input, output, session) {
       out <- try(
         SKBD::get_OC_SKBD(
           target_prob = input$b_target,
+          shared = isTRUE(input$b_shared),
+          symmetric = isTRUE(input$b_symmetric),
+          k_left = input$b_k_left,
+          k_right = input$b_k_right,
           tox_prob = as.numeric(tox_mat[i, ]),
           start_dose = as.integer(input$b_start_dose),
           n_cohort = as.integer(input$b_ncohort),
