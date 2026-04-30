@@ -120,7 +120,9 @@ server <- function(input, output, session) {
         cutoff_elimin = input$b_cutoff,
         extra_safe = isTRUE(input$b_extra_safe),
         offset = input$b_offset,
-        table_type = input$b_type
+        table_type = input$b_type,
+        show_past = input$b_type != "continue",
+        start_from = "next"
       ),
       silent = TRUE
     )
