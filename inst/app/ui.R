@@ -115,8 +115,7 @@ ui <- shiny::fluidPage(
                 width = 12,
                 shiny::div(
                   style = "background:#fff4d6;border:2px solid #f0b24d;border-left:6px solid #d98100;border-radius:6px;padding:10px 12px 6px 12px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);",
-                  shiny::div(style = "color:#9c4e00;font-weight:700;font-size:15px;margin-bottom:4px;", "⚠ Critical setting"),
-                  shiny::checkboxInput("b_shared", shiny::tags$strong("Use shared borrowing"), value = TRUE)
+                                    shiny::checkboxInput("b_shared", shiny::tags$strong("Use shared borrowing"), value = TRUE)
                 )
               )
             ),
@@ -133,7 +132,7 @@ ui <- shiny::fluidPage(
           ),
           shiny::div(
             class = "dose-alert-box",
-            shiny::div(class = "dose-alert-title", "⚠ Important: Current trial data"),
+            shiny::div(class = "dose-alert-title", "Current trial data"),
             shiny::div(
               class = "dose-alert-note",
               "Please keep these four fields consistent with the ongoing cohort. Enter one value per dose level (D1, D2, ...)."
