@@ -134,7 +134,7 @@ ui <- shiny::fluidPage(
               ),
               shiny::column(
                 width = 6,
-                shiny::selectInput("b_type", "Table type", choices = c("continue", "baseline"), selected = "continue")
+                shiny::selectInput("b_type", "Table type", choices = c("continue", "baseline"), selected = "baseline")
               )
             ),
             shiny::tags$div(

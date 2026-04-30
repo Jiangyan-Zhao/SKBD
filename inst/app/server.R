@@ -8,6 +8,7 @@ server <- function(input, output, session) {
     if (is.na(n_dose) || n_dose < 1) {
       n_dose <- 1L
     }
+    default_y <- c(0, 1, 2, 2)
 
     shiny::tags$table(
       class = "sim-grid-table",
@@ -21,7 +22,7 @@ server <- function(input, output, session) {
               shiny::numericInput(
                 inputId = paste0("b_y_", i),
                 label = NULL,
-                value = 0,
+                value = if (i <= length(default_y)) default_y[i] else 0,
                 min = 0,
                 step = 1,
                 width = "80px"
@@ -38,6 +39,7 @@ server <- function(input, output, session) {
     if (is.na(n_dose) || n_dose < 1) {
       n_dose <- 1L
     }
+    default_n <- c(3, 6, 9, 3)
 
     shiny::tags$table(
       class = "sim-grid-table",
@@ -51,7 +53,7 @@ server <- function(input, output, session) {
               shiny::numericInput(
                 inputId = paste0("b_n_", i),
                 label = NULL,
-                value = 0,
+                value = if (i <= length(default_n)) default_n[i] else 0,
                 min = 0,
                 step = 1,
                 width = "80px"
