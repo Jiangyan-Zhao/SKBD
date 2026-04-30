@@ -70,12 +70,35 @@ server <- function(input, output, session) {
     if (is.na(n_dose) || n_dose < 1) {
       n_dose <- 1L
     }
-    dose_values <- seq(0, 1, length.out = n_dose)
-    dose_labels <- paste0("D", seq_len(n_dose), "=", sprintf("%.2f", dose_values))
-    shiny::tags$div(
-      class = "small-note",
-      shiny::strong("Dose values (default equally spaced in [0,1]): "),
-      paste(dose_labels, collapse = ", ")
+    default_dose_values <- seq(0, 1, length.out = n_dose)
+
+    shiny::tagList(
+      shiny::tags$label(shiny::strong("Dose values by level:")),
+      shiny::tags$table(
+        class = "sim-grid-table",
+        shiny::tags$thead(
+          shiny::tags$tr(lapply(seq_len(n_dose), function(i) shiny::tags$th(paste0("D", i))))
+        ),
+        shiny::tags$tbody(
+          shiny::tags$tr(
+            lapply(seq_len(n_dose), function(i) {
+              shiny::tags$td(
+                shiny::numericInput(
+                  inputId = paste0("b_dose_", i),
+                  label = NULL,
+                  value = default_dose_values[i],
+                  step = 0.01,
+                  width = "90px"
+                )
+              )
+            })
+          )
+        )
+      ),
+      shiny::tags$div(
+        class = "small-note",
+        "Tip: Enter one numeric value per dose level (D1, D2, ...), strictly increasing."
+      )
     )
   })
 
