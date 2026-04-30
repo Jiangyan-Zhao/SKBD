@@ -133,7 +133,7 @@ ui <- shiny::fluidPage(
             shiny::fluidRow(
               shiny::column(
                 width = 6,
-                shiny::numericInput("b_d", "Current dose index d", value = 3, min = 1, step = 1, width = "100%")
+                shiny::numericInput("b_d", "Current dose index d", value = 3, min = 1, step = 1)
               ),
               shiny::column(
                 width = 6,
