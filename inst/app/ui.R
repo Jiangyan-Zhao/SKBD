@@ -181,7 +181,7 @@ ui <- shiny::fluidPage(
               shiny::div(class = "small-note", "Please download and fill in this template to avoid upload format errors.")
             ),
             shiny::fluidRow(
-              shiny::column(8, shiny::numericInput("o_ntrial", "Number of Simulations", value = 1000, min = 10, step = 10, width = "100%")),
+              shiny::column(8, shiny::numericInput("o_ntrial", "Number of Simulations", value = 1000, min = 10, step = 10)),
               shiny::column(4, shiny::numericInput("o_seed", "Set Seed", value = 6, min = 1, step = 1, width = "100%"))
             ),
             shiny::fluidRow(
