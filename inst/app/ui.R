@@ -132,7 +132,26 @@ ui <- shiny::fluidPage(
           ),
           shiny::div(
             class = "dose-alert-box",
-            shiny::div(class = "panel-heading dose-alert-title", "Current trial data"),
+            shiny::div(
+              class = "panel-heading dose-alert-title",
+              style = "position:relative;",
+              "Current Trial Data",
+              shiny::tags$button(
+                type = "button",
+                class = "btn btn-link",
+                style = "position:absolute;right:0;top:50%;transform:translateY(-50%);padding:0;line-height:1;border:none;text-decoration:none;color:#f39c12;font-size:18px;font-weight:700;",
+                `aria-label` = "Current trial data help",
+                `data-toggle` = "popover",
+                `data-container` = "body",
+                title = "Current trial data",
+                `data-content` = "Enter the interim data available at the current decision point.<br/>
+<strong>DLTs by dose</strong> and <strong>Treated by dose</strong> are cumulative counts at each dose level.<br/>
+<strong>Current dose index d</strong> is the dose currently under evaluation for the next cohort.<br/>
+Use <strong>continue</strong> to generate a decision using the accumulated trial data; use <strong>baseline</strong> to display the base Keyboard rule at the current dose.<br/>
+Require 0 &le; DLTs &le; treated for every dose.",
+                shiny::HTML("&#9432;")
+              )
+            ),
             shiny::div(
               class = "dose-alert-note",
               "Please keep these four fields consistent with the ongoing cohort. Enter one value per dose level (D1, D2, ...)."
