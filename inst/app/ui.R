@@ -84,7 +84,7 @@ ui <- shiny::fluidPage(
               ),
               shiny::column(
                 width = 4,
-                shiny::numericInput("b_earlystop", "Display columns up to #patients", value = 30, min = 1, step = 1)
+                shiny::numericInput("b_earlystop", "Early-stop cap per dose (#patients)", value = 30, min = 1, step = 1)
               )
             )
           ),

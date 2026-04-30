@@ -443,6 +443,7 @@ server <- function(input, output, session) {
           start_dose = as.integer(input$b_start_dose),
           n_cohort = as.integer(input$b_ncohort),
           cohort_size = as.integer(input$b_csize),
+          n_earlystop = as.integer(input$b_earlystop),
           n_trial = as.integer(input$o_ntrial),
           seed = as.integer(input$o_seed + i - 1L)
         ),
