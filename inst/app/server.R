@@ -156,6 +156,8 @@ server <- function(input, output, session) {
     DT::datatable(
       boundary_df,
       rownames = FALSE,
+      width = "100%",
+      class = "compact stripe",
       extensions = "Buttons",
       options = list(
         dom = "Bfrtip",
@@ -467,6 +469,8 @@ server <- function(input, output, session) {
     DT::datatable(
       display_df,
       rownames = FALSE,
+      width = "100%",
+      class = "compact stripe",
       extensions = "Buttons",
       options = list(
         dom = "Bfrtip",
