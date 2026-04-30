@@ -156,6 +156,8 @@ server <- function(input, output, session) {
     DT::datatable(
       boundary_df,
       rownames = FALSE,
+      width = "100%",
+      class = "compact stripe",
       extensions = "Buttons",
       options = list(
         dom = "Bfrtip",
@@ -164,7 +166,7 @@ server <- function(input, output, session) {
         searching = FALSE,
         info = FALSE,
         ordering = FALSE,
-        autoWidth = TRUE,
+        autoWidth = FALSE,
         scrollX = TRUE
       )
     )
@@ -467,6 +469,8 @@ server <- function(input, output, session) {
     DT::datatable(
       display_df,
       rownames = FALSE,
+      width = "100%",
+      class = "compact stripe",
       extensions = "Buttons",
       options = list(
         dom = "Bfrtip",
@@ -479,13 +483,8 @@ server <- function(input, output, session) {
         pageLength = 16,
         lengthChange = FALSE,
         ordering = FALSE,
-        autoWidth = TRUE,
-        scrollX = TRUE,
-        initComplete = DT::JS(
-          "function(settings, json) {",
-          "  this.api().columns.adjust().draw(false);",
-          "}"
-        )
+        autoWidth = FALSE,
+        scrollX = FALSE
       )
     )
   }, server = FALSE)
