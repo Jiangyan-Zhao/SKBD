@@ -54,12 +54,8 @@ ui <- shiny::fluidPage(
             shiny::div(class = "panel-heading", "Kernel Setting"),
             shiny::fluidRow(
               shiny::column(
-                width = 6,
+                width = 12,
                 shiny::checkboxInput("b_shared", "Use shared borrowing", value = TRUE)
-              ),
-              shiny::column(
-                width = 6,
-                shiny::checkboxInput("b_symmetric", "Use symmetric kernel", value = FALSE)
               )
             ),
             shiny::fluidRow(
