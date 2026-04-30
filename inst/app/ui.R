@@ -132,7 +132,7 @@ ui <- shiny::fluidPage(
           ),
           shiny::div(
             class = "dose-alert-box",
-            shiny::div(class = "dose-alert-title", "Current trial data"),
+            shiny::div(class = "panel-heading dose-alert-title", "Current trial data"),
             shiny::div(
               class = "dose-alert-note",
               "Please keep these four fields consistent with the ongoing cohort. Enter one value per dose level (D1, D2, ...)."
