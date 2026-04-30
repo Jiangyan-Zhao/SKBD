@@ -27,11 +27,11 @@ ui <- shiny::fluidPage(
             shiny::fluidRow(
               shiny::column(
                 width = 6,
-                shiny::numericInput("b_n_dose", "Number of doses:", value = 5, min = 1, step = 1)
+                shiny::numericInput("b_n_dose", "Number of doses:", value = 5, min = 1, step = 1, width = "100%")
               ),
               shiny::column(
                 width = 6,
-                shiny::numericInput("b_start_dose", "Starting dose level:", value = 1, min = 1, step = 1)
+                shiny::numericInput("b_start_dose", "Starting dose level:", value = 1, min = 1, step = 1, width = "100%")
               )
             ),
             shiny::uiOutput("b_dose_values")
@@ -39,7 +39,7 @@ ui <- shiny::fluidPage(
           shiny::div(
             class = "panel-card",
             shiny::div(class = "panel-heading", "Target Probability"),
-            shiny::numericInput("b_target", "Target Toxicity Probability ϕ :", value = 0.30, min = 0.01, max = 0.99, step = 0.01),
+            shiny::numericInput("b_target", "Target Toxicity Probability ϕ :", value = 0.30, min = 0.01, max = 0.99, step = 0.01, width = "100%"),
             shiny::sliderInput(
               "b_interval",
               "Acceptable toxicity probability interval:",
@@ -76,17 +76,17 @@ ui <- shiny::fluidPage(
             shiny::fluidRow(
               shiny::column(
                 width = 6,
-                shiny::numericInput("b_csize", "Cohort size", value = 3, min = 1, step = 1)
+                shiny::numericInput("b_csize", "Cohort size", value = 3, min = 1, step = 1, width = "100%")
               ),
               shiny::column(
                 width = 6,
-                shiny::numericInput("b_ncohort", "Number of cohorts", value = 10, min = 1, step = 1)
+                shiny::numericInput("b_ncohort", "Number of cohorts", value = 10, min = 1, step = 1, width = "100%")
               )
             ),
             shiny::fluidRow(
               shiny::column(
                 width = 12,
-                shiny::numericInput("b_earlystop", "Stop trial if the number of patients assigned to single dose reaches m and the decision is to stay, where n =", value = 30, min = 1, step = 1)
+                shiny::numericInput("b_earlystop", "Stop trial if the number of patients assigned to single dose reaches m and the decision is to stay, where n =", value = 30, min = 1, step = 1, width = "100%")
               )
             )
           ),
@@ -96,11 +96,11 @@ ui <- shiny::fluidPage(
             shiny::fluidRow(
               shiny::column(
                 width = 6,
-                shiny::numericInput("b_cutoff", "Eliminate if Pr(p_d > phi | data) >", value = 0.95, min = 0.5, max = 0.999, step = 0.01)
+                shiny::numericInput("b_cutoff", "Eliminate if Pr(p_d > phi | data) >", value = 0.95, min = 0.5, max = 0.999, step = 0.01, width = "100%")
               ),
               shiny::column(
                 width = 6,
-                shiny::numericInput("b_offset", "Extra-safe offset", value = 0.05, min = 0, max = 0.49, step = 0.01)
+                shiny::numericInput("b_offset", "Extra-safe offset", value = 0.05, min = 0, max = 0.49, step = 0.01, width = "100%")
               )
             ),
             shiny::checkboxInput("b_extra_safe", "Apply extra-safe stopping rule at lowest dose", value = FALSE),
@@ -133,7 +133,7 @@ ui <- shiny::fluidPage(
             shiny::fluidRow(
               shiny::column(
                 width = 6,
-                shiny::numericInput("b_d", "Current dose index d", value = 3, min = 1, step = 1)
+                shiny::numericInput("b_d", "Current dose index d", value = 3, min = 1, step = 1, width = "100%")
               ),
               shiny::column(
                 width = 6,
@@ -181,8 +181,8 @@ ui <- shiny::fluidPage(
               shiny::div(class = "small-note", "Please download and fill in this template to avoid upload format errors.")
             ),
             shiny::fluidRow(
-              shiny::column(8, shiny::numericInput("o_ntrial", "Number of Simulations", value = 1000, min = 10, step = 10)),
-              shiny::column(4, shiny::numericInput("o_seed", "Set Seed", value = 6, min = 1, step = 1))
+              shiny::column(8, shiny::numericInput("o_ntrial", "Number of Simulations", value = 1000, min = 10, step = 10, width = "100%")),
+              shiny::column(4, shiny::numericInput("o_seed", "Set Seed", value = 6, min = 1, step = 1, width = "100%"))
             ),
             shiny::fluidRow(
               shiny::column(4, shiny::actionButton("o_add_scn", "Add", class = "btn-sim")),
