@@ -65,33 +65,17 @@ server <- function(input, output, session) {
     )
   })
 
-  output$b_dose_inputs <- shiny::renderUI({
+  output$b_dose_values <- shiny::renderUI({
     n_dose <- as.integer(input$b_n_dose)
     if (is.na(n_dose) || n_dose < 1) {
       n_dose <- 1L
     }
-    default_dose <- seq(0, 1, length.out = n_dose)
-
-    shiny::tags$table(
-      class = "sim-grid-table",
-      shiny::tags$thead(
-        shiny::tags$tr(lapply(seq_len(n_dose), function(i) shiny::tags$th(paste0("D", i))))
-      ),
-      shiny::tags$tbody(
-        shiny::tags$tr(
-          lapply(seq_len(n_dose), function(i) {
-            shiny::tags$td(
-              shiny::numericInput(
-                inputId = paste0("b_dose_", i),
-                label = NULL,
-                value = default_dose[i],
-                step = 0.01,
-                width = "80px"
-              )
-            )
-          })
-        )
-      )
+    dose_values <- seq(0, 1, length.out = n_dose)
+    dose_labels <- paste0("D", seq_len(n_dose), "=", sprintf("%.2f", dose_values))
+    shiny::tags$div(
+      class = "small-note",
+      shiny::strong("Dose values (default equally spaced in [0,1]): "),
+      paste(dose_labels, collapse = ", ")
     )
   })
 
