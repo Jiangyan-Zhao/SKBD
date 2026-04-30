@@ -65,6 +65,36 @@ server <- function(input, output, session) {
     )
   })
 
+  output$b_dose_inputs <- shiny::renderUI({
+    n_dose <- as.integer(input$b_n_dose)
+    if (is.na(n_dose) || n_dose < 1) {
+      n_dose <- 1L
+    }
+    default_dose <- seq(0, 1, length.out = n_dose)
+
+    shiny::tags$table(
+      class = "sim-grid-table",
+      shiny::tags$thead(
+        shiny::tags$tr(lapply(seq_len(n_dose), function(i) shiny::tags$th(paste0("D", i))))
+      ),
+      shiny::tags$tbody(
+        shiny::tags$tr(
+          lapply(seq_len(n_dose), function(i) {
+            shiny::tags$td(
+              shiny::numericInput(
+                inputId = paste0("b_dose_", i),
+                label = NULL,
+                value = default_dose[i],
+                step = 0.01,
+                width = "80px"
+              )
+            )
+          })
+        )
+      )
+    )
+  })
+
   boundary_res <- shiny::eventReactive(input$b_run, {
     n_dose <- as.integer(input$b_n_dose)
     y <- vapply(seq_len(n_dose), function(i) {
@@ -72,6 +102,9 @@ server <- function(input, output, session) {
     }, numeric(1))
     n <- vapply(seq_len(n_dose), function(i) {
       as.numeric(input[[paste0("b_n_", i)]])
+    }, numeric(1))
+    dose_set <- vapply(seq_len(n_dose), function(i) {
+      as.numeric(input[[paste0("b_dose_", i)]])
     }, numeric(1))
     interval <- input$b_interval
     margin_left <- input$b_target - interval[1]
@@ -86,6 +119,10 @@ server <- function(input, output, session) {
       validate_msg <- sprintf("Vectors y and n must each contain exactly %d values.", n_dose)
     } else if (any(y < 0) || any(n < 0) || any(y > n)) {
       validate_msg <- "Require 0 <= y <= n for every dose."
+    } else if (any(is.na(dose_set)) || !all(is.finite(dose_set))) {
+      validate_msg <- "Dose values must be finite numeric values."
+    } else if (anyDuplicated(dose_set) || is.unsorted(dose_set, strictly = TRUE)) {
+      validate_msg <- "Dose values must be strictly increasing with no duplicates."
     } else if (input$b_d < 1 || input$b_d > n_dose) {
       validate_msg <- sprintf("Current dose index d must be between 1 and %d.", n_dose)
     } else if (input$b_start_dose < 1 || input$b_start_dose > n_dose) {
@@ -112,6 +149,7 @@ server <- function(input, output, session) {
         d = as.integer(input$b_d),
         y = y,
         n = n,
+        dose_set = dose_set,
         n_cohort = as.integer(input$b_ncohort),
         cohort_size = as.integer(input$b_csize),
         n_earlystop = as.integer(input$b_earlystop),
@@ -369,11 +407,19 @@ server <- function(input, output, session) {
 
   oc_res <- shiny::eventReactive(input$o_run, {
     tox_mat <- get_scenario_matrix()
+    n_dose <- scenario_dim$n_dose
+    dose_set <- vapply(seq_len(n_dose), function(i) {
+      as.numeric(input[[paste0("b_dose_", i)]])
+    }, numeric(1))
     if (!nrow(tox_mat) || !ncol(tox_mat) || any(is.na(tox_mat))) {
       return(list(error = "Please provide numeric toxicity probabilities for all scenario cells."))
     }
     if (any(tox_mat <= 0 | tox_mat >= 1)) {
       return(list(error = "All toxicity probabilities must be within (0, 1)."))
+    }
+    if (any(is.na(dose_set)) || !all(is.finite(dose_set)) ||
+        anyDuplicated(dose_set) || is.unsorted(dose_set, strictly = TRUE)) {
+      return(list(error = "Dose values must be finite numeric values and strictly increasing."))
     }
 
     scenario_outputs <- vector("list", nrow(tox_mat))
@@ -386,6 +432,7 @@ server <- function(input, output, session) {
           k_left = input$b_k_left,
           k_right = input$b_k_right,
           tox_prob = as.numeric(tox_mat[i, ]),
+          dose_set = dose_set,
           start_dose = as.integer(input$b_start_dose),
           n_cohort = as.integer(input$b_ncohort),
           cohort_size = as.integer(input$b_csize),
