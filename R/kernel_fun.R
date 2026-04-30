@@ -1,124 +1,238 @@
 #' Asymmetric/symmetric kernel with interpretable neighbor borrowing strengths
 #'
 #' @description
-#' `kernel_fun()` computes kernel similarities between a target dose value `dose` and a set of dose
-#' locations `dose_set` (typically on a standardized scale, e.g., `[0,1]`).
+#' `kernel_fun()` computes kernel similarities between a target dose value `dose`
+#' and a set of dose locations `dose_set`, typically on a standardized scale,
+#' e.g., `[0, 1]`.
 #'
-#' Unlike the conventional parameterization that requires users to specify decay parameters
-#' `theta` directly, this kernel is parameterized by **interpretable neighbor kernel values**:
-#' `k_left` and `k_right`, which represent the desired kernel similarity at a reference distance
-#' `ref_gap` on the left and right sides, respectively. The decay parameters are inferred internally via
-#' \deqn{\theta = -\log(k) / \text{ref\_gap}^2.}
+#' Unlike the conventional parameterization that requires users to specify decay
+#' parameters `theta` directly, this kernel is parameterized by interpretable
+#' neighbor kernel values: `k_left` and `k_right`. These values represent the
+#' desired kernel similarity at a reference distance `ref_gap` on the left and
+#' right sides, respectively.
 #'
 #' @details
-#' The kernel takes the form \eqn{k(d,d_s)=\exp\{-\theta(d-d_s)^2\}}.
-#'
-#' \itemize{
-#'   \item **Asymmetric mode** (`symmetric = FALSE`):
-#'     \eqn{\theta_1} is used for dose locations strictly below `dose` (`dose_set < dose`),
-#'     and \eqn{\theta_2} is used for dose locations at or above `dose` (`dose_set >= dose`),
-#'     where
-#'     \deqn{\theta_1 = -\log(k_{\text{left}})/\text{ref\_gap}^2,\qquad
-#'           \theta_2 = -\log(k_{\text{right}})/\text{ref\_gap}^2.}
-#'     If `k_right > k_left`, then \eqn{\theta_2 < \theta_1}, meaning the kernel decays more slowly
-#'     on the right side (stronger borrowing from higher doses), matching the typical safety-oriented
-#'     SKBD/BKP borrowing direction.
-#'
-#'   \item **Symmetric mode** (`symmetric = TRUE`):
-#'     A single \eqn{\theta} is inferred using `k_right` (or its default) at distance `ref_gap`.
+#' For interior values `0 < k < 1`, the kernel takes the Gaussian form
+#' \deqn{
+#'   k(d,d_s)=\exp\{-\theta(d-d_s)^2\},
+#' }
+#' where
+#' \deqn{
+#'   \theta = -\log(k) / \text{ref\_gap}^2.
 #' }
 #'
-#' The default `ref_gap` is set to the minimum adjacent spacing in `dose_set`, i.e.,
-#' `min(diff(dose_set))`. This makes `k_left`/`k_right` interpretable as the desired borrowing strength
-#' at the smallest dose spacing on the current grid.
+#' Boundary values are handled explicitly:
+#' \itemize{
+#'   \item `k = 0` means no borrowing from that side, except the target dose
+#'         itself, whose kernel weight is always 1.
+#'   \item `k = 1` means full borrowing from that side, with no distance decay.
+#' }
 #'
-#' @param dose Numeric scalar. Target dose value (standardized dose level, not an index).
-#' @param dose_set Numeric vector. Dose locations at which to evaluate similarity (standardized doses).
-#'   Typically strictly increasing.
-#' @param symmetric Logical. If `TRUE`, use a single symmetric decay; if `FALSE` (default), use an
-#'   asymmetric decay with separate left/right decay rates.
-#' @param k_left Numeric scalar in `(0,1)`. Desired kernel value at distance `ref_gap` for dose locations
-#'   strictly below `dose` (`dose_set < dose`). Default is `0.2` when omitted.
-#' @param k_right Numeric scalar in `(0,1)`. Desired kernel value at distance `ref_gap` for dose locations
-#'   at or above `dose` (`dose_set >= dose`). Default is `0.8` when omitted.
-#' @param ref_gap Numeric scalar. Reference distance used to interpret `k_left` and `k_right`.
-#'   If `NULL`, defaults to `min(diff(dose_set))`. Must be positive and finite.
+#' In asymmetric mode (`symmetric = FALSE`), `k_left` controls borrowing from
+#' dose locations strictly below `dose`, whereas `k_right` controls borrowing
+#' from dose locations strictly above `dose`. The target dose itself always has
+#' kernel weight 1.
 #'
-#' @return Numeric vector. Kernel similarities `k` of length `length(dose_set)`, with entries in `(0,1]`.
+#' In symmetric mode (`symmetric = TRUE`), a single symmetric kernel is used.
+#' By convention, `k_right` is used as the reference similarity.
+#'
+#' The default `ref_gap` is the minimum adjacent spacing in `dose_set`.
+#'
+#' @param dose Numeric scalar. Target dose value, usually a standardized dose
+#'   value rather than a dose index.
+#' @param dose_set Numeric vector. Dose locations at which to evaluate the
+#'   kernel similarity.
+#' @param symmetric Logical. If `TRUE`, use a single symmetric decay. If
+#'   `FALSE`, use separate left/right borrowing strengths.
+#' @param k_left Numeric scalar in `[0, 1]`. Desired kernel value at distance
+#'   `ref_gap` for dose locations strictly below `dose`. If `NULL`, defaults
+#'   to `0.2`.
+#' @param k_right Numeric scalar in `[0, 1]`. Desired kernel value at distance
+#'   `ref_gap` for dose locations strictly above `dose`. If `NULL`, defaults
+#'   to `0.8`.
+#' @param ref_gap Numeric scalar. Reference distance used to interpret
+#'   `k_left` and `k_right`. If `NULL`, defaults to the minimum adjacent
+#'   spacing in `dose_set`.
+#'
+#' @return Numeric vector of kernel similarities with length `length(dose_set)`.
+#'   Entries are in `[0, 1]`.
 #'
 #' @examples
 #' dose_set = c(0.25, 0.50, 0.75)
 #'
-#' # Asymmetric borrowing: weaker from the left (0.2), stronger from the right (0.8)
-#' kernel_fun(dose = 0.50, dose_set = dose_set, symmetric = FALSE, k_left = 0.2, k_right = 0.8)
+#' kernel_fun(
+#'   dose = 0.50,
+#'   dose_set = dose_set,
+#'   symmetric = FALSE,
+#'   k_left = 0.2,
+#'   k_right = 0.8
+#' )
 #'
-#' # Symmetric borrowing using k_right as the reference similarity
-#' kernel_fun(dose = 0.50, dose_set = dose_set, symmetric = TRUE, k_right = 0.5)
+#' kernel_fun(
+#'   dose = 0.50,
+#'   dose_set = dose_set,
+#'   symmetric = TRUE,
+#'   k_right = 0.5
+#' )
 #'
-#' # Fix the reference distance explicitly (instead of using min(diff(dose_set)))
-#' kernel_fun(dose = 0.50, dose_set = dose_set, symmetric = FALSE,
-#'            k_left = 0.2, k_right = 0.8, ref_gap = 0.25)
+#' kernel_fun(
+#'   dose = 0.50,
+#'   dose_set = dose_set,
+#'   symmetric = FALSE,
+#'   k_left = 0,
+#'   k_right = 1
+#' )
 #'
 #' @noRd
 kernel_fun <- function(
-    dose, dose_set,
+    dose,
+    dose_set,
     symmetric = FALSE,
-    k_left = NULL, k_right = NULL,
+    k_left = NULL,
+    k_right = NULL,
     ref_gap = NULL
-){
-  # dose: scalar standardized dose (not index)
-  # dose_set: vector of standardized dose locations (not indices)
+) {
   
-  # ---- Validate neighbor kernel values (defaults if missing) ----
-  # Require at least one of k_left/k_right; fill missing side with defaults
-  if (is.null(k_left) && is.null(k_right)) {
-    stop("please provide `k_left` and/or `k_right` (both in (0,1)).")
-  }
-  if (is.null(k_left))  k_left  = 0.2
-  if (is.null(k_right)) k_right = 0.8
-  
-  # Ensure both neighbor kernel values are scalars in (0,1)
-  if (!is.numeric(k_left)  || length(k_left)  != 1 || !(0 < k_left  && k_left  < 1)) {
-    stop("`k_left` must be a scalar in (0,1).")
-  }
-  if (!is.numeric(k_right) || length(k_right) != 1 || !(0 < k_right && k_right < 1)) {
-    stop("`k_right` must be a scalar in (0,1).")
+  # ---- Validate dose ----
+  if (!is.numeric(dose) || length(dose) != 1L || !is.finite(dose)) {
+    stop("`dose` must be a finite numeric scalar.", call. = FALSE)
   }
   
-  # ---- Choose reference distance (gap) ----
-  # Default: smallest adjacent spacing in dose_set (interprets k_left/k_right as neighbor borrowing)
+  # ---- Validate dose_set ----
+  if (!is.numeric(dose_set) ||
+      length(dose_set) < 1L ||
+      any(!is.finite(dose_set))) {
+    stop("`dose_set` must be a finite numeric vector.", call. = FALSE)
+  }
+  
+  dose_set <- as.numeric(dose_set)
+  
+  # ---- Validate symmetric ----
+  if (!is.logical(symmetric) || length(symmetric) != 1L || is.na(symmetric)) {
+    stop("`symmetric` must be either TRUE or FALSE.", call. = FALSE)
+  }
+  
+  # ---- Set default neighbor kernel values ----
+  if (is.null(k_left)) {
+    k_left <- 0.2
+  }
+  
+  if (is.null(k_right)) {
+    k_right <- 0.8
+  }
+  
+  # ---- Validate neighbor kernel values ----
+  if (!is.numeric(k_left) ||
+      length(k_left) != 1L ||
+      !is.finite(k_left) ||
+      k_left < 0 ||
+      k_left > 1) {
+    stop("`k_left` must be a scalar in [0, 1].", call. = FALSE)
+  }
+  
+  if (!is.numeric(k_right) ||
+      length(k_right) != 1L ||
+      !is.finite(k_right) ||
+      k_right < 0 ||
+      k_right > 1) {
+    stop("`k_right` must be a scalar in [0, 1].", call. = FALSE)
+  }
+  
+  # ---- Choose reference distance ----
   if (is.null(ref_gap)) {
-    if (length(dose_set) < 2) stop("need at least two distinct dose points to infer ref_gap.")
-    ref_gap = min(diff(dose_set))
-  }
-  if (!is.numeric(ref_gap) || length(ref_gap) != 1 || !is.finite(ref_gap) || ref_gap <= 0) {
-    stop("`ref_gap` must be a positive finite scalar.")
+    
+    dose_set_unique <- sort(unique(dose_set))
+    
+    if (length(dose_set_unique) < 2L) {
+      stop(
+        "Need at least two distinct dose points to infer `ref_gap`.",
+        call. = FALSE
+      )
+    }
+    
+    ref_gap <- min(diff(dose_set_unique))
   }
   
-  # ---- Infer decay parameter(s) theta internally from neighbor kernel values ----
-  # exp(-theta * ref_gap^2) = k  =>  theta = -log(k) / ref_gap^2
-  if (symmetric) {
+  if (!is.numeric(ref_gap) ||
+      length(ref_gap) != 1L ||
+      !is.finite(ref_gap) ||
+      ref_gap <= 0) {
+    stop("`ref_gap` must be a positive finite scalar.", call. = FALSE)
+  }
+  
+  # ---- Compute kernel values ----
+  tol <- sqrt(.Machine$double.eps)
+  k <- numeric(length(dose_set))
+  
+  if (isTRUE(symmetric)) {
     
-    # Symmetric kernel: use one theta based on k_right (default 0.8 if omitted)
-    k0 = k_right
-    theta = -log(k0) / (ref_gap^2)
+    dist <- abs(dose - dose_set)
+    same_id <- dist <= tol
     
-    # Compute symmetric Gaussian kernel values
-    k = exp(-theta * (dose - dose_set)^2)
+    if (k_right == 0) {
+      
+      k[] <- 0
+      k[same_id] <- 1
+      
+    } else if (k_right == 1) {
+      
+      k[] <- 1
+      
+    } else {
+      
+      theta <- -log(k_right) / (ref_gap^2)
+      k <- exp(-theta * dist^2)
+      k[same_id] <- 1
+    }
     
   } else {
     
-    # Asymmetric kernel: different decay on left and right sides of `dose`
-    theta1 = -log(k_left)  / (ref_gap^2)  # left side (dose_set < dose): typically steeper decay
-    theta2 = -log(k_right) / (ref_gap^2)  # right side (dose_set >= dose): typically slower decay
+    left_id <- dose_set < dose - tol
+    same_id <- abs(dose_set - dose) <= tol
+    right_id <- dose_set > dose + tol
     
-    # Assign side-specific theta by comparing dose_set locations to dose
-    n_dose = length(dose_set)
-    n_dose_left = sum(dose_set < dose)
-    theta_set = c(rep(theta1, n_dose_left), rep(theta2, n_dose - n_dose_left))
+    # Target dose itself always has weight 1.
+    k[same_id] <- 1
     
-    # Compute asymmetric Gaussian kernel values
-    k = exp(-theta_set * (dose - dose_set)^2)
+    # Left-side borrowing.
+    if (any(left_id)) {
+      
+      dist_left <- dose - dose_set[left_id]
+      
+      if (k_left == 0) {
+        
+        k[left_id] <- 0
+        
+      } else if (k_left == 1) {
+        
+        k[left_id] <- 1
+        
+      } else {
+        
+        theta1 <- -log(k_left) / (ref_gap^2)
+        k[left_id] <- exp(-theta1 * dist_left^2)
+      }
+    }
+    
+    # Right-side borrowing.
+    if (any(right_id)) {
+      
+      dist_right <- dose_set[right_id] - dose
+      
+      if (k_right == 0) {
+        
+        k[right_id] <- 0
+        
+      } else if (k_right == 1) {
+        
+        k[right_id] <- 1
+        
+      } else {
+        
+        theta2 <- -log(k_right) / (ref_gap^2)
+        k[right_id] <- exp(-theta2 * dist_right^2)
+      }
+    }
   }
   
   return(k)
