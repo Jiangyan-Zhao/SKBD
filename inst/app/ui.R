@@ -86,7 +86,7 @@ ui <- shiny::fluidPage(
             shiny::fluidRow(
               shiny::column(
                 width = 12,
-                shiny::numericInput("b_earlystop", "Stop trial if the number of patients assigned to single dose reaches m and the decision is to stay, where n =", value = 30, min = 1, step = 1)
+                shiny::numericInput("b_earlystop", "Stop trial if the number of patients assigned to single dose reaches n and the decision is to stay, where n =", value = 30, min = 1, step = 1, width = "100%")
               )
             )
           ),
