@@ -55,45 +55,6 @@ ui <- shiny::fluidPage(
           ),
           shiny::div(
             class = "panel-card",
-            shiny::div(
-              class = "panel-heading",
-              style = "position:relative;",
-              "Kernel Setting",
-              shiny::tags$button(
-                type = "button",
-                class = "btn btn-link",
-                style = "position:absolute;right:0;top:50%;transform:translateY(-50%);padding:0;line-height:1;border:none;text-decoration:none;color:#f39c12;font-size:18px;font-weight:700;",
-                `aria-label` = "Shared borrowing help",
-                `data-toggle` = "popover",
-                `data-container` = "body",
-                title = "Shared borrowing",
-                `data-content` = "Checked: SKBD uses kernel-based borrowing across dose levels.<br/>Unchecked: the design reduces to the ordinary Keyboard design, and the left- and right-side borrowing strengths are ignored.",
-                shiny::HTML("&#9432;")
-              )
-            ),
-            shiny::fluidRow(
-              shiny::column(
-                width = 12,
-                shiny::div(
-                  style = "background:#fff4d6;border:2px solid #f0b24d;border-left:6px solid #d98100;border-radius:6px;padding:10px 12px 6px 12px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);",
-                  shiny::div(style = "color:#9c4e00;font-weight:700;font-size:15px;margin-bottom:4px;", "⚠ Critical setting"),
-                  shiny::checkboxInput("b_shared", "Use shared borrowing", value = TRUE)
-                )
-              )
-            ),
-            shiny::fluidRow(
-              shiny::column(
-                width = 6,
-                shiny::sliderInput("b_k_left", "Left-side borrowing strength", value = 0.2, min = 0, max = 1, step = 0.01, width = "100%")
-              ),
-              shiny::column(
-                width = 6,
-                shiny::sliderInput("b_k_right", "Right-side borrowing strength", value = 0.8, min = 0, max = 1, step = 0.01, width = "100%")
-              )
-            )
-          ),
-          shiny::div(
-            class = "panel-card",
             shiny::div(class = "panel-heading", "Sample Size"),
             shiny::fluidRow(
               shiny::column(
@@ -131,6 +92,45 @@ ui <- shiny::fluidPage(
         ),
         shiny::column(
           width = 8,
+          shiny::div(
+            class = "panel-card",
+            shiny::div(
+              class = "panel-heading",
+              style = "position:relative;",
+              "Kernel Setting",
+              shiny::tags$button(
+                type = "button",
+                class = "btn btn-link",
+                style = "position:absolute;right:0;top:50%;transform:translateY(-50%);padding:0;line-height:1;border:none;text-decoration:none;color:#f39c12;font-size:18px;font-weight:700;",
+                `aria-label` = "Shared borrowing help",
+                `data-toggle` = "popover",
+                `data-container` = "body",
+                title = "Shared borrowing",
+                `data-content` = "Checked: SKBD uses kernel-based borrowing across dose levels.<br/>Unchecked: the design reduces to the ordinary Keyboard design, and the left- and right-side borrowing strengths are ignored.",
+                shiny::HTML("&#9432;")
+              )
+            ),
+            shiny::fluidRow(
+              shiny::column(
+                width = 12,
+                shiny::div(
+                  style = "background:#fff4d6;border:2px solid #f0b24d;border-left:6px solid #d98100;border-radius:6px;padding:10px 12px 6px 12px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);",
+                  shiny::div(style = "color:#9c4e00;font-weight:700;font-size:15px;margin-bottom:4px;", "⚠ Critical setting"),
+                  shiny::checkboxInput("b_shared", shiny::tags$strong("Use shared borrowing"), value = TRUE)
+                )
+              )
+            ),
+            shiny::fluidRow(
+              shiny::column(
+                width = 6,
+                shiny::sliderInput("b_k_left", "Left-side borrowing strength", value = 0.2, min = 0, max = 1, step = 0.01, width = "100%")
+              ),
+              shiny::column(
+                width = 6,
+                shiny::sliderInput("b_k_right", "Right-side borrowing strength", value = 0.8, min = 0, max = 1, step = 0.01, width = "100%")
+              )
+            )
+          ),
           shiny::div(
             class = "dose-alert-box",
             shiny::div(class = "dose-alert-title", "⚠ Important: Current trial data"),
