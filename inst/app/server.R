@@ -65,6 +65,20 @@ server <- function(input, output, session) {
     )
   })
 
+  output$b_dose_values <- shiny::renderUI({
+    n_dose <- as.integer(input$b_n_dose)
+    if (is.na(n_dose) || n_dose < 1) {
+      n_dose <- 1L
+    }
+    dose_values <- seq(0, 1, length.out = n_dose)
+    dose_labels <- paste0("D", seq_len(n_dose), "=", sprintf("%.2f", dose_values))
+    shiny::tags$div(
+      class = "small-note",
+      shiny::strong("Dose values (default equally spaced in [0,1]): "),
+      paste(dose_labels, collapse = ", ")
+    )
+  })
+
   boundary_res <- shiny::eventReactive(input$b_run, {
     n_dose <- as.integer(input$b_n_dose)
     y <- vapply(seq_len(n_dose), function(i) {
