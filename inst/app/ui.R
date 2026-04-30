@@ -33,7 +33,8 @@ ui <- shiny::fluidPage(
                 width = 6,
                 shiny::numericInput("b_start_dose", "Starting dose level:", value = 1, min = 1, step = 1)
               )
-            )
+            ),
+            shiny::uiOutput("b_dose_values")
           ),
           shiny::div(
             class = "panel-card",
