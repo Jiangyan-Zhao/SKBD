@@ -75,16 +75,18 @@ ui <- shiny::fluidPage(
             shiny::div(class = "panel-heading", "Sample Size"),
             shiny::fluidRow(
               shiny::column(
-                width = 4,
+                width = 6,
                 shiny::numericInput("b_csize", "Cohort size", value = 3, min = 1, step = 1)
               ),
               shiny::column(
-                width = 4,
+                width = 6,
                 shiny::numericInput("b_ncohort", "Number of cohorts", value = 10, min = 1, step = 1)
-              ),
+              )
+            ),
+            shiny::fluidRow(
               shiny::column(
-                width = 4,
-                shiny::numericInput("b_earlystop", "Early-stop cap per dose (#patients)", value = 30, min = 1, step = 1)
+                width = 12,
+                shiny::numericInput("b_earlystop", "Stop trial if the number of patients assigned to single dose reaches m and the decision is to stay, where n =", value = 30, min = 1, step = 1)
               )
             )
           ),
