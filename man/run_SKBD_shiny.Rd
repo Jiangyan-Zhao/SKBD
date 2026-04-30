@@ -4,10 +4,22 @@
 \alias{run_SKBD_shiny}
 \title{Launch an Interactive Shiny App for SKBD}
 \usage{
-run_SKBD_shiny(launch.browser = TRUE)
+run_SKBD_shiny(
+  launch.browser = getOption("shiny.launch.browser", interactive()),
+  ...
+)
 }
 \arguments{
-\item{launch.browser}{Logical; passed to \code{\link[shiny:runApp]{shiny::runApp()}}.}
+\item{launch.browser}{Logical or function; controls whether and how the app is
+opened after launch. The default is
+\code{getOption("shiny.launch.browser", interactive())}, which follows the
+standard behavior of \code{\link[shiny:runApp]{shiny::runApp()}}. In RStudio, this typically opens the
+app in the RStudio Viewer or Shiny window. Set \code{launch.browser = TRUE} to
+open the app in the system default browser, or \code{launch.browser = FALSE} to
+start the app without opening a browser.}
+
+\item{...}{Additional arguments passed to \code{\link[shiny:runApp]{shiny::runApp()}}, such as \code{port},
+\code{host}, or \code{display.mode}.}
 }
 \value{
 Invisibly returns the value from \code{\link[shiny:runApp]{shiny::runApp()}}.
@@ -20,16 +32,25 @@ characteristic simulation.
 \details{
 The app currently provides two tabs:
 \itemize{
-\item \strong{Boundary (SKBD):} interactively compute
-\code{get_boundary_SKBD()} and inspect escalation/de-escalation/elimination
-boundaries.
-\item \strong{OC Simulation (SKBD):} interactively run \code{get_OC_SKBD()}
-and inspect summary metrics.
+\item \strong{Trial Setting:} interactively generate dose-escalation and
+de-escalation boundary tables.
+\item \strong{Simulation:} run batch simulations under user-specified
+scenarios and summarize the operating characteristics.
 }
+
+By default, the app follows the standard behavior of \code{\link[shiny:runApp]{shiny::runApp()}}. In
+RStudio, this typically opens the app in the RStudio Viewer or Shiny window;
+in other R sessions, it may open in the system default browser.
 }
 \examples{
 \dontrun{
 run_SKBD_shiny()
+
+# Open in the system default browser
+run_SKBD_shiny(launch.browser = TRUE)
+
+# Start the app without opening a browser
+run_SKBD_shiny(launch.browser = FALSE)
 }
 
 }

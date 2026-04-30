@@ -6,26 +6,28 @@
 [![R-CMD-check](https://github.com/Jiangyan-Zhao/SKBD/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Jiangyan-Zhao/SKBD/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-`SKBD` implements the shared keyboard design (SKBD) for model-assisted
-phase I dose-finding trials. The package provides tools for
+`SKBD` implements the **Shared Keyboard Design (SKBD)** for
+model-assisted phase I dose-finding trials.
 
-- constructing decision tables for the shared keyboard design,
-- simulating operating characteristics under the standard SKBD,
-- extending SKBD to time-to-event settings with late-onset toxicity, and
-- evaluating adaptive dose insertion under a shared-keyboard framework.
+The package provides practical tools for:
 
-The package is intended for method development, operating-characteristic
-evaluation, and practical exploration of shared keyboard decision rules
-in phase I oncology trials.
+- generating SKBD decision tables,
+- evaluating trial operating characteristics through simulation,
+- extending SKBD to time-to-event settings with delayed toxicity
+  outcomes, and
+- assessing adaptive dose insertion under a shared-borrowing framework.
+
+`SKBD` is designed for method development, simulation-based validation,
+and practical trial planning in early-phase oncology studies.
 
 ## Installation
 
-`SKBD` is not currently on CRAN. You can install the development version
-from GitHub:
+`SKBD` is not currently on CRAN. Install the development version from
+GitHub:
 
 ``` r
-install.packages("remotes")
-remotes::install_github("Jiangyan-Zhao/SKBD")
+# install.packages("pak")
+pak::pak("Jiangyan-Zhao/SKBD")
 ```
 
 Then load the package:
@@ -36,23 +38,72 @@ library(SKBD)
 
 ## Main functions
 
-The current public interface includes five main functions:
+The current public interface includes five core functions:
 
 - `get_boundary_SKBD()` generates pre-tabulated decision boundaries for
   the shared keyboard design.
 - `get_OC_SKBD()` simulates operating characteristics for the standard
   SKBD.
-- `get_OC_TITE_SKBD()` simulates operating characteristics for the
-  time-to-event shared keyboard design.
+- `get_OC_TITE_SKBD()` simulates operating characteristics for
+  time-to-event SKBD.
 - `get_OC_Insert_SKBD()` simulates operating characteristics when
-  adaptive dose insertion is allowed.
-- `PUA()` generates random monotone dose-toxicity scenarios using a
+  adaptive dose insertion is enabled.
+- `PUA()` generates monotone dose-toxicity scenarios using a
   pseudo-uniform algorithm.
+
+## Shiny app
+
+A Shiny app is included for interactive use of SKBD decision tables and
+simulation outputs.
+
+### What you can do in the app
+
+- Configure trial design settings, including dose levels, target
+  toxicity probability, borrowing strength, sample size, and
+  overdose-control parameters.
+- Input current trial observations and generate SKBD decision tables
+  interactively.
+- Run multi-scenario operating-characteristic simulations using manual
+  input or uploaded CSV templates.
+
+### Launch the Shiny app
+
+After installing **SKBD**, load the package and launch the app by
+running:
+
+``` r
+library(SKBD)
+
+run_SKBD_shiny()
+```
+
+By default, `run_SKBD_shiny()` follows the standard launching behavior
+of `shiny::runApp()`. In RStudio, the app is typically opened in the
+RStudio Viewer or Shiny window.
+
+To open the app in the system default browser, use:
+
+``` r
+run_SKBD_shiny(launch.browser = TRUE)
+```
+
+To start the app without automatically opening a browser, use:
+
+``` r
+run_SKBD_shiny(launch.browser = FALSE)
+```
+
+The app provides two main modules:
+
+- **Trial Setting**: interactively generates dose-escalation and
+  de-escalation boundary tables.
+- **Simulation**: runs batch simulations under user-specified scenarios
+  and summarizes the operating characteristics.
 
 ## Decision tables for SKBD
 
-A typical starting point is to generate a decision table at a current
-dose level, conditional on the observed data across doses.
+A typical starting point is to generate a decision table at the current
+dose level, conditional on the observed data across all dose levels.
 
 ``` r
 y <- c(0, 1, 2, 2, 0)
@@ -74,7 +125,7 @@ out_boundary$boundary_tab
 #> Eliminate if # of DLT >=   NA NA NA NA NA 10 11 13 14 15
 ```
 
-This returns a keyboard-style table with escalation, de-escalation, and
+The output is a keyboard-style table with escalation, de-escalation, and
 elimination boundaries based on the SKBD pseudo-posterior at the current
 dose.
 
@@ -100,14 +151,13 @@ out_skbd$ROD60
 #> [1] 1.8
 ```
 
-The returned object includes accuracy and safety summaries such as
-percent correct selection (`PCS`), percent correct allocation (`PCA`),
-and overdosing risk.
+The returned object includes accuracy and safety summaries, such as the
+percentage of correct selection (`PCS`), percentage of correct
+allocation (`PCA`), and overdose risk.
 
 ## Time-to-event SKBD
 
-Late-onset toxicity can be handled through the time-to-event shared
-keyboard design:
+Delayed toxicity outcomes can be handled using time-to-event SKBD:
 
 ``` r
 out_tite <- get_OC_TITE_SKBD(
@@ -128,13 +178,13 @@ out_tite$duration_mean
 #> [1] 23.56665
 ```
 
-This version accounts for pending toxicity outcomes through weighted
-follow-up within the DLT assessment window.
+This extension accounts for pending toxicity outcomes by incorporating
+weighted follow-up information within the DLT assessment window.
 
 ## Adaptive dose insertion
 
-The package also supports simulations under an insertion-enabled shared
-keyboard design:
+`SKBD` also supports simulations for insertion-enabled shared keyboard
+designs:
 
 ``` r
 out_insert <- get_OC_Insert_SKBD(
@@ -145,11 +195,31 @@ out_insert <- get_OC_Insert_SKBD(
 )
 
 out_insert$insertion
+#> $sel_pct
+#> [1] 80.7
+#> 
+#> $pts_pct
+#> [1] 49.38
+#> 
+#> $dose_mean
+#> [1] 10.64145
+#> 
+#> $dose_sd
+#> [1] 3.651881
+#> 
+#> $trial_pct
+#> [1] 95.3
+#> 
+#> $cohort_mean
+#> [1] 3.373277
+#> 
+#> $n_median
+#> [1] 3
 ```
 
 The insertion summary reports how often new doses are inserted, where
-inserted doses tend to be selected, and how patients are allocated to
-inserted doses.
+inserted doses tend to be located, how often they are selected as the
+final MTD, and how patients are allocated to inserted doses.
 
 ## Random monotone scenarios
 
@@ -174,7 +244,8 @@ scen
 
 ## Development notes
 
-`SKBD` is under active development. The package currently focuses on
-core simulation and decision-table tools for the shared keyboard
-framework. Additional examples, validation materials, and extended
-documentation can be added as the package evolves.
+`SKBD` is under active development. The current version focuses on
+decision-table utilities, simulation engines, time-to-event extensions,
+and adaptive dose insertion for the SKBD framework. Additional examples,
+validation materials, and extended tutorials will be added as the
+package evolves.
