@@ -164,6 +164,7 @@ server <- function(input, output, session) {
         searching = FALSE,
         info = FALSE,
         ordering = FALSE,
+        autoWidth = TRUE,
         scrollX = TRUE
       )
     )
@@ -478,7 +479,13 @@ server <- function(input, output, session) {
         pageLength = 16,
         lengthChange = FALSE,
         ordering = FALSE,
-        scrollX = TRUE
+        autoWidth = TRUE,
+        scrollX = TRUE,
+        initComplete = DT::JS(
+          "function(settings, json) {",
+          "  this.api().columns.adjust().draw(false);",
+          "}"
+        )
       )
     )
   }, server = FALSE)
