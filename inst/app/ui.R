@@ -6,6 +6,9 @@ ui <- shiny::fluidPage(
          if ($.fn.dataTable && $.fn.dataTable.isDataTable('#o_summary table')) {\
            $('#o_summary table').DataTable().columns.adjust().draw(false);\
          }\
+       });\
+       $(function () {\
+         $('[data-toggle=\"popover\"]').popover({trigger: 'focus', html: true, placement: 'left'});\
        });"
     ))
   ),
@@ -52,11 +55,30 @@ ui <- shiny::fluidPage(
           ),
           shiny::div(
             class = "panel-card",
-            shiny::div(class = "panel-heading", "Kernel Setting"),
+            shiny::div(
+              class = "panel-heading",
+              style = "position:relative;",
+              "Kernel Setting",
+              shiny::tags$button(
+                type = "button",
+                class = "btn btn-link",
+                style = "position:absolute;right:0;top:50%;transform:translateY(-50%);padding:0;line-height:1;border:none;text-decoration:none;color:#f39c12;font-size:18px;font-weight:700;",
+                `aria-label` = "Shared borrowing help",
+                `data-toggle` = "popover",
+                `data-container` = "body",
+                title = "Shared borrowing",
+                `data-content` = "Checked: SKBD uses kernel-based borrowing across dose levels.<br/>Unchecked: the design reduces to the ordinary Keyboard design, and the left- and right-side borrowing strengths are ignored.",
+                shiny::HTML("&#9432;")
+              )
+            ),
             shiny::fluidRow(
               shiny::column(
                 width = 12,
-                shiny::checkboxInput("b_shared", "Use shared borrowing", value = TRUE)
+                shiny::div(
+                  style = "background:#fff4d6;border:2px solid #f0b24d;border-left:6px solid #d98100;border-radius:6px;padding:10px 12px 6px 12px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);",
+                  shiny::div(style = "color:#9c4e00;font-weight:700;font-size:15px;margin-bottom:4px;", "⚠ Critical setting"),
+                  shiny::checkboxInput("b_shared", "Use shared borrowing", value = TRUE)
+                )
               )
             ),
             shiny::fluidRow(
