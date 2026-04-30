@@ -484,7 +484,17 @@ server <- function(input, output, session) {
         lengthChange = FALSE,
         ordering = FALSE,
         autoWidth = FALSE,
-        scrollX = FALSE
+        scrollX = TRUE,
+        initComplete = DT::JS(
+          "function(settings, json) {",
+          "  this.api().columns.adjust();",
+          "}"
+        ),
+        drawCallback = DT::JS(
+          "function(settings) {",
+          "  this.api().columns.adjust();",
+          "}"
+        )
       )
     )
   }, server = FALSE)
