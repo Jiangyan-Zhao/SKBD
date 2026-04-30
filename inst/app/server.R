@@ -10,25 +10,28 @@ server <- function(input, output, session) {
     }
     default_y <- c(0, 1, 2, 2)
 
-    shiny::tags$table(
-      class = "sim-grid-table",
-      shiny::tags$thead(
-        shiny::tags$tr(lapply(seq_len(n_dose), function(i) shiny::tags$th(paste0("D", i))))
-      ),
-      shiny::tags$tbody(
-        shiny::tags$tr(
-          lapply(seq_len(n_dose), function(i) {
-            shiny::tags$td(
-              shiny::numericInput(
-                inputId = paste0("b_y_", i),
-                label = NULL,
-                value = if (i <= length(default_y)) default_y[i] else 0,
-                min = 0,
-                step = 1,
-                width = "80px"
+    shiny::div(
+      class = "input-table-scroll",
+      shiny::tags$table(
+        class = "sim-grid-table",
+        shiny::tags$thead(
+          shiny::tags$tr(lapply(seq_len(n_dose), function(i) shiny::tags$th(paste0("D", i))))
+        ),
+        shiny::tags$tbody(
+          shiny::tags$tr(
+            lapply(seq_len(n_dose), function(i) {
+              shiny::tags$td(
+                shiny::numericInput(
+                  inputId = paste0("b_y_", i),
+                  label = NULL,
+                  value = if (i <= length(default_y)) default_y[i] else 0,
+                  min = 0,
+                  step = 1,
+                  width = "80px"
+                )
               )
-            )
-          })
+            })
+          )
         )
       )
     )
@@ -41,25 +44,28 @@ server <- function(input, output, session) {
     }
     default_n <- c(3, 6, 9, 3)
 
-    shiny::tags$table(
-      class = "sim-grid-table",
-      shiny::tags$thead(
-        shiny::tags$tr(lapply(seq_len(n_dose), function(i) shiny::tags$th(paste0("D", i))))
-      ),
-      shiny::tags$tbody(
-        shiny::tags$tr(
-          lapply(seq_len(n_dose), function(i) {
-            shiny::tags$td(
-              shiny::numericInput(
-                inputId = paste0("b_n_", i),
-                label = NULL,
-                value = if (i <= length(default_n)) default_n[i] else 0,
-                min = 0,
-                step = 1,
-                width = "80px"
+    shiny::div(
+      class = "input-table-scroll",
+      shiny::tags$table(
+        class = "sim-grid-table",
+        shiny::tags$thead(
+          shiny::tags$tr(lapply(seq_len(n_dose), function(i) shiny::tags$th(paste0("D", i))))
+        ),
+        shiny::tags$tbody(
+          shiny::tags$tr(
+            lapply(seq_len(n_dose), function(i) {
+              shiny::tags$td(
+                shiny::numericInput(
+                  inputId = paste0("b_n_", i),
+                  label = NULL,
+                  value = if (i <= length(default_n)) default_n[i] else 0,
+                  min = 0,
+                  step = 1,
+                  width = "80px"
+                )
               )
-            )
-          })
+            })
+          )
         )
       )
     )
@@ -74,24 +80,27 @@ server <- function(input, output, session) {
 
     shiny::tagList(
       shiny::tags$label(shiny::strong("Dose values by level:")),
-      shiny::tags$table(
-        class = "sim-grid-table",
-        shiny::tags$thead(
-          shiny::tags$tr(lapply(seq_len(n_dose), function(i) shiny::tags$th(paste0("D", i))))
-        ),
-        shiny::tags$tbody(
-          shiny::tags$tr(
-            lapply(seq_len(n_dose), function(i) {
-              shiny::tags$td(
-                shiny::numericInput(
-                  inputId = paste0("b_dose_", i),
-                  label = NULL,
-                  value = default_dose_values[i],
-                  step = 0.01,
-                  width = "90px"
+      shiny::div(
+        class = "input-table-scroll",
+        shiny::tags$table(
+          class = "sim-grid-table",
+          shiny::tags$thead(
+            shiny::tags$tr(lapply(seq_len(n_dose), function(i) shiny::tags$th(paste0("D", i))))
+          ),
+          shiny::tags$tbody(
+            shiny::tags$tr(
+              lapply(seq_len(n_dose), function(i) {
+                shiny::tags$td(
+                  shiny::numericInput(
+                    inputId = paste0("b_dose_", i),
+                    label = NULL,
+                    value = default_dose_values[i],
+                    step = 0.01,
+                    width = "90px"
+                  )
                 )
-              )
-            })
+              })
+            )
           )
         )
       ),
@@ -393,10 +402,13 @@ server <- function(input, output, session) {
       )
     })
 
-    shiny::tags$table(
-      class = "sim-grid-table",
-      shiny::tags$thead(shiny::tags$tr(lapply(header, shiny::tags$th))),
-      shiny::tags$tbody(row_nodes)
+    shiny::div(
+      class = "input-table-scroll",
+      shiny::tags$table(
+        class = "sim-grid-table",
+        shiny::tags$thead(shiny::tags$tr(lapply(header, shiny::tags$th))),
+        shiny::tags$tbody(row_nodes)
+      )
     )
   })
 
