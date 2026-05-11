@@ -40,12 +40,10 @@
 #' @param pri_beta Numeric scalar. Prior beta for the Beta pseudo-posterior.
 #' @param key_L Numeric scalar. Lower bound of the target key, in `(0,1)`.
 #' @param key_U Numeric scalar. Upper bound of the target key, in `(0,1)` with `key_L < key_U`.
-#' @param symmetric Logical. Passed to `kernel_fun()` to indicate symmetric vs asymmetric kernel mode.
 #' @param k_left Numeric scalar in `(0,1)`. Passed to `kernel_fun()` as left-side
 #'   neighbor borrowing strength (used when `dose_set < dose`).
 #' @param k_right Numeric scalar in `(0,1)`. Passed to `kernel_fun()` as right-side
-#'   neighbor borrowing strength (used when `dose_set >= dose`, and as the symmetric
-#'   borrowing strength when `symmetric = TRUE`).
+#'   neighbor borrowing strength (used when `dose_set >= dose`).
 #' @param ref_gap Optional positive scalar. Passed to `kernel_fun()` as the reference
 #'   spacing used to infer decay from `k_left`/`k_right`.
 #' @param M Integer. Number of grid points inside `(dl, dr)` used for search. Default is `100`.
@@ -73,7 +71,7 @@
 #'   n_treated_work = n_treated_work,
 #'   pri_alpha = 0.5, pri_beta = 0.5,
 #'   key_L = 0.25, key_U = 0.35,
-#'   symmetric = FALSE, k_left = 0.2, k_right = 0.8, M = 100
+#'   k_left = 0.2, k_right = 0.2, M = 100
 #' )
 #' out$newdose
 #'
@@ -81,7 +79,7 @@
 
 choose_newdose = function(
     dl, dr, dose_set_work, n_dlt_work, n_treated_work,
-    pri_alpha, pri_beta, key_L, key_U, symmetric = TRUE,
+    pri_alpha, pri_beta, key_L, key_U, 
     k_left = 0.2, k_right = 0.2, ref_gap = NULL, M = 100
 ){
   if (!is.finite(dl) || !is.finite(dr) || dr <= dl) {
@@ -106,7 +104,6 @@ choose_newdose = function(
   
   for (g in seq_along(grid)) {
     k = kernel_fun(grid[g], dose_obs,
-               symmetric = symmetric,
                k_left = k_left,
                k_right = k_right,
                ref_gap = ref_gap)

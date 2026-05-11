@@ -17,7 +17,6 @@ get_OC_SKBD(
   cutoff_elimin = 0.95,
   extra_safe = FALSE,
   offset = 0.05,
-  symmetric = FALSE,
   k_left = 0.2,
   k_right = 0.8,
   ref_gap = NULL,
@@ -62,13 +61,10 @@ threshold \code{cutoff_elimin - offset}.}
 
 \item{offset}{Nonnegative scalar; safety offset used only when \code{extra_safe=TRUE}.}
 
-\item{symmetric}{Logical; kernel type when \code{shared=TRUE}. If \code{TRUE},
-uses a symmetric Gaussian kernel; otherwise uses an asymmetric Gaussian kernel.}
-
 \item{k_left}{Numeric scalar in \verb{(0,1)}. Left-side neighbor borrowing strength passed to \code{kernel_fun()}.}
 
 \item{k_right}{Numeric scalar in \verb{(0,1)}. Right-side neighbor borrowing strength passed to \code{kernel_fun()}
-(and used for symmetric borrowing when \code{symmetric=TRUE}).}
+(set \code{k_left == k_right} for symmetric borrowing).}
 
 \item{ref_gap}{Optional positive scalar. Reference spacing passed to \code{kernel_fun()}. If \code{NULL},
 kernel defaults to the minimum adjacent spacing in \code{dose_set}.}

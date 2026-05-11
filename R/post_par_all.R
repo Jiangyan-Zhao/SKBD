@@ -32,12 +32,10 @@
 #' @param dose_set Numeric vector. Working dose grid (often standardized to `[0, 1]`), assumed sorted.
 #' @param pri_alpha Numeric scalar. Prior alpha \eqn{\alpha_0} for Beta pseudo-posterior.
 #' @param pri_beta Numeric scalar. Prior beta \eqn{\beta_0} for Beta pseudo-posterior.
-#' @param symmetric Logical. Passed to `kernel_fun()` to indicate symmetric vs asymmetric kernel mode.
 #' @param k_left Numeric scalar in `(0,1)`. Passed to `kernel_fun()` as left-side
 #'   neighbor borrowing strength (used when `dose_set < dose`).
 #' @param k_right Numeric scalar in `(0,1)`. Passed to `kernel_fun()` as right-side
-#'   neighbor borrowing strength (used when `dose_set >= dose`, and as the symmetric
-#'   borrowing strength when `symmetric = TRUE`).
+#'   neighbor borrowing strength (used when `dose_set >= dose`).
 #' @param ref_gap Optional positive scalar. Passed to `kernel_fun()` as the reference
 #'   spacing used to infer decay from `k_left`/`k_right`.
 #'
@@ -59,7 +57,6 @@
 #'   dose_set = dose_set,
 #'   pri_alpha = 0.5,
 #'   pri_beta = 0.5,
-#'   symmetric = FALSE,
 #'   k_left = 0.2,
 #'   k_right = 0.8
 #' )
@@ -69,7 +66,7 @@
 #' @noRd
 post_par_all = function(
     n_dlt, n_treated, dose_set,
-    pri_alpha, pri_beta, symmetric,
+    pri_alpha, pri_beta, 
     k_left = 0.2, k_right = 0.8, ref_gap = NULL
 ) {
   
@@ -89,7 +86,6 @@ post_par_all = function(
     # Kernel similarities between target dose_set[j] and all observed doses
     ker_vals = kernel_fun(
       dose_set[d], dose_set,
-      symmetric = symmetric,
       k_left = k_left,
       k_right = k_right,
       ref_gap = ref_gap

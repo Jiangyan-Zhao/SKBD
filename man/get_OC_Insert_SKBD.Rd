@@ -19,7 +19,6 @@ get_OC_Insert_SKBD(
   cutoff_elimin = 0.95,
   extra_safe = FALSE,
   offset = 0.05,
-  symmetric = FALSE,
   k_left = 0.2,
   k_right = 0.8,
   ref_gap = NULL,
@@ -62,9 +61,6 @@ when \code{extra_safe = TRUE}).}
 \code{cutoff_elimin - offset}.}
 
 \item{offset}{Scalar in \eqn{[0,0.5)}. Safety offset used when \code{extra_safe = TRUE}.}
-
-\item{symmetric}{Logical. If \code{TRUE}, use symmetric kernel borrowing; otherwise allow
-asymmetric borrowing via \code{k_left} and \code{k_right}.}
 
 \item{k_left, k_right}{Scalars in \eqn{(0,1)} controlling borrowing strength to the left and right
 neighbors in the SKBD pseudo-posterior update. Typically \code{k_right > k_left} for safety.}

@@ -32,14 +32,14 @@
 #' Invisibly returns the value from [shiny::runApp()].
 #'
 #' @examples
-#' \dontrun{
-#' run_SKBD_shiny()
+#' if (interactive()) {
+#'   run_SKBD_shiny()
 #'
-#' # Open in the system default browser
-#' run_SKBD_shiny(launch.browser = TRUE)
+#'   # Open in the system default browser
+#'   run_SKBD_shiny(launch.browser = TRUE)
 #'
-#' # Start the app without opening a browser
-#' run_SKBD_shiny(launch.browser = FALSE)
+#'   # Start the app without opening a browser
+#'   run_SKBD_shiny(launch.browser = FALSE)
 #' }
 #'
 #' @export

@@ -9,7 +9,6 @@ get_OC_TITE_SKBD(
   tox_prob,
   n_cohort,
   cohort_size,
-  symmetric = FALSE,
   k_left = 0.2,
   k_right = 0.8,
   ref_gap = NULL,
@@ -42,9 +41,6 @@ get_OC_TITE_SKBD(
 \item{n_cohort}{Positive integer. Number of cohorts per simulated trial.}
 
 \item{cohort_size}{Positive integer. Number of patients per cohort.}
-
-\item{symmetric}{Logical. If \code{TRUE}, use a symmetric borrowing kernel; otherwise allow
-asymmetric borrowing via \code{k_left} and \code{k_right}.}
 
 \item{k_left, k_right}{Scalars in \eqn{(0,1)} controlling borrowing strength to the left and right
 neighbors when \code{shared = TRUE}. Typically \code{k_right > k_left} for safety.}

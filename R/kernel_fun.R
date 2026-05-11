@@ -1,4 +1,4 @@
-#' Asymmetric/symmetric kernel with interpretable neighbor borrowing strengths
+#' Kernel with interpretable left/right neighbor borrowing strengths
 #'
 #' @description
 #' `kernel_fun()` computes kernel similarities between a target dose value `dose`
@@ -28,13 +28,11 @@
 #'   \item `k = 1` means full borrowing from that side, with no distance decay.
 #' }
 #'
-#' In asymmetric mode (`symmetric = FALSE`), `k_left` controls borrowing from
-#' dose locations strictly below `dose`, whereas `k_right` controls borrowing
-#' from dose locations strictly above `dose`. The target dose itself always has
-#' kernel weight 1.
+#' `k_left` controls borrowing from dose locations strictly below `dose`,
+#' whereas `k_right` controls borrowing from dose locations strictly above `dose`.
+#' The target dose itself always has kernel weight 1.
 #'
-#' In symmetric mode (`symmetric = TRUE`), a single symmetric kernel is used.
-#' By convention, `k_right` is used as the reference similarity.
+#' Symmetric borrowing is obtained by setting `k_left == k_right`.
 #'
 #' The default `ref_gap` is the minimum adjacent spacing in `dose_set`.
 #'
@@ -42,8 +40,6 @@
 #'   value rather than a dose index.
 #' @param dose_set Numeric vector. Dose locations at which to evaluate the
 #'   kernel similarity.
-#' @param symmetric Logical. If `TRUE`, use a single symmetric decay. If
-#'   `FALSE`, use separate left/right borrowing strengths.
 #' @param k_left Numeric scalar in `[0, 1]`. Desired kernel value at distance
 #'   `ref_gap` for dose locations strictly below `dose`. If `NULL`, defaults
 #'   to `0.2`.
@@ -63,7 +59,6 @@
 #' kernel_fun(
 #'   dose = 0.50,
 #'   dose_set = dose_set,
-#'   symmetric = FALSE,
 #'   k_left = 0.2,
 #'   k_right = 0.8
 #' )
@@ -71,14 +66,6 @@
 #' kernel_fun(
 #'   dose = 0.50,
 #'   dose_set = dose_set,
-#'   symmetric = TRUE,
-#'   k_right = 0.5
-#' )
-#'
-#' kernel_fun(
-#'   dose = 0.50,
-#'   dose_set = dose_set,
-#'   symmetric = FALSE,
 #'   k_left = 0,
 #'   k_right = 1
 #' )
@@ -87,7 +74,6 @@
 kernel_fun <- function(
     dose,
     dose_set,
-    symmetric = FALSE,
     k_left = NULL,
     k_right = NULL,
     ref_gap = NULL
@@ -107,10 +93,6 @@ kernel_fun <- function(
   
   dose_set <- as.numeric(dose_set)
   
-  # ---- Validate symmetric ----
-  if (!is.logical(symmetric) || length(symmetric) != 1L || is.na(symmetric)) {
-    stop("`symmetric` must be either TRUE or FALSE.", call. = FALSE)
-  }
   
   # ---- Set default neighbor kernel values ----
   if (is.null(k_left)) {
@@ -164,74 +146,50 @@ kernel_fun <- function(
   tol <- sqrt(.Machine$double.eps)
   k <- numeric(length(dose_set))
   
-  if (isTRUE(symmetric)) {
+  left_id <- dose_set < dose - tol
+  same_id <- abs(dose_set - dose) <= tol
+  right_id <- dose_set > dose + tol
+  
+  # Target dose itself always has weight 1.
+  k[same_id] <- 1
+  
+  # Left-side borrowing.
+  if (any(left_id)) {
     
-    dist <- abs(dose - dose_set)
-    same_id <- dist <= tol
+    dist_left <- dose - dose_set[left_id]
     
-    if (k_right == 0) {
+    if (k_left == 0) {
       
-      k[] <- 0
-      k[same_id] <- 1
+      k[left_id] <- 0
       
-    } else if (k_right == 1) {
+    } else if (k_left == 1) {
       
-      k[] <- 1
+      k[left_id] <- 1
       
     } else {
       
-      theta <- -log(k_right) / (ref_gap^2)
-      k <- exp(-theta * dist^2)
-      k[same_id] <- 1
+      theta1 <- -log(k_left) / (ref_gap^2)
+      k[left_id] <- exp(-theta1 * dist_left^2)
     }
+  }
+  
+  # Right-side borrowing.
+  if (any(right_id)) {
     
-  } else {
+    dist_right <- dose_set[right_id] - dose
     
-    left_id <- dose_set < dose - tol
-    same_id <- abs(dose_set - dose) <= tol
-    right_id <- dose_set > dose + tol
-    
-    # Target dose itself always has weight 1.
-    k[same_id] <- 1
-    
-    # Left-side borrowing.
-    if (any(left_id)) {
+    if (k_right == 0) {
       
-      dist_left <- dose - dose_set[left_id]
+      k[right_id] <- 0
       
-      if (k_left == 0) {
-        
-        k[left_id] <- 0
-        
-      } else if (k_left == 1) {
-        
-        k[left_id] <- 1
-        
-      } else {
-        
-        theta1 <- -log(k_left) / (ref_gap^2)
-        k[left_id] <- exp(-theta1 * dist_left^2)
-      }
-    }
-    
-    # Right-side borrowing.
-    if (any(right_id)) {
+    } else if (k_right == 1) {
       
-      dist_right <- dose_set[right_id] - dose
+      k[right_id] <- 1
       
-      if (k_right == 0) {
-        
-        k[right_id] <- 0
-        
-      } else if (k_right == 1) {
-        
-        k[right_id] <- 1
-        
-      } else {
-        
-        theta2 <- -log(k_right) / (ref_gap^2)
-        k[right_id] <- exp(-theta2 * dist_right^2)
-      }
+    } else {
+      
+      theta2 <- -log(k_right) / (ref_gap^2)
+      k[right_id] <- exp(-theta2 * dist_right^2)
     }
   }
   

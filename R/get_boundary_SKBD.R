@@ -55,10 +55,9 @@
 #' @param cohort_size Number of patients per cohort (used for cohort-aligned \code{boundary_tab} output).
 #' @param shared Logical; if \code{TRUE}, use kernel-weighted borrowing across doses.
 #'        If \code{FALSE}, use only current-dose data (identity kernel; no borrowing).
-#' @param symmetric Logical; if \code{TRUE}, use a symmetric kernel; otherwise use an asymmetric kernel.
 #' @param k_left Numeric scalar in `(0,1)`. Left-side neighbor borrowing strength passed to `kernel_fun()`.
 #' @param k_right Numeric scalar in `(0,1)`. Right-side neighbor borrowing strength passed to `kernel_fun()`
-#'        (and used for symmetric borrowing when \code{symmetric=TRUE}).
+#'        (set `k_left == k_right` for symmetric borrowing).
 #' @param ref_gap Optional positive scalar. Reference spacing passed to `kernel_fun()`. If `NULL`,
 #'        kernel defaults to the minimum adjacent spacing in `dose_set`.
 #' @param dose_set Numeric vector of dose labels (default \code{1:length(y)}). Used only to compute kernel distances.
@@ -121,7 +120,6 @@
 get_boundary_SKBD <- function(target_prob, d,
                               y, n,
                               n_cohort = 10, cohort_size = 3,
-                              symmetric = FALSE,
                               k_left = 0.2, k_right = 0.8, ref_gap = NULL,
                               shared = TRUE,
                               dose_set = 1:length(y),
@@ -165,7 +163,6 @@ get_boundary_SKBD <- function(target_prob, d,
     kernel_fun(
       dose = dose_set_std[d],
       dose_set = dose_set_std,
-      symmetric = symmetric,
       k_left = k_left,
       k_right = k_right,
       ref_gap = ref_gap

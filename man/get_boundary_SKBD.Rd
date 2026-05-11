@@ -11,7 +11,6 @@ get_boundary_SKBD(
   n,
   n_cohort = 10,
   cohort_size = 3,
-  symmetric = FALSE,
   k_left = 0.2,
   k_right = 0.8,
   ref_gap = NULL,
@@ -41,12 +40,10 @@ get_boundary_SKBD(
 
 \item{cohort_size}{Number of patients per cohort (used for cohort-aligned \code{boundary_tab} output).}
 
-\item{symmetric}{Logical; if \code{TRUE}, use a symmetric kernel; otherwise use an asymmetric kernel.}
-
 \item{k_left}{Numeric scalar in \verb{(0,1)}. Left-side neighbor borrowing strength passed to \code{kernel_fun()}.}
 
 \item{k_right}{Numeric scalar in \verb{(0,1)}. Right-side neighbor borrowing strength passed to \code{kernel_fun()}
-(and used for symmetric borrowing when \code{symmetric=TRUE}).}
+(set \code{k_left == k_right} for symmetric borrowing).}
 
 \item{ref_gap}{Optional positive scalar. Reference spacing passed to \code{kernel_fun()}. If \code{NULL},
 kernel defaults to the minimum adjacent spacing in \code{dose_set}.}

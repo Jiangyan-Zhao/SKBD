@@ -32,11 +32,9 @@
 #' @param shared Logical; if \code{TRUE}, use kernel-weighted borrowing across doses
 #'   to construct the posterior at the current dose. If \code{FALSE}, reduces to
 #'   local updating (keyboard-style) via an identity kernel.
-#' @param symmetric Logical; kernel type when \code{shared=TRUE}. If \code{TRUE},
-#'   uses a symmetric Gaussian kernel; otherwise uses an asymmetric Gaussian kernel.
 #' @param k_left Numeric scalar in `(0,1)`. Left-side neighbor borrowing strength passed to `kernel_fun()`.
 #' @param k_right Numeric scalar in `(0,1)`. Right-side neighbor borrowing strength passed to `kernel_fun()`
-#'   (and used for symmetric borrowing when \code{symmetric=TRUE}).
+#'   (set `k_left == k_right` for symmetric borrowing).
 #' @param ref_gap Optional positive scalar. Reference spacing passed to `kernel_fun()`. If `NULL`,
 #'   kernel defaults to the minimum adjacent spacing in `dose_set`.
 #' @param light_return Logical; if \code{TRUE}, do not store/return individual-level
@@ -104,7 +102,6 @@ get_OC_SKBD <- function(
     n_earlystop = 1000, 
     cutoff_elimin = 0.95,
     extra_safe = FALSE, offset = 0.05, 
-    symmetric = FALSE,
     k_left = 0.2, k_right = 0.8, ref_gap = NULL,
     shared = TRUE, # incorporate the keybooard design as a special case
     light_return = TRUE,
@@ -190,7 +187,6 @@ get_OC_SKBD <- function(
       ker_vals[i, ] = kernel_fun(
         dose = dose_set_std[i],
         dose_set = dose_set_std,
-        symmetric = symmetric,
         k_left = k_left,
         k_right = k_right,
         ref_gap = ref_gap
@@ -295,7 +291,6 @@ get_OC_SKBD <- function(
           dose_set = dose_set_std, 
           pri_alpha = 0.01, 
           pri_beta = 0.01, 
-          symmetric = TRUE, 
           k_left = 0.2,
           k_right = 0.2,
           ref_gap = ref_gap

@@ -41,8 +41,6 @@
 #' @param extra_safe Logical. If \code{TRUE}, use a more conservative elimination cutoff
 #' \code{cutoff_elimin - offset}.
 #' @param offset Scalar in \eqn{[0,0.5)}. Safety offset used when \code{extra_safe = TRUE}.
-#' @param symmetric Logical. If \code{TRUE}, use symmetric kernel borrowing; otherwise allow
-#' asymmetric borrowing via \code{k_left} and \code{k_right}.
 #' @param k_left,k_right Scalars in \eqn{(0,1)} controlling borrowing strength to the left and right
 #' neighbors in the SKBD pseudo-posterior update. Typically \code{k_right > k_left} for safety.
 #' @param ref_gap Optional positive scalar. Reference gap used for kernel scaling. Note: in the current
@@ -102,7 +100,6 @@ get_OC_Insert_SKBD <- function(
     n_earlystop = 1000, 
     cutoff_elimin = 0.95,
     extra_safe = FALSE, offset = 0.05, 
-    symmetric = FALSE, 
     k_left = 0.2, k_right = 0.8, ref_gap = NULL,
     shared = TRUE, # incorporate the keybooard design as a special case
     light_return = TRUE,
@@ -257,7 +254,6 @@ get_OC_Insert_SKBD <- function(
         dose_set = dose_set_work, 
         pri_alpha = 0.5, 
         pri_beta = 0.5, 
-        symmetric = TRUE, 
         k_left = 0.01,
         k_right = 0.01,
         ref_gap = ref_gap
@@ -362,7 +358,6 @@ get_OC_Insert_SKBD <- function(
               pri_beta  = (1 - target_prob),
               key_L = key_L,
               key_U = key_U,
-              symmetric = TRUE,
               k_left = 0.2,
               k_right = 0.2,
               ref_gap = ref_gap
@@ -410,7 +405,6 @@ get_OC_Insert_SKBD <- function(
         dose_set = dose_set_work,
         pri_alpha = pri_alpha,
         pri_beta = pri_beta,
-        symmetric = symmetric,
         k_left = k_left,
         k_right = k_right,
         ref_gap = ref_gap
@@ -472,7 +466,6 @@ get_OC_Insert_SKBD <- function(
         dose_set = dose_set_work, 
         pri_alpha = 0.01, 
         pri_beta = 0.01, 
-        symmetric = TRUE, 
         k_left = 0.2,
         k_right = 0.2,
         ref_gap = ref_gap

@@ -29,8 +29,6 @@
 #' @param tox_prob Numeric vector in \eqn{[0,1]}. True DLT probabilities at each dose level.
 #' @param n_cohort Positive integer. Number of cohorts per simulated trial.
 #' @param cohort_size Positive integer. Number of patients per cohort.
-#' @param symmetric Logical. If \code{TRUE}, use a symmetric borrowing kernel; otherwise allow
-#' asymmetric borrowing via \code{k_left} and \code{k_right}.
 #' @param k_left,k_right Scalars in \eqn{(0,1)} controlling borrowing strength to the left and right
 #' neighbors when \code{shared = TRUE}. Typically \code{k_right > k_left} for safety.
 #' @param ref_gap Optional positive scalar. Reference dose gap used in kernel scaling.
@@ -114,7 +112,6 @@
 
 get_OC_TITE_SKBD <- function(target_prob, tox_prob, 
                         n_cohort, cohort_size,
-                        symmetric = FALSE,
                         k_left = 0.2, k_right = 0.8, ref_gap = NULL,
                         shared = TRUE, # incorporate the keybooard design
                         dose_set = 1:length(tox_prob), 
@@ -219,7 +216,6 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
       ker_vals[i, ] = kernel_fun(
         dose = dose_set_std[i],
         dose_set = dose_set_std,
-        symmetric = symmetric,
         k_left = k_left,
         k_right = k_right,
         ref_gap = ref_gap
@@ -451,7 +447,6 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
           dose_set = dose_set_std[adm_idx], 
           pri_alpha = 0.01, 
           pri_beta = 0.01, 
-          symmetric = TRUE, 
           k_left = 0.2,
           k_right = 0.2,
           ref_gap = ref_gap
