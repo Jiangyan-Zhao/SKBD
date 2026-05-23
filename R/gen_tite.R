@@ -66,8 +66,7 @@
 #'   tau = 3
 #' )
 #' out2$n_DLT
-#'
-#' @importFrom stats rbinom runif
+#' 
 #' @noRd
 
 gen_tite = function(n, pi, 

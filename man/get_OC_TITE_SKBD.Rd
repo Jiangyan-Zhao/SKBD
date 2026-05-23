@@ -113,8 +113,6 @@ of patients were treated above the target key.}
 \item{\code{monotonic_percent}}{Percentage of trials where estimated toxicity means are monotone
 before isotonic adjustment.}
 \item{\code{Y}, \code{N}}{Matrices (\code{n_trial} by \code{n_dose}) of DLT counts and treated counts.}
-\item{\code{TR_MTD}, \code{TR_aboveMTD}, \code{overdosing60}, \code{overdosing80}}{Aliases for
-\code{PCA}, \code{above_MTD}, \code{ROD60}, \code{ROD80} (kept for backward compatibility).}
 \item{\code{dose_Paths}, \code{DLT_Paths}}{(Only if \code{light_return = FALSE}) Patient-level
 dose assignment paths and DLT indicators for each trial.}
 }

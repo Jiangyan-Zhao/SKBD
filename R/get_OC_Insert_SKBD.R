@@ -87,8 +87,6 @@
 #' )
 #' out$insertion$trial_pct
 #'
-#' @importFrom stats median pbeta rbeta rbinom rexp runif sd
-#' @importFrom utils tail
 #' @export
 
 get_OC_Insert_SKBD <- function(

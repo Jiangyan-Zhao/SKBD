@@ -47,20 +47,6 @@ run_SKBD_shiny <- function(
     launch.browser = getOption("shiny.launch.browser", interactive()),
     ...
 ) {
-  if (!requireNamespace("shiny", quietly = TRUE)) {
-    stop(
-      "Package 'shiny' is required for this function. Please install it with install.packages('shiny').",
-      call. = FALSE
-    )
-  }
-  
-  if (!requireNamespace("DT", quietly = TRUE)) {
-    stop(
-      "Package 'DT' is required for this function. Please install it with install.packages('DT').",
-      call. = FALSE
-    )
-  }
-  
   app_dir <- system.file("app", package = "SKBD")
   
   if (!nzchar(app_dir)) {
@@ -71,7 +57,7 @@ run_SKBD_shiny <- function(
   }
   
   invisible(
-    shiny::runApp(
+    runApp(
       appDir = app_dir,
       launch.browser = launch.browser,
       ...

@@ -195,7 +195,7 @@ server <- function(input, output, session) {
     "Boundary table generated successfully."
   })
 
-  output$b_table <- DT::renderDataTable({
+  output$b_table <- renderDataTable({
     res <- boundary_res()
     if (!is.null(res$error)) {
       return(NULL)
@@ -210,7 +210,7 @@ server <- function(input, output, session) {
       boundary_df[[nm]] <- ifelse(is.na(vals), "NA", as.character(as.integer(round(vals))))
     }
 
-    DT::datatable(
+    datatable(
       boundary_df,
       rownames = FALSE,
       width = "100%",
@@ -525,7 +525,7 @@ server <- function(input, output, session) {
     out_df
   })
 
-  output$o_summary <- DT::renderDataTable({
+  output$o_summary <- renderDataTable({
     out_df <- oc_summary_df()
 
     display_df <- out_df
@@ -535,7 +535,7 @@ server <- function(input, output, session) {
       display_df[[nm]] <- ifelse(is.na(display_df[[nm]]), "", sprintf("%.2f", display_df[[nm]]))
     }
 
-    DT::datatable(
+    datatable(
       display_df,
       rownames = FALSE,
       width = "100%",
@@ -554,12 +554,12 @@ server <- function(input, output, session) {
         ordering = FALSE,
         autoWidth = FALSE,
         scrollX = TRUE,
-        initComplete = DT::JS(
+        initComplete = JS(
           "function(settings, json) {",
           "  this.api().columns.adjust();",
           "}"
         ),
-        drawCallback = DT::JS(
+        drawCallback = JS(
           "function(settings) {",
           "  this.api().columns.adjust();",
           "}"

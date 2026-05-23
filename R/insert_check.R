@@ -85,7 +85,6 @@
 #'   n_treated = n_treated
 #' )
 #'
-#' @importFrom stats pbeta
 #' @noRd
 
 insert_check = function(

@@ -30,7 +30,6 @@
 #' keys <- get_Key(0.30, 0.05, 0.05)
 #' get_strongKey(alpha_Post = 3, beta_Post = 7, keys = keys)
 #'
-#' @importFrom stats pbeta
 #' @noRd
 get_strongKey <- function(
     alpha_Post, beta_Post, keys, 
