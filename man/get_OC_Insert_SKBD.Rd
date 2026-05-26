@@ -22,7 +22,6 @@ get_OC_Insert_SKBD(
   k_left = 0.2,
   k_right = 0.8,
   ref_gap = NULL,
-  shared = TRUE,
   light_return = TRUE,
   n_trial = 1000,
   seed = 6
@@ -62,14 +61,12 @@ when \code{extra_safe = TRUE}).}
 
 \item{offset}{Scalar in \eqn{[0,0.5)}. Safety offset used when \code{extra_safe = TRUE}.}
 
-\item{k_left, k_right}{Scalars in \eqn{(0,1)} controlling borrowing strength to the left and right
+\item{k_left, k_right}{Scalars in \eqn{[0,1]} controlling borrowing strength to the left and right
 neighbors in the SKBD pseudo-posterior update. Typically \code{k_right > k_left} for safety.}
 
 \item{ref_gap}{Optional positive scalar. Reference gap used for kernel scaling. Note: in the current
 implementation, \code{ref_gap} is recomputed internally as \code{min(diff(dose_set_work))} after each
 insertion/update.}
-
-\item{shared}{Logical. Reserved for compatibility with the shared keyboard framework.}
 
 \item{light_return}{Logical. If \code{TRUE}, return only summaries; if \code{FALSE}, also return
 per-trial details in \code{trial_detail}.}
@@ -99,7 +96,7 @@ with per-trial working grids, counts, elimination flags, insertion info, and ear
 }
 }
 \description{
-Simulate phase I dose-finding trials under the inserted Shared Keyboard design (Insert-SKBD),
+Simulate phase I dose-finding trials under the dose-insertion Shared Keyboard design (Insert-SKBD),
 where the working dose grid can be adaptively refined by inserting new dose levels when
 posterior evidence suggests that the target toxicity level is not well covered by the
 current prespecified grid.
@@ -131,7 +128,10 @@ out$insertion$trial_pct
 
 }
 \references{
-Chu, Y., H. Pan, and Y. Yuan (2016).
-Adaptive dose modification for phase I clinical trials.
+Zhao J, Shi X, Xu J (2026). Shared Keyboard: An improved Bayesian design
+for phase I clinical trials via Beta kernel process. \emph{ArXiv}.
+https://arxiv.org/abs/2605.25043
+
+Chu, Y., H. Pan, and Y. Yuan (2016). Adaptive dose modification for phase I clinical trials.
 \emph{Statistics in Medicine 35}(20), 3497--3508.
 }

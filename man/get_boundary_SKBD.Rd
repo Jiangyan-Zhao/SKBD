@@ -40,9 +40,9 @@ get_boundary_SKBD(
 
 \item{cohort_size}{Number of patients per cohort (used for cohort-aligned \code{boundary_tab} output).}
 
-\item{k_left}{Numeric scalar in \verb{(0,1)}. Left-side neighbor borrowing strength passed to \code{kernel_fun()}.}
+\item{k_left}{Numeric scalar in \eqn{[0,1]}. Left-side neighbor borrowing strength passed to \code{kernel_fun()}.}
 
-\item{k_right}{Numeric scalar in \verb{(0,1)}. Right-side neighbor borrowing strength passed to \code{kernel_fun()}
+\item{k_right}{Numeric scalar in \eqn{[0,1]}. Right-side neighbor borrowing strength passed to \code{kernel_fun()}
 (set \code{k_left == k_right} for symmetric borrowing).}
 
 \item{ref_gap}{Optional positive scalar. Reference spacing passed to \code{kernel_fun()}. If \code{NULL},
@@ -87,7 +87,7 @@ de-escalation, and elimination boundaries.
 If \code{extra_safe=TRUE} and \code{d==1}, additional elements \code{cutoff} and \code{stop_boundary} are returned.
 }
 \description{
-\code{get_boundary_SKBD()} generates pre-tabulated dose escalation/de-escalation
+Generate the pre-tabulated dose escalation/de-escalation
 (and overdose elimination) decision tables for the Shared Keyboard Design (SKBD)
 at a \strong{current dose} \code{d}, given the accumulated data across all doses.
 The output is a keyboard-like boundary table (similar to the original Keyboard design),
@@ -162,4 +162,9 @@ out_future <- get_boundary_SKBD(target_prob = target_prob,
                                start_from = "next")
 out_future$full_boundary_tab
 
+}
+\references{
+Zhao J, Shi X, Xu J (2026). Shared Keyboard: An improved Bayesian design
+for phase I clinical trials via Beta kernel process. \emph{ArXiv}.
+https://arxiv.org/abs/2605.25043
 }

@@ -43,13 +43,16 @@
 #' giving the true toxicity probabilities at the corresponding dose levels.
 #'
 #' @references
-#' Clertant, M. and J. O'Quigley (2017).
-#' Semiparametric dose finding methods.
-#' \emph{Journal of the Royal Statistical Society Series B: Statistical Methodology 79}(5), 1487--1508.
+#' Zhao J, Shi X, Xu J (2026). Shared Keyboard: An improved Bayesian design 
+#'   for phase I clinical trials via Beta kernel process. \emph{ArXiv}. 
+#'   https://arxiv.org/abs/2605.25043
+#' 
+#' Clertant, M. and J. O'Quigley (2017). Semiparametric dose finding methods.
+#'   \emph{Journal of the Royal Statistical Society Series B: Statistical Methodology 79}(5), 1487--1508.
 #' 
 #' Zhou, Y., J. J. Lee, S. Wang, S. Bailey, and Y. Yuan (2021). 
-#' Incorporating historical information to improve phase I clinical trials. 
-#' \emph{Pharmaceutical Statistics 20}(6), 1017--1034.
+#'   Incorporating historical information to improve phase I clinical trials. 
+#'   \emph{Pharmaceutical Statistics 20}(6), 1017--1034.
 #'
 #' @examples
 #' set.seed(1)
@@ -60,7 +63,6 @@
 #' )
 #' scen
 #'
-#' @importFrom stats rbeta runif
 #' @export
 
 PUA = function(dose_set, target_prob, n_scenarios = 1000, 

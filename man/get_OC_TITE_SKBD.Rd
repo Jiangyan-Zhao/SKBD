@@ -42,12 +42,11 @@ get_OC_TITE_SKBD(
 
 \item{cohort_size}{Positive integer. Number of patients per cohort.}
 
-\item{k_left, k_right}{Scalars in \eqn{(0,1)} controlling borrowing strength to the left and right
+\item{k_left, k_right}{Scalars in \eqn{[0,1]} controlling borrowing strength to the left and right
 neighbors when \code{shared = TRUE}. Typically \code{k_right > k_left} for safety.}
 
-\item{ref_gap}{Optional positive scalar. Reference dose gap used in kernel scaling.
-Note: in the current implementation, \code{ref_gap} is recomputed internally as
-\code{min(diff(dose_set_std))}.}
+\item{ref_gap}{Optional positive scalar. Reference spacing passed to \code{kernel_fun()}. If \code{NULL},
+kernel defaults to the minimum adjacent spacing in \code{dose_set}.}
 
 \item{shared}{Logical. If \code{TRUE}, use kernel borrowing (TITE-SKBD). If \code{FALSE}, use
 within-dose updates (keyboard-style).}
@@ -160,7 +159,10 @@ out$PCS
 
 }
 \references{
-Lin, R. and Y. Yuan (2020).
-Time-to-event model-assisted designs for dose-finding trials with delayed toxicity.
-\emph{Biostatistics 21}(4), 807--824.
+Zhao J, Shi X, Xu J (2026). Shared Keyboard: An improved Bayesian design
+for phase I clinical trials via Beta kernel process. \emph{ArXiv}.
+https://arxiv.org/abs/2605.25043
+
+Lin, R. and Y. Yuan (2020). Time-to-event model-assisted designs for
+dose-finding trials with delayed toxicity. \emph{Biostatistics 21}(4), 807--824.
 }

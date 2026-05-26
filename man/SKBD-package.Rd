@@ -51,6 +51,10 @@ tables and running operating-characteristic simulations.
 }
 
 \references{
+Zhao J, Shi X, Xu J (2026). Shared Keyboard: An improved Bayesian design
+for phase I clinical trials via Beta kernel process. \emph{ArXiv}.
+https://arxiv.org/abs/2605.25043
+
 Yan F, Mandrekar SJ, Yuan Y (2017). Keyboard: A Novel Bayesian Toxicity
 Probability Interval Design for Phase I Clinical Trials.
 \emph{Clinical Cancer Research}, 23(15), 3994--4003.

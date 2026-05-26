@@ -118,3 +118,10 @@ test_that("constant dose_set errors", {
     "dose_set must have at least two distinct values"
   )
 })
+
+test_that("boundary table has expected components", {
+  y <- c(0, 1, 2, 2, 0)
+  n <- c(3, 6, 9, 3, 0)
+  out <- get_boundary_SKBD(0.30, d = 3, y = y, n = n)
+  expect_true(all(c("boundary_tab", "decision_table", "weight") %in% names(out)))
+})

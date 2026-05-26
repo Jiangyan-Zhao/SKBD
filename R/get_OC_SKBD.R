@@ -32,8 +32,8 @@
 #' @param shared Logical; if \code{TRUE}, use kernel-weighted borrowing across doses
 #'   to construct the posterior at the current dose. If \code{FALSE}, reduces to
 #'   local updating (keyboard-style) via an identity kernel.
-#' @param k_left Numeric scalar in `(0,1)`. Left-side neighbor borrowing strength passed to `kernel_fun()`.
-#' @param k_right Numeric scalar in `(0,1)`. Right-side neighbor borrowing strength passed to `kernel_fun()`
+#' @param k_left Numeric scalar in \eqn{[0,1]}. Left-side neighbor borrowing strength passed to `kernel_fun()`.
+#' @param k_right Numeric scalar in \eqn{[0,1]}. Right-side neighbor borrowing strength passed to `kernel_fun()`
 #'   (set `k_left == k_right` for symmetric borrowing).
 #' @param ref_gap Optional positive scalar. Reference spacing passed to `kernel_fun()`. If `NULL`,
 #'   kernel defaults to the minimum adjacent spacing in `dose_set`.
@@ -55,9 +55,13 @@
 #' The design identifies the strongest key (toxicity interval with largest posterior
 #' probability) and applies the standard keyboard escalation/de-escalation rule relative
 #' to the target key. An overdose-control rule eliminates overly toxic doses and all
-#' higher doses. At the end of the trial, the MTD is selected by applying isotonic
-#' regression to observed rates
-#' among admissible doses and choosing the dose closest to \code{target_prob}.
+#' higher doses. 
+#' At the end of the trial, the MTD is selected from the admissible doses by applying 
+#' isotonic regression, if needed, to the posterior mean toxicity estimates and 
+#' choosing the dose whose adjusted estimate is closest to \code{target_prob}.
+#' When \code{shared = TRUE}, the final toxicity estimates are obtained from 
+#' a weak-prior Beta posterior with symmetric kernel borrowing; 
+#' when \code{shared = FALSE}, they reduce to within-dose weak-prior Beta estimates.
 #'
 #' @return A list with components:
 #' \itemize{
@@ -79,6 +83,10 @@
 #' }
 #'
 #' @references
+#' Zhao J, Shi X, Xu J (2026). Shared Keyboard: An improved Bayesian design 
+#'   for phase I clinical trials via Beta kernel process. \emph{ArXiv}. 
+#'   https://arxiv.org/abs/2605.25043
+#'
 #' Yan, F., Mandrekar, S. J., and Yuan, Y. (2017).
 #' Keyboard: A Novel Bayesian Toxicity Probability Interval Design for Phase I Clinical Trials.
 #' \emph{Clinical Cancer Research 23}(15), 3994--4003.
@@ -182,7 +190,9 @@ get_OC_SKBD <- function(
   ## get kernel
   if(shared){
     ker_vals = matrix(0, nrow = n_dose, ncol = n_dose)
-    ref_gap = min(diff(dose_set_std))
+    if (is.null(ref_gap)) {
+      ref_gap = min(diff(dose_set_std))
+    }
     for (i in 1:n_dose) {
       ker_vals[i, ] = kernel_fun(
         dose = dose_set_std[i],

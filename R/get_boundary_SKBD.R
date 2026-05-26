@@ -1,7 +1,7 @@
 #' @title Pre-tabulated Decision Boundaries for the Shared Keyboard Design
 #'
 #' @description
-#' \code{get_boundary_SKBD()} generates pre-tabulated dose escalation/de-escalation
+#' Generate the pre-tabulated dose escalation/de-escalation
 #' (and overdose elimination) decision tables for the Shared Keyboard Design (SKBD)
 #' at a \strong{current dose} \code{d}, given the accumulated data across all doses.
 #' The output is a keyboard-like boundary table (similar to the original Keyboard design),
@@ -55,8 +55,8 @@
 #' @param cohort_size Number of patients per cohort (used for cohort-aligned \code{boundary_tab} output).
 #' @param shared Logical; if \code{TRUE}, use kernel-weighted borrowing across doses.
 #'        If \code{FALSE}, use only current-dose data (identity kernel; no borrowing).
-#' @param k_left Numeric scalar in `(0,1)`. Left-side neighbor borrowing strength passed to `kernel_fun()`.
-#' @param k_right Numeric scalar in `(0,1)`. Right-side neighbor borrowing strength passed to `kernel_fun()`
+#' @param k_left Numeric scalar in \eqn{[0,1]}. Left-side neighbor borrowing strength passed to `kernel_fun()`.
+#' @param k_right Numeric scalar in \eqn{[0,1]}. Right-side neighbor borrowing strength passed to `kernel_fun()`
 #'        (set `k_left == k_right` for symmetric borrowing).
 #' @param ref_gap Optional positive scalar. Reference spacing passed to `kernel_fun()`. If `NULL`,
 #'        kernel defaults to the minimum adjacent spacing in `dose_set`.
@@ -85,6 +85,11 @@
 #'   \item \code{meta}: a list recording \code{table_type}, \code{show_past}, \code{start_from}, and the starting column used.
 #' }
 #' If \code{extra_safe=TRUE} and \code{d==1}, additional elements \code{cutoff} and \code{stop_boundary} are returned.
+#'
+#' @references
+#' Zhao J, Shi X, Xu J (2026). Shared Keyboard: An improved Bayesian design 
+#'   for phase I clinical trials via Beta kernel process. \emph{ArXiv}. 
+#'   https://arxiv.org/abs/2605.25043
 #'
 #' @examples
 #' ## Example data across 5 doses:

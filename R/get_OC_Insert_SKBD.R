@@ -1,7 +1,7 @@
 #' @title Operating Characteristics for the Dose-Insertion Shared Keyboard Design
 #' 
 #' @description 
-#' Simulate phase I dose-finding trials under the inserted Shared Keyboard design (Insert-SKBD),
+#' Simulate phase I dose-finding trials under the dose-insertion Shared Keyboard design (Insert-SKBD),
 #' where the working dose grid can be adaptively refined by inserting new dose levels when
 #' posterior evidence suggests that the target toxicity level is not well covered by the
 #' current prespecified grid.
@@ -41,12 +41,11 @@
 #' @param extra_safe Logical. If \code{TRUE}, use a more conservative elimination cutoff
 #' \code{cutoff_elimin - offset}.
 #' @param offset Scalar in \eqn{[0,0.5)}. Safety offset used when \code{extra_safe = TRUE}.
-#' @param k_left,k_right Scalars in \eqn{(0,1)} controlling borrowing strength to the left and right
+#' @param k_left,k_right Scalars in \eqn{[0,1]} controlling borrowing strength to the left and right
 #' neighbors in the SKBD pseudo-posterior update. Typically \code{k_right > k_left} for safety.
 #' @param ref_gap Optional positive scalar. Reference gap used for kernel scaling. Note: in the current
 #' implementation, \code{ref_gap} is recomputed internally as \code{min(diff(dose_set_work))} after each
 #' insertion/update.
-#' @param shared Logical. Reserved for compatibility with the shared keyboard framework.
 #' @param light_return Logical. If \code{TRUE}, return only summaries; if \code{FALSE}, also return
 #' per-trial details in \code{trial_detail}.
 #' @param n_trial Positive integer. Number of simulated trials.
@@ -72,9 +71,12 @@
 #' }
 #'
 #' @references
-#' Chu, Y., H. Pan, and Y. Yuan (2016). 
-#' Adaptive dose modification for phase I clinical trials.
-#' \emph{Statistics in Medicine 35}(20), 3497--3508.
+#' Zhao J, Shi X, Xu J (2026). Shared Keyboard: An improved Bayesian design 
+#'   for phase I clinical trials via Beta kernel process. \emph{ArXiv}. 
+#'   https://arxiv.org/abs/2605.25043
+#' 
+#' Chu, Y., H. Pan, and Y. Yuan (2016). Adaptive dose modification for phase I clinical trials.
+#'   \emph{Statistics in Medicine 35}(20), 3497--3508.
 #' 
 #' @examples
 #' tox_prob <- c(0.14, 0.45, 0.63, 0.74, 0.80)
@@ -99,7 +101,6 @@ get_OC_Insert_SKBD <- function(
     cutoff_elimin = 0.95,
     extra_safe = FALSE, offset = 0.05, 
     k_left = 0.2, k_right = 0.8, ref_gap = NULL,
-    shared = TRUE, # incorporate the keybooard design as a special case
     light_return = TRUE,
     n_trial = 1000, seed = 6
 ) {

@@ -49,6 +49,10 @@
 #' }
 #'
 #' @references
+#' Zhao J, Shi X, Xu J (2026). Shared Keyboard: An improved Bayesian design 
+#'   for phase I clinical trials via Beta kernel process. \emph{ArXiv}. 
+#'   https://arxiv.org/abs/2605.25043
+#'
 #' Yan F, Mandrekar SJ, Yuan Y (2017). Keyboard: A Novel Bayesian Toxicity
 #'   Probability Interval Design for Phase I Clinical Trials.
 #'   \emph{Clinical Cancer Research}, 23(15), 3994--4003.
@@ -63,7 +67,7 @@
 #'   \emph{Journal of the Royal Statistical Society: Series B}, 79(5),
 #'   1487--1508.
 #' 
-#' @importFrom DT datatable renderDataTable
+#' @importFrom DT datatable JS renderDataTable
 #' @importFrom shiny runApp
 #' @importFrom stats median pbeta rbeta rbinom rexp runif sd
 #' @importFrom utils tail

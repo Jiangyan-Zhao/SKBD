@@ -2,8 +2,7 @@
 #'
 #' @description
 #' `run_SKBD_shiny()` launches a Shiny interface for exploring key functions in
-#' the `SKBD` package, including decision-boundary generation and operating-
-#' characteristic simulation.
+#' the `SKBD` package, including decision-boundary generation and operating characteristic simulation.
 #'
 #' @details
 #' The app currently provides two tabs:

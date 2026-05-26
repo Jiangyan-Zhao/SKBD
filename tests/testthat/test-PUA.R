@@ -38,3 +38,9 @@ test_that("PUA target-dose position is within target interval for every scenario
 
   expect_true(all(in_target))
 })
+
+test_that("PUA returns monotone scenarios", {
+  out <- PUA(dose_set = 1:5, target_prob = 0.30, n_scenarios = 5, seed = 1)
+  expect_equal(nrow(out), 5)
+  expect_true(all(apply(out, 1, function(z) all(diff(z) >= 0))))
+})

@@ -29,11 +29,10 @@
 #' @param tox_prob Numeric vector in \eqn{[0,1]}. True DLT probabilities at each dose level.
 #' @param n_cohort Positive integer. Number of cohorts per simulated trial.
 #' @param cohort_size Positive integer. Number of patients per cohort.
-#' @param k_left,k_right Scalars in \eqn{(0,1)} controlling borrowing strength to the left and right
+#' @param k_left,k_right Scalars in \eqn{[0,1]} controlling borrowing strength to the left and right
 #' neighbors when \code{shared = TRUE}. Typically \code{k_right > k_left} for safety.
-#' @param ref_gap Optional positive scalar. Reference dose gap used in kernel scaling.
-#' Note: in the current implementation, \code{ref_gap} is recomputed internally as
-#' \code{min(diff(dose_set_std))}.
+#' @param ref_gap Optional positive scalar. Reference spacing passed to `kernel_fun()`. If `NULL`,
+#'   kernel defaults to the minimum adjacent spacing in `dose_set`.
 #' @param shared Logical. If \code{TRUE}, use kernel borrowing (TITE-SKBD). If \code{FALSE}, use
 #' within-dose updates (keyboard-style).
 #' @param dose_set Numeric vector of dose values. Defaults to \code{1:length(tox_prob)}.
@@ -85,9 +84,12 @@
 #' }
 #'
 #' @references
-#' Lin, R. and Y. Yuan (2020). 
-#' Time-to-event model-assisted designs for dose-finding trials with delayed toxicity. 
-#' \emph{Biostatistics 21}(4), 807--824.
+#' Zhao J, Shi X, Xu J (2026). Shared Keyboard: An improved Bayesian design 
+#'   for phase I clinical trials via Beta kernel process. \emph{ArXiv}. 
+#'   https://arxiv.org/abs/2605.25043
+#' 
+#' Lin, R. and Y. Yuan (2020). Time-to-event model-assisted designs for 
+#' dose-finding trials with delayed toxicity. \emph{Biostatistics 21}(4), 807--824.
 #' 
 #' @examples
 #' tox_prob <- c(0.05, 0.12, 0.20, 0.35, 0.50)
@@ -208,7 +210,9 @@ get_OC_TITE_SKBD <- function(target_prob, tox_prob,
   ## get kernel
   if(shared){
     ker_vals = matrix(0, nrow = n_dose, ncol = n_dose)
-    ref_gap = min(diff(dose_set_std))
+    if (is.null(ref_gap)) {
+      ref_gap = min(diff(dose_set_std))
+    }
     for (i in 1:n_dose) {
       ker_vals[i, ] = kernel_fun(
         dose = dose_set_std[i],

@@ -46,3 +46,15 @@ test_that("get_OC_SKBD validates invalid start_dose", {
     "start_dose"
   )
 })
+
+test_that("OC simulation returns main summaries", {
+  out <- get_OC_SKBD(
+    target_prob = 0.30,
+    tox_prob = c(0.05, 0.12, 0.30, 0.45, 0.60),
+    n_cohort = 3,
+    cohort_size = 3,
+    n_trial = 5,
+    seed = 1
+  )
+  expect_true(all(c("PCS", "PCA", "above_MTD", "ROD60", "ROD80") %in% names(out)))
+})

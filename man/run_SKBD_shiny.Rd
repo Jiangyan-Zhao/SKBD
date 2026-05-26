@@ -26,8 +26,7 @@ Invisibly returns the value from \code{\link[shiny:runApp]{shiny::runApp()}}.
 }
 \description{
 \code{run_SKBD_shiny()} launches a Shiny interface for exploring key functions in
-the \code{SKBD} package, including decision-boundary generation and operating-
-characteristic simulation.
+the \code{SKBD} package, including decision-boundary generation and operating characteristic simulation.
 }
 \details{
 The app currently provides two tabs:
