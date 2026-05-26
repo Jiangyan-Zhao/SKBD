@@ -5,3 +5,6 @@
 ^\.claude$
 ^\.github$
 ^README\.Rmd$
+^cran-comments\.md$
+^revdep$
+^CRAN-SUBMISSION$
