@@ -1,8 +1,10 @@
 
-# SKBD
+# SKBD: Shared Keyboard Designs for Phase I Dose-Finding Trials
 
 <!-- badges: start -->
 
+[![CRAN
+status](https://www.r-pkg.org/badges/version/SKBD)](https://cran.r-project.org/package=SKBD)
 [![R-CMD-check](https://github.com/Jiangyan-Zhao/SKBD/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Jiangyan-Zhao/SKBD/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
@@ -22,8 +24,15 @@ and practical trial planning in early-phase oncology studies.
 
 ## Installation
 
-`SKBD` is not currently on CRAN. Install the development version from
-GitHub:
+You can install the stable version of **SKBD** from
+[CRAN](https://CRAN.R-project.org/package=SKBD) with:
+
+``` r
+install.packages("SKBD")
+```
+
+Or install the development version from
+[GitHub](https://github.com/Jiangyan-Zhao/SKBD) with:
 
 ``` r
 # install.packages("pak")
