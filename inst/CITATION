@@ -1,4 +1,4 @@
-citHeader("To cite the BKP package in publications use:")
+citHeader("To cite the SKBD package in publications use:")
 
 bibentry(
   bibtype  = "Manual",
