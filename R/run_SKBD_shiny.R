@@ -46,6 +46,14 @@ run_SKBD_shiny <- function(
     launch.browser = getOption("shiny.launch.browser", interactive()),
     ...
 ) {
+  if (!requireNamespace("DT", quietly = TRUE)) {
+    stop(
+      "The 'DT' package is required to launch the SKBD Shiny app. ",
+      "Please reinstall SKBD with its dependencies, or install DT manually.",
+      call. = FALSE
+    )
+  }
+  
   app_dir <- system.file("app", package = "SKBD")
   
   if (!nzchar(app_dir)) {

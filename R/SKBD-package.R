@@ -67,7 +67,6 @@
 #'   \emph{Journal of the Royal Statistical Society: Series B}, 79(5),
 #'   1487--1508.
 #' 
-#' @importFrom DT datatable JS renderDataTable
 #' @importFrom shiny runApp
 #' @importFrom stats median pbeta rbeta rbinom rexp runif sd
 #' @importFrom utils tail

@@ -20,7 +20,7 @@ Encoding: UTF-8
 NeedsCompilation: no
 Roxygen: list(markdown = TRUE)
 Depends: R (>= 3.5.0)
-Imports: shiny, DT
-Suggests: testthat (>= 3.0.0)
+Imports: shiny
+Suggests: DT, testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0
