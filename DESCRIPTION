@@ -1,5 +1,5 @@
 Package: SKBD
-Title: SKBD: Shared Keyboard Designs for Phase I Dose-Finding Trials
+Title: Shared Keyboard Designs for Phase I Dose-Finding Trials
 Version: 0.1.1
 Authors@R: c(
     person(given = "Jiangyan", family = "Zhao", email = "zhaojy2017@126.com", role = c("cre", "aut")),

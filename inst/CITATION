@@ -11,7 +11,7 @@ bibentry(
 
 bibentry(
   bibtype = "Manual",
-  title   = "SKBD: Shared Keyboard Designs for Phase I Dose-Finding Trials",
+  title   = "Shared Keyboard Designs for Phase I Dose-Finding Trials",
   author  = c(person(given = "Jiangyan", family = "Zhao"),
     person(given = "Xian", family = "Shi"),
     person(given = "Jin", family = "Xu")),
