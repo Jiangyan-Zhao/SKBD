@@ -9,7 +9,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# SKBD: Shared Keyboard Designs for Phase I Dose-Finding Trials
+# SKBD: Shared Keyboard Designs for Phase I Clinical Trials
 
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/SKBD)](https://cran.r-project.org/package=SKBD)

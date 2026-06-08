@@ -11,11 +11,11 @@ bibentry(
 
 bibentry(
   bibtype = "Manual",
-  title   = "Shared Keyboard Designs for Phase I Dose-Finding Trials",
+  title   = "{SKBD}: Shared Keyboard Design for Phase {I} Clinical Trials",
   author  = c(person(given = "Jiangyan", family = "Zhao"),
     person(given = "Xian", family = "Shi"),
     person(given = "Jin", family = "Xu")),
-  year    = "2025",
+  year    = "2026",
   note    = "R package version 0.1.1",
   url     = "https://cran.r-project.org/package=SKBD",
   doi     = "10.32614/CRAN.package.SKBD"
